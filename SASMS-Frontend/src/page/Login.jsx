@@ -32,7 +32,6 @@ const roleConfig = {
 
 export default function Login() {
   const navigate = useNavigate();
-
   const [selectedRole, setSelectedRole] = useState("admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
