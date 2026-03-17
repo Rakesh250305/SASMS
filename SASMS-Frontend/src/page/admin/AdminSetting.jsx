@@ -1,0 +1,318 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Menu,
+  Bell,
+  Moon,
+  Lock,
+  Globe,
+  ChevronRight,
+  LogOut,
+  Shield,
+  Database,
+  Users,
+  Eye,
+} from "lucide-react";
+import AdminDrawer from "../../component/AdminDrawer";
+import { motion, AnimatePresence } from "framer-motion";
+import InputField from "../../component/InputField";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+const settingsSections = [
+  {
+    title: "System",
+    items: [
+      {
+        icon: <Bell size={18} />,
+        label: "Notification Settings",
+        desc: "Manage system-wide notifications",
+        color: "text-blue-700",
+        bg: "bg-blue-50",
+      },
+      {
+        icon: <Database size={18} />,
+        label: "Data Management",
+        desc: "Backup and export options",
+        color: "text-green-700",
+        bg: "bg-green-50",
+      },
+      {
+        icon: <Globe size={18} />,
+        label: "Language & Region",
+        desc: "English (US)",
+        color: "text-purple-700",
+        bg: "bg-purple-50",
+      },
+    ],
+  },
+  {
+    title: "Security",
+    items: [
+      {
+        icon: <Lock size={18} />,
+        label: "Change Password",
+        desc: "Update admin password",
+        color: "text-orange-600",
+        bg: "bg-orange-50",
+      },
+      {
+        icon: <Shield size={18} />,
+        label: "Access Control",
+        desc: "Manage user permissions",
+        color: "text-blue-700",
+        bg: "bg-blue-50",
+      },
+      {
+        icon: <Users size={18} />,
+        label: "Role Management",
+        desc: "Configure user roles",
+        color: "text-green-700",
+        bg: "bg-green-50",
+      },
+    ],
+  },
+  {
+    title: "Appearance",
+    items: [
+      {
+        icon: <Moon size={18} />,
+        label: "Dark Mode",
+        desc: "Toggle dark theme",
+        color: "text-purple-700",
+        bg: "bg-purple-50",
+        toggle: true,
+      },
+    ],
+  },
+];
+
+export function AdminSettings() {
+  const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  const handlePasswordChange = (e) => {
+  setPasswordData({
+    ...passwordData,
+    [e.target.name]: e.target.value
+  });
+};
+
+const handleUpdatePassword = async () => {
+
+  if (passwordData.newPassword !== passwordData.confirmPassword) {
+    toast.error("New and Confirm Password do not match");
+    return;
+  }
+
+  try {
+
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      "http://localhost:5000/admin/change-password",
+      {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    toast.success("Password updated successfully");
+
+    setShowPasswordModal(false);
+
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    });
+
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to change Password");
+  }
+};
+
+  return (
+    <div className="flex flex-col min-h-screen bg-[#F5F7FA]">
+
+      <AdminDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#1565C0] to-[#1976D2] px-5 pt-4 pb-5">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="bg-white/20 p-2 rounded-lg text-white"
+          >
+            <Menu size={18} />
+          </button>
+
+          <h1 className="text-white text-[16px] font-bold flex-1">
+            Settings
+          </h1>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+
+        {settingsSections.map((section) => (
+          <div key={section.title} className="mb-5">
+
+            {/* Section Title */}
+            <div className="text-[11px] font-bold text-gray-400 tracking-wider uppercase mb-2 pl-1">
+              {section.title}
+            </div>
+
+            {/* Card */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+
+              {section.items.map((item, i) => (
+                <div
+                  key={item.label}
+                  onClick={() => {
+                    if (item.label === "Change Password") {
+                      setShowPasswordModal(true);
+                    } else if (item.toggle) {
+                      setDarkMode((d) => !d);
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${i !== section.items.length - 1
+                      ? "border-b border-gray-100"
+                      : ""
+                    }`}
+
+                >
+                  {/* Icon */}
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${item.bg} ${item.color}`}
+                  >
+                    {item.icon}
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1">
+                    <div className="text-[13px] font-semibold text-[#1A1A2E]">
+                      {item.label}
+                    </div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">
+                      {item.desc}
+                    </div>
+                  </div>
+
+                  {/* Toggle */}
+                  {item.toggle ? (
+                    <div
+                      className={`w-11 h-6 rounded-full transition-all ${darkMode ? "bg-blue-600" : "bg-gray-300"
+                        } relative`}
+                    >
+                      <div
+                        className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all ${darkMode ? "left-6" : "left-[2px]"
+                          }`}
+                      ></div>
+                    </div>
+                  ) : (
+                    <ChevronRight size={16} className="text-gray-400" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Logout Button */}
+        <button
+          onClick={() => navigate("/login")}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-sm"
+        >
+          <LogOut size={18} />
+          Sign Out
+        </button>
+      </div>
+
+  <AnimatePresence>
+        {showPasswordModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-end justify-center z-50">
+
+    <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="absolute bottom-0 left-0 right-0 bg-white h-[60vh] rounded-t-3xl p-6 z-50 overflow-y-auto"
+            >
+
+      <h2 className="text-lg font-bold mb-4">Change Password</h2>
+
+      <div className="space-y-3">
+
+          <InputField
+            type="password"
+            label="Current Psssword"
+            icon={<Eye size={16}/>}
+            name="currentPassword"
+            placeholder="Current Password"
+          value={passwordData.currentPassword}
+          onChange={handlePasswordChange}
+          />
+
+          <InputField
+            type="password"
+            label="New Psssword"
+            icon={<Eye size={16}/>}
+            name="newPassword"
+            placeholder="New Password"
+          value={passwordData.newPassword}
+          onChange={handlePasswordChange}
+          />
+
+          <InputField
+            type="password"
+            label="Confirm Psssword"
+            icon={<Eye size={16}/>}
+            name="confirmPassword"
+            placeholder="Confirm Password"
+          value={passwordData.confirmPassword}
+          onChange={handlePasswordChange}
+          />
+
+      </div>
+
+      <div className="flex gap-3 mt-5">
+
+        <button
+          onClick={() => setShowPasswordModal(false)}
+          className="flex-1 py-2 rounded-xl border text-sm font-semibold"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleUpdatePassword}
+          className="flex-1 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold"
+        >
+          Update
+        </button>
+
+      </div>
+
+    </motion.div>
+
+  </div>
+)}
+  </AnimatePresence>
+    </div>
+  );
+}
