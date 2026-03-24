@@ -415,6 +415,7 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
 export default function AdminBookingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [booking, setBooking] = useState(null);
   const [providers, setProviders] = useState([]);
@@ -437,13 +438,13 @@ export default function AdminBookingDetail() {
       setLoading(true);
       try {
         const [bRes, pRes, aRes] = await Promise.all([
-          axios.get(`http://localhost:5000/admin/booking/${id}`, {
+          axios.get(`${apiUrl}/admin/booking/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/admin/provider", {
+          axios.get(`${apiUrl}/admin/provider`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/admin/assets", {
+          axios.get(`${apiUrl}/admin/assets`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -473,7 +474,7 @@ export default function AdminBookingDetail() {
     setMsg(null);
     try {
       const res = await axios.put(
-        `http://localhost:5000/admin/booking/${id}/assign`,
+        `${apiUrl}/admin/booking/${id}/assign`,
         { providerId: selectedProvider, assetIds: selectedAssets, adminNote },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -590,7 +591,7 @@ export default function AdminBookingDetail() {
         <Section title="Service">
           <div className="flex items-center gap-3">
             {booking.service?.serviceImage ? (
-              <img src={`http://localhost:5000${booking.service.serviceImage}`} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+              <img src={`${apiUrl}${booking.service.serviceImage}`} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
             ) : (
               <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
                 <Package size={22} className="text-blue-400" />

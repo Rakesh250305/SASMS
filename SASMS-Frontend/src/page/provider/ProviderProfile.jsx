@@ -58,6 +58,7 @@ function EditField({ icon: Icon, label, name, value, onChange, type = "text", lo
 
 export default function ProviderProfile() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -69,7 +70,7 @@ export default function ProviderProfile() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await axios.get("http://localhost:5000/provider", {
+        const r = await axios.get(`${apiUrl}/provider`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = r.data.data || r.data.provider || r.data;
@@ -99,7 +100,7 @@ export default function ProviderProfile() {
     setSaveMsg("");
     try {
       const r = await axios.put(
-        "http://localhost:5000/provider/profile",
+        `${apiUrl}/provider/profile`,
         form,
         { headers: { Authorization: `Bearer ${token}` } }
       );

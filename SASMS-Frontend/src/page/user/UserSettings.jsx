@@ -86,9 +86,9 @@ const settingsSections = [
 
 export default function UserSettings() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [darkMode, setDarkMode] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -115,7 +115,7 @@ const handleUpdatePassword = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      "http://localhost:5000/user/change-password",
+      `${apiUrl}/user/change-password`,
       {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword

@@ -62,7 +62,7 @@ const providers = [
 export default function AdminProviders() {
 
   const navigate = useNavigate();
-
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [providerList, setProviderList] = useState([]);
@@ -81,7 +81,7 @@ export default function AdminProviders() {
       try {
 
         const res = await axios.get(
-          "http://localhost:5000/admin/provider",
+          `${apiUrl}/admin/provider`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -136,7 +136,7 @@ export default function AdminProviders() {
     try {
 
       const res = await axios.post(
-        "http://localhost:5000/admin/provider/create",
+        `${apiUrl}/admin/provider/create`,
         {
           ...newProvider,
           serviceType: newProvider.serviceType.split(",")
@@ -198,7 +198,7 @@ export default function AdminProviders() {
     try {
 
       const res = await axios.put(
-        `http://localhost:5000/admin/Provider/${selectedProvider._id}`,
+        `${apiUrl}/admin/Provider/${selectedProvider._id}`,
         newProvider,
         {
           headers: {

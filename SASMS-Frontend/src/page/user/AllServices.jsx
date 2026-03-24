@@ -32,6 +32,7 @@ function SkeletonCard() {
 
 export default function AllServices() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [services, setServices] = useState([]);
   const [search, setSearch] = useState("");
   const [showFilter, setShowFilter] = useState(false);
@@ -57,7 +58,7 @@ export default function AllServices() {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/user/allService", {
+      const res = await axios.get(`${apiUrl}/user/allService`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setServices(res.data.data || []);
@@ -202,7 +203,7 @@ export default function AllServices() {
               {/* Image */}
               {service.serviceImage ? (
                 <img
-                  src={`http://localhost:5000${service.serviceImage}`}
+                  src={`${apiUrl}${service.serviceImage}`}
                   alt={service.serviceName}
                   className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
                 />

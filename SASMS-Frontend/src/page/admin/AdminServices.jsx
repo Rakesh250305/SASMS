@@ -25,6 +25,7 @@ import axios from "axios";
 export default function AdminServices() {
 
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [showAddModal, setShowAddModal] = useState(false);
 
   const [newService, setNewService] = useState({
@@ -70,7 +71,7 @@ export default function AdminServices() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:5000/admin/service",
+        `${apiUrl}/admin/service`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -116,7 +117,7 @@ export default function AdminServices() {
     try {
 
       await axios.post(
-        "http://localhost:5000/admin/service/create",
+        `${apiUrl}/admin/service/create`,
         formData,
         {
           headers: {
@@ -166,7 +167,7 @@ export default function AdminServices() {
     newFd.append("serviceImage", newService.serviceImage);
 
       const res = await axios.put(
-        `http://localhost:5000/admin/service/${selectedService._id}`,
+        `${apiUrl}/admin/service/${selectedService._id}`,
         newFd,
         {
           headers: {
@@ -215,7 +216,7 @@ export default function AdminServices() {
     try {
 
       await axios.delete(
-        `http://localhost:5000/admin/service/${id}`,
+        `${apiUrl}/admin/service/${id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -306,7 +307,7 @@ export default function AdminServices() {
 
             {/* IMAGE */}
             <img
-              src={`http://localhost:5000${service.serviceImage}`}
+              src={`${apiUrl}${service.serviceImage}`}
               className="w-11 h-11 rounded-xl object-cover"
             />
 
@@ -666,7 +667,7 @@ export default function AdminServices() {
 
               {selectedService.serviceImage && (
                 <img
-                  src={`http://localhost:5000${selectedService.serviceImage}`}
+                  src={`${apiUrl}${selectedService.serviceImage}`}
                   className="w-full h-40 object-cover rounded-xl mb-4"
                 />
               )}

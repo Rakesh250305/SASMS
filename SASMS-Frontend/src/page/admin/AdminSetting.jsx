@@ -89,6 +89,7 @@ const settingsSections = [
 
 export function AdminSettings() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -118,7 +119,7 @@ const handleUpdatePassword = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      "http://localhost:5000/admin/change-password",
+      `${apiUrl}/admin/change-password`,
       {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword

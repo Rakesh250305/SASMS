@@ -24,6 +24,7 @@ import StatusBadge from "../../component/StatusBadge";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRef } from "react";
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const serviceCategories = [
   { name: "HVAC", icon: <Wind size={22} />, color: "#059669", bg: "#ECFDF5", count: 8 },
@@ -42,7 +43,6 @@ export default function UserDashboard() {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [services, setServices] = useState([]);
-  // const [categories, setCategories] = useState([]);
   const searchRef = useRef(null);
   const [bookingHistory, setBookingHistory] = useState([]);
 
@@ -53,7 +53,7 @@ export default function UserDashboard() {
     const fetchUserData = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/user",
+          `${apiUrl}/user`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -76,7 +76,7 @@ export default function UserDashboard() {
     const fetchServices = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/user/allService",
+          `${apiUrl}/user/allService`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -98,7 +98,7 @@ export default function UserDashboard() {
     const fetchRecentBookings = async () => {
 
       const res = await axios.get(
-        "http://localhost:5000/user/recentBooking",
+        `${apiUrl}/user/recentBooking`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -230,7 +230,7 @@ export default function UserDashboard() {
                   >
                     {s.serviceImage && (
                       <img
-                        src={`http://localhost:5000${s.serviceImage}`}
+                        src={`${apiUrl}${s.serviceImage}`}
                         alt={s.serviceName}
                         className="w-10 h-10 rounded-lg object-cover"
                       />

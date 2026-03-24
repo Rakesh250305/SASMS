@@ -38,6 +38,7 @@ const tabs = ["All", "Available", "Out of Stock", "Maintenance"];
 
 export default function AdminAssets() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [activeTab, setActiveTab] = useState(0);
   const [search, setSearch] = useState("");
@@ -63,7 +64,7 @@ export default function AdminAssets() {
     const fetchAllAssets = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/admin/assets",
+          `${apiUrl}/admin/assets`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -124,7 +125,7 @@ export default function AdminAssets() {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "http://localhost:5000/admin/assets/create",
+        `${apiUrl}/admin/assets/create`,
         newAsset,
         {
           headers: {
@@ -167,7 +168,7 @@ export default function AdminAssets() {
     try {
 
       const res = await axios.put(
-        `http://localhost:5000/admin/assets/${selectedAsset._id}`,
+        `${apiUrl}/admin/assets/${selectedAsset._id}`,
         newAsset,
         {
           headers: {
@@ -214,7 +215,7 @@ export default function AdminAssets() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/admin/assets/${id}`,
+        `${apiUrl}/admin/assets/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

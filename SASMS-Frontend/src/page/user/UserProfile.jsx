@@ -6,7 +6,7 @@ import { User, X } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
 
 export default function UserProfile() {
-
+    const apiUrl = import.meta.env.VITE_BACKEND_URL;
     const [user, setUser] = useState(null);
     const [tab, setTab] = useState("profile");
     const [form, setForm] = useState({ name: "", email: "", phone: "" });
@@ -49,7 +49,7 @@ export default function UserProfile() {
             try {
 
                 const res = await axios.get(
-                    "http://localhost:5000/user",
+                    `${apiUrl}/user`,
                     {
                         headers: { Authorization: `Bearer ${token}` }
                     }
@@ -81,7 +81,7 @@ export default function UserProfile() {
         }
 
         axios
-            .get("http://localhost:5000/user/address", {
+            .get(`${apiUrl}/user/address`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             .then((res) => setAddresses(res.data.addresses || []));
@@ -96,7 +96,7 @@ export default function UserProfile() {
         try {
 
             await axios.put(
-                "http://localhost:5000/user/profile",
+                `${apiUrl}/user/profile`,
                 { name: form.name, phone: form.phone },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -125,7 +125,7 @@ export default function UserProfile() {
         try {
 
             await axios.put(
-                "http://localhost:5000/user/change-password",
+                `${apiUrl}/user/change-password`,
                 {
                     currentPassword: pwForm.currentPassword,
                     newPassword: pwForm.newPassword
@@ -154,7 +154,7 @@ export default function UserProfile() {
     const deleteAddress = async (id) => {
 
         await axios.delete(
-            `http://localhost:5000/user/address/${id}`,
+            `${apiUrl}/user/address/${id}`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -167,7 +167,7 @@ export default function UserProfile() {
         try {
 
             const res = await axios.post(
-                "http://localhost:5000/user/address",
+                `${apiUrl}/user/address`,
                 newAddress,
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -202,7 +202,7 @@ export default function UserProfile() {
         try {
 
             const res = await axios.put(
-                `http://localhost:5000/user/address/${selectedAddress._id}`,
+                `${apiUrl}/user/address/${selectedAddress._id}`,
                 newAddress,
                 {
                     headers: { Authorization: `Bearer ${token}` }

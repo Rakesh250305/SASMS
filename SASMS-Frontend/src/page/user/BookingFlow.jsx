@@ -8,6 +8,7 @@ const STEPS = ["Service", "Address", "Notes", "Confirm"];
 export default function BookingFlow() {
 
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [searchParams] = useSearchParams();
 
   const preselectedServiceId = searchParams.get("serviceId");
@@ -30,7 +31,7 @@ export default function BookingFlow() {
       try {
 
         const res = await axios.get(
-          "http://localhost:5000/user/allService",
+          `${apiUrl}/user/allService`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -72,7 +73,7 @@ useEffect(()=>{
   try {
 
     const res = await axios.get(
-      "http://localhost:5000/user/address",
+      `${apiUrl}/user/address`,
       {
         headers: { Authorization: `Bearer ${token}` }
       }
@@ -95,7 +96,7 @@ fetchAddresses();
     try {
 
       await axios.post(
-        "http://localhost:5000/user/booking/create",
+        `${apiUrl}/user/booking/create`,
         {
           serviceId: selectedService._id,
           address : selectedAddressId,
@@ -212,7 +213,7 @@ fetchAddresses();
 
                   {s.serviceImage && (
                     <img
-                      src={`http://localhost:5000${s.serviceImage}`}
+                      src={`${apiUrl}${s.serviceImage}`}
                       alt={s.serviceName}
                       className="w-12 h-12 rounded-lg object-cover"
                     />

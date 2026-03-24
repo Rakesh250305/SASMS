@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BottomNav from "../../component/BottomNav";
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const STATUS_TABS = ["all", "pending", "assigned", "in_progress", "completed", "cancelled"];
 
@@ -78,7 +79,7 @@ function CancelModal({ booking, onConfirm, onClose, loading }) {
               <div className="bg-slate-50 rounded-2xl p-3 flex items-center gap-3 mb-6 border border-gray-100">
                 {booking.service?.serviceImage ? (
                   <img
-                    src={`http://localhost:5000${booking.service.serviceImage}`}
+                    src={`${apiUrl}${booking.service.serviceImage}`}
                     alt=""
                     className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
                   />
@@ -144,7 +145,7 @@ function BookingCard({ booking, onCancelClick }) {
       <div className="flex items-center gap-3 p-4 border-b border-gray-50">
         {booking.service?.serviceImage ? (
           <img
-            src={`http://localhost:5000${booking.service.serviceImage}`}
+            src={`${apiUrl}${booking.service.serviceImage}`}
             alt={booking.service?.serviceName}
             className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
           />
@@ -282,7 +283,7 @@ export default function UserBookings() {
         if (activeTab !== "all") params.append("status", activeTab);
 
         const res = await axios.get(
-          `http://localhost:5000/user/booking?${params}`,
+          `${apiUrl}/user/booking?${params}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -307,7 +308,7 @@ export default function UserBookings() {
     setCancelling(true);
     try {
       await axios.put(
-        `http://localhost:5000/user/booking/${cancelTarget._id}/cancel`,
+        `${apiUrl}/user/booking/${cancelTarget._id}/cancel`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -74,6 +74,7 @@ function Skeleton() {
 }
 
 export default function ProviderNotifications() {
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const [notifs,    setNotifs]    = useState([]);
   const [unread,    setUnread]    = useState(0);
@@ -83,7 +84,7 @@ export default function ProviderNotifications() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await axios.get("http://localhost:5000/provider/notifications", {
+        const r = await axios.get(`${apiUrl}/provider/notifications`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setNotifs(r.data.notifications || []);
@@ -95,7 +96,7 @@ export default function ProviderNotifications() {
 
   const markRead = async (ids) => {
     try {
-      await axios.put("http://localhost:5000/provider/notifications/mark-read",
+      await axios.put(`${apiUrl}/provider/notifications/mark-read`,
         { ids }, { headers: { Authorization: `Bearer ${token}` } });
       setNotifs(prev => prev.map(n => ids.includes(n._id) ? { ...n, isRead: true } : n));
       setUnread(prev => Math.max(0, prev - ids.length));
@@ -104,7 +105,7 @@ export default function ProviderNotifications() {
 
   const markAll = async () => {
     try {
-      await axios.put("http://localhost:5000/provider/notifications/mark-read",
+      await axios.put(`${apiUrl}/provider/notifications/mark-read`,
         { ids: [] }, { headers: { Authorization: `Bearer ${token}` } });
       setNotifs(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnread(0);

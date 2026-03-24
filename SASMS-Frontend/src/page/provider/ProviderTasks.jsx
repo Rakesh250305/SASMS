@@ -39,6 +39,7 @@ const tabLabel = (t) =>
 
 export default function ProviderTasks() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [tasks,       setTasks]       = useState([]);
   const [activeTab,   setActiveTab]   = useState("all");
   const [loading,     setLoading]     = useState(true);
@@ -50,7 +51,7 @@ export default function ProviderTasks() {
       setLoading(true);
       try {
         const p = activeTab !== "all" ? `?status=${activeTab}` : "";
-        const r = await axios.get(`http://localhost:5000/provider/booking${p}`, {
+        const r = await axios.get(`${apiUrl}/provider/booking${p}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTasks(r.data.bookings || r.data.data || []);
@@ -63,7 +64,7 @@ export default function ProviderTasks() {
     e.stopPropagation();
     setAccepting(id);
     try {
-      await axios.put(`http://localhost:5000/provider/booking/${id}/status`,
+      await axios.put(`${apiUrl}/provider/booking/${id}/status`,
         { status: "in_progress" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -118,7 +119,7 @@ export default function ProviderTasks() {
             {/* Top */}
             <div className="flex items-center gap-3 p-4 border-b border-gray-50">
               <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
-                <img src={`http://localhost:5000${t.service?.serviceImage}`} className="h-full rounded-xl" />
+                <img src={`${apiUrl}${t.service?.serviceImage}`} className="h-full rounded-xl" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-mono text-purple-500 mb-0.5">{t.bookingId}</p>

@@ -34,6 +34,7 @@ function timeAgo(d) {
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [provider, setProvider] = useState(null);
   const [tasks, setTasks]       = useState([]);
   const [stats, setStats]       = useState({});
@@ -44,9 +45,9 @@ export default function ProviderDashboard() {
     (async () => {
       try {
         const [pR, tR, sR] = await Promise.all([
-          axios.get("http://localhost:5000/provider",                { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://localhost:5000/provider/booking?limit=4",{ headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://localhost:5000/provider/stats",          { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${apiUrl}/provider`,                { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${apiUrl}/provider/booking?limit=5`,{ headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${apiUrl}/provider/stats`,          { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setProvider(pR.data.data || pR.data.provider || pR.data);
         setTasks(tR.data.bookings || tR.data.data || []);
@@ -161,7 +162,7 @@ export default function ProviderDashboard() {
           >
             <div className="flex items-center gap-3 p-4">
               <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
-                <img src={`http://localhost:5000${t.service?.serviceImage}`} className="h-full rounded-xl" />
+                <img src={`${apiUrl}${t.service?.serviceImage}`} className="h-full rounded-xl" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-mono text-purple-500 mb-0.5">{t.bookingId}</p>
