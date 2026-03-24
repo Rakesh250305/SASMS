@@ -51,6 +51,7 @@ export default function AdminDashboard() {
           }
         );
         setData(res.data.data);
+        console.log(res.data.data);
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) {
@@ -167,7 +168,7 @@ export default function AdminDashboard() {
 
           <div className="text-lg flex flex-col font-extrabold">
             {data.storeName}
-            <small>{data.storeAddress}</small>
+            <small>{data?.storeAddress + ","} {data?.city + ","} {data?.state + ","} {data?.pincode}</small>
           </div>
 
           <p className="absolute right-1">GST: {data?.GSTNo || ""}</p>

@@ -1,15 +1,11 @@
 export default function ScreenLoader() {
   return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      backgroundColor: "rgba(0,0,0,0.4)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-    }}>
-      <div className="spinner-border text-primary" role="status" />
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
+      <div className="flex gap-2">
+        <span className="w-3 h-3 bg-white rounded-full animate-bounce"></span>
+        <span className="w-3 h-3 bg-white rounded-full animate-bounce delay-150"></span>
+        <span className="w-3 h-3 bg-white rounded-full animate-bounce delay-300"></span>
+      </div>
     </div>
   );
 }
