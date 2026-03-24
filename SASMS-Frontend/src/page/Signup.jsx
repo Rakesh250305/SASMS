@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { User, Mail, Lock, Phone, ChevronDown, ArrowLeft, Check, Store, Building2, MapPin, Building2Icon, Hash, NotebookTabs, Link2 } from "lucide-react";
 import { toast } from "react-toastify";
 import InputField from "../component/InputField";
-import ScreenLoader from '../component/ScreenLoader';
+import ScreenLoader from '../component/ScreenLoader.jsx';
 
 /* ---------------- MAIN COMPONENT ---------------- */
 
@@ -210,7 +210,7 @@ export default function Signup() {
   return (
 
     <div className="min-h-screen flex flex-col bg-[#f8faff] overflow-y-auto">
-      {loading <ScreenLoader /> }
+      {loading && <ScreenLoader /> }
 
       {/* HEADER */}
       <div className="relative bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-6 pt-9 pb-14 overflow-hidden">
