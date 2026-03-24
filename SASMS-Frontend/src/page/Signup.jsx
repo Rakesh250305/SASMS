@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { User, Mail, Lock, Phone, ChevronDown, ArrowLeft, Check, Store, Building2, MapPin, Building2Icon, Hash, NotebookTabs, Link2 } from "lucide-react";
 import { toast } from "react-toastify";
 import InputField from "../component/InputField";
+import ScreenLoader from '../component/ScreenLoader';
 
 /* ---------------- MAIN COMPONENT ---------------- */
 
@@ -13,6 +14,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -178,6 +180,7 @@ export default function Signup() {
 
     if (!validateStep()) return;
     try {
+      setLoading(true);
       const payload = { ...form };
       delete payload.confirmPass;
 
@@ -197,6 +200,8 @@ export default function Signup() {
       navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed");
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -205,6 +210,7 @@ export default function Signup() {
   return (
 
     <div className="min-h-screen flex flex-col bg-[#f8faff] overflow-y-auto">
+      {loading <ScreenLoader /> }
 
       {/* HEADER */}
       <div className="relative bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-6 pt-9 pb-14 overflow-hidden">
