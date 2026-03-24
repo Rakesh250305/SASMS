@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
 
-// ✅ underscore, matches your DB schema exactly
 const STATUS_FLOW = ["pending", "assigned", "in_progress", "completed"];
 
 const STATUS_LABEL = {
@@ -57,6 +56,7 @@ function Section({ title, children }) {
 export default function UserBookingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [booking, setBooking] = useState(null);  
   const [loading, setLoading] = useState(true); 
@@ -68,7 +68,7 @@ export default function UserBookingDetail() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `http://localhost:5000/user/booking/${id}`,
+          `${apiUrl}/user/booking/${id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setBooking(res.data.data);
@@ -190,7 +190,7 @@ export default function UserBookingDetail() {
           <div className="flex items-center gap-3">
             {booking.service?.serviceImage ? (
               <img
-                src={`http://localhost:5000${booking.service.serviceImage}`}
+                src={`${apiUrl}${booking.service.serviceImage}`}
                 alt={booking.service.serviceName}
                 className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
               />

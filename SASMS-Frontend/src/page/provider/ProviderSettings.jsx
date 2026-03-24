@@ -13,10 +13,6 @@ import {
   Eye,
   User,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import InputField from "../../component/InputField";
-import axios from "axios";
-import { toast } from "react-toastify";
 import BottomNav from "../../component/BottomNav";
 
 const settingsSections = [

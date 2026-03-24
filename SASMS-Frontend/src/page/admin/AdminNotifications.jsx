@@ -91,6 +91,7 @@ function SkeletonCard() {
 
 export default function AdminNotifications() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -100,7 +101,7 @@ export default function AdminNotifications() {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/admin/notifications", {
+      const res = await axios.get(`${apiUrl}/admin/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(res.data.notifications || []);
@@ -119,7 +120,7 @@ export default function AdminNotifications() {
   const handleMarkRead = async (ids) => {
     try {
       await axios.put(
-        "http://localhost:5000/admin/notifications/mark-read",
+        `${apiUrl}/admin/notifications/mark-read`,
         { ids },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -135,7 +136,7 @@ export default function AdminNotifications() {
   const handleMarkAllRead = async () => {
     try {
       await axios.put(
-        "http://localhost:5000/admin/notifications/mark-read",
+        `${apiUrl}/admin/notifications/mark-read`,
         { ids: [] },
         { headers: { Authorization: `Bearer ${token}` } }
       );

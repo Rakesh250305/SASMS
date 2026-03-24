@@ -32,6 +32,7 @@ const roleConfig = {
 
 export default function Login() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [selectedRole, setSelectedRole] = useState("admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +52,7 @@ const handleLogin = async (e) => {
   try {
     setLoading(true);
     const res = await axios.post(
-      "http://localhost:5000/auth/login",
+      `${apiUrl}/auth/login`,
       {
         email,
         password,

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BottomNav from "../../component/BottomNav";
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 /* ── Notification type → icon + colors ─────────────────── */
 const TYPE_CONFIG = {
@@ -96,7 +97,7 @@ export default function UserNotification() {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/user/notifications", {
+      const res = await axios.get(`${apiUrl}/user/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(res.data.notifications || []);
@@ -115,7 +116,7 @@ export default function UserNotification() {
   const handleMarkRead = async (ids) => {
     try {
       await axios.put(
-        "http://localhost:5000/user/notifications/mark-read",
+        `${apiUrl}/user/notifications/mark-read`,
         { ids },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -131,7 +132,7 @@ export default function UserNotification() {
   const handleMarkAllRead = async () => {
     try {
       await axios.put(
-        "http://localhost:5000/user/notifications/mark-read",
+        `${apiUrl}/user/notifications/mark-read`,
         { ids: [] },
         { headers: { Authorization: `Bearer ${token}` } }
       );

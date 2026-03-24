@@ -149,7 +149,7 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
 export default function ProviderTaskDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -163,7 +163,7 @@ export default function ProviderTaskDetail() {
 const fetchTask = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`http://localhost:5000/provider/booking/${id}`, {
+        const res = await axios.get(`${apiUrl}/provider/booking/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const t = res.data.booking || res.data.data;
@@ -186,7 +186,7 @@ const fetchTask = async () => {
     setActionLoading(true);
     try {
       const res = await axios.put(
-        `http://localhost:5000/provider/booking/${id}/status`,
+        `${apiUrl}/provider/booking/${id}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -313,7 +313,7 @@ const fetchTask = async () => {
           <div className="flex items-center gap-3">
             {task.service?.serviceImage ? (
               <img
-                src={`http://localhost:5000${task.service.serviceImage}`}
+                src={`${apiUrl}${task.service.serviceImage}`}
                 alt=""
                 className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
               />

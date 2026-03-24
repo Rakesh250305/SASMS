@@ -77,11 +77,11 @@ const filterLabel = (s) =>
 
 export default function AdminServiceRequest() {
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [activeTab, setActiveTab] = useState("bookings");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bookings, setBookings] = useState([]);
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
@@ -90,7 +90,7 @@ export default function AdminServiceRequest() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("http://localhost:5000/admin/booking?limit=100", {
+        const res = await axios.get(`${apiUrl}/admin/booking?limit=100`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setBookings(res.data.bookings || []);
@@ -104,7 +104,6 @@ export default function AdminServiceRequest() {
 
   // Derive unique users from bookings
   const derivedUsers = useMemo(() => {
-    if (users.length > 0) return users;
     const map = new Map();
     bookings.forEach((b) => {
       if (b.user && !map.has(b.user._id)) {
@@ -117,7 +116,7 @@ export default function AdminServiceRequest() {
       }
     });
     return Array.from(map.values());
-  }, [users, bookings]);
+  }, [bookings]);
 
   // Count per status for filter chips
   const statusCounts = useMemo(() => {
@@ -328,7 +327,7 @@ export default function AdminServiceRequest() {
                 <div className="flex items-center gap-3 p-4 border-b border-gray-50">
                   {b.service?.serviceImage ? (
                     <img
-                      src={`http://localhost:5000${b.service.serviceImage}`}
+                      src={`${apiUrl}${b.service.serviceImage}`}
                       alt=""
                       className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
                     />

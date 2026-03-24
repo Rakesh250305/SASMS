@@ -11,6 +11,7 @@ import InputField from "../component/InputField";
 export default function Signup() {
 
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [step, setStep] = useState(1);
 
   const [form, setForm] = useState({
@@ -182,13 +183,13 @@ export default function Signup() {
 
       if(payload.role === "admin"){
         const res = await axios.post(
-        "http://localhost:5000/admin/signup",
+        `${apiUrl}/admin/signup`,
         payload
       );
       toast.success(res.data.message);
       } else {
         const res = await axios.post(
-        "http://localhost:5000/user/signup",
+        `${apiUrl}/user/signup`,
         payload
       );
       toast.success(res.data.message);

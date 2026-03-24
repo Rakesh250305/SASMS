@@ -24,6 +24,7 @@ const STAT_CONFIG = [
 export default function AdminDashboard() {
 
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [data, setData] = useState([]);
   const [stats, setStats] = useState([]);
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
     const fetchAdminData = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/admin",
+          `${apiUrl}/admin`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -62,7 +63,7 @@ export default function AdminDashboard() {
       try {
 
         const res = await axios.get(
-          "http://localhost:5000/admin/booking/stats",
+          `${apiUrl}/admin/booking/stats`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
       try {
 
         const res = await axios.get(
-          "http://localhost:5000/admin/stats",
+          `${apiUrl}/admin/stats`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -99,7 +100,7 @@ export default function AdminDashboard() {
     const fetchActivities = async () => {
 
       const res = await axios.get(
-        "http://localhost:5000/admin/activities",
+        `${apiUrl}/admin/activities`,
         {
           headers: {
             Authorization: `Bearer ${token}`
