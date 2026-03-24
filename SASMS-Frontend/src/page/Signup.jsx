@@ -206,9 +206,7 @@ export default function Signup() {
   };
 
   /* ---------------- UI ---------------- */
-
   return (
-
     <div className="min-h-screen flex flex-col bg-[#f8faff] overflow-y-auto">
       {loading && <ScreenLoader /> }
 
