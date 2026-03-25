@@ -13,7 +13,7 @@ const userNav = [
   { icon: <LayoutDashboard size={22} />, label: "Home", path: "/user", color: "text-emerald-800", bg: "bg-emerald-800" },
   { icon: <Calendar size={22} />, label: "Bookings", path: "/user/bookings", color: "text-emerald-800", bg: "bg-emerald-800" },
   { icon: <Package size={22} />, label: "Services", path: "/user/services", color: "text-emerald-800", bg: "bg-emerald-800" },
-  { icon: <Settings size={22} />, label: "Setting", path: "/user/settings", color: "text-emerald-800", bg: "bg-emerald-800" },
+  { icon: <Settings size={22} />, label: "Settings", path: "/user/settings", color: "text-emerald-800", bg: "bg-emerald-800" },
 ];
 
 const providerNav = [
