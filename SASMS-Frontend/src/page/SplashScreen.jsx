@@ -55,8 +55,8 @@ export function SplashScreen() {
           transition={{ delay: 0.8 }}
           className="mt-4 px-4 py-1 bg-white/20 rounded-full"
         >
-          <span className="text-white/90 text-[11px]">
-            Manage. Track. Deliver.
+          <span className="text-white/90 items-center text-[11px]">
+            Manage • Track • Booking
           </span>
         </motion.div>
 
