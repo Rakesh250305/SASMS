@@ -28,11 +28,13 @@ import ProviderTasks from "./page/provider/ProviderTasks";
 import ProviderTaskDetail from "./page/provider/ProviderTaskDetail";
 import ProviderNotifications from "./page/provider/ProviderNotifications";
 import { ProviderSettings } from "./page/provider/ProviderSettings";
+import PwaInstallButton from "./component/PwaInstallButton";
 
 function App() {
 
   return (
     <BrowserRouter>
+    <PwaInstallButton />
       <Routes>
 
         <Route path="/" element={<SplashScreen />} />

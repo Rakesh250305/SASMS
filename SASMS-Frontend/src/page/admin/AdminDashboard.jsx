@@ -51,7 +51,6 @@ export default function AdminDashboard() {
           }
         );
         setData(res.data.data);
-        console.log(res.data.data);
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) {
