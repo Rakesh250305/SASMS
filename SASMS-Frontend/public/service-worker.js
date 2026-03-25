@@ -1,8 +1,8 @@
 const CACHE_NAME = "SASMS-v1";
 const urlsToCache = [
   "/",
-  "/index.html",
-  "offline.html",];
+  "/offline.html",
+  "/index.html",];
 
 self.addEventListener("install", e => {
     // console.log("Service Worker: Installed");
@@ -12,19 +12,13 @@ self.addEventListener("install", e => {
   self.skipWaiting();
 });
 
-// if offline then serve from cache and if not in cache then serve offline page
-self.addEventListener("fetch", e => {
-  if (e.request.mode === "navigate") {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(e.request, res.clone());
-            return res;
-          });
-        })
-        .catch(() => caches.match(e.request))
-        .then(res => res || caches.match("/offline.html"))
+// if offline then serve offline page
+self.addEventListener("fetch", event => {
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match("/offline.html");
+      })
     );
   }
 });
