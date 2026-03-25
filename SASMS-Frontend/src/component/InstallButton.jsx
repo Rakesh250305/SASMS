@@ -30,8 +30,8 @@ export default function InstallButton() {
   if (!deferredPrompt) return null;
 
   return (
-    <div className="fixed top-5 right-5">
-        <button onClick={installApp} className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded">
+    <div className="fixed top-5 right-5 z-[9999]">
+        <button onClick={installApp} className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
             Install App
         </button>
     </div>
