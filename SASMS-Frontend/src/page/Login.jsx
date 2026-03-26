@@ -1,272 +1,290 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import logo from '../assets/main-Logo.png'
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, UserCog, User } from "lucide-react";
+import logo from "../assets/main-Logo.png";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, UserCog, User, AlertCircle } from "lucide-react";
 import { toast } from "react-toastify";
 
 const roleConfig = {
   admin: {
     label: "Admin",
-    icon: <Shield size={16} />,
+    icon: <Shield size={15} />,
     color: "#1976D2",
+    gradient: "linear-gradient(135deg, #1565C0, #1976D2dd)",
     bg: "#EFF6FF",
     path: "/admin",
+    placeholder: "admin@example.com",
   },
   provider: {
     label: "Provider",
-    icon: <UserCog size={16} />,
+    icon: <UserCog size={15} />,
     color: "#86198f",
-    bg: "#c026d3",
+    gradient: "linear-gradient(135deg, #6b21a8, #86198fdd)",
+    bg: "#fdf4ff",
     path: "/provider",
+    placeholder: "provider@example.com",
   },
   user: {
     label: "User",
-    icon: <User size={16} />,
+    icon: <User size={15} />,
     color: "#065f46",
-    bg: "#d1fae5",
+    gradient: "linear-gradient(135deg, #047857, #065f46dd)",
+    bg: "#ecfdf5",
     path: "/user",
+    placeholder: "user@example.com",
   },
 };
 
 export default function Login() {
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
+
   const [selectedRole, setSelectedRole] = useState("admin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail]               = useState("");
+  const [password, setPassword]         = useState("");
+  const [showPass, setShowPass]         = useState(false);
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState("");   // inline error banner
 
   const config = roleConfig[selectedRole];
 
-const handleLogin = async (e) => {
-  e.preventDefault();
+  /* clear error when user starts retyping */
+  const handleEmailChange = (e) => { setError(""); setEmail(e.target.value); };
+  const handlePassChange  = (e) => { setError(""); setPassword(e.target.value); };
 
-    if (!email || !password) {
-    toast.warning("Please fill all fields");
-    return;
-  }
+  const handleRoleChange = (role) => {
+    setSelectedRole(role);
+    setError("");
+    setEmail("");
+    setPassword("");
+  };
 
-  try {
-    setLoading(true);
-    const res = await axios.post(
-      `${apiUrl}/auth/login`,
-      {
-        email,
-        password,
-        role: selectedRole
-      }
-    );
-    localStorage.setItem("token", res.data.token);
-    localStorage.setItem("role", res.data.role);
-    const role = res.data.role;
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
 
-    if (role === "admin") navigate("/admin");
-    if (role === "provider") navigate("/provider");
-    if (role === "user") navigate("/user");
-
-    toast.success("Login successful");
-  } catch (err) {
-
-    if (err.response && err.response.data) {
-      toast.info(err.response.data.message);
-    } else {
-      toast.error("Server Error!");
+    if (!email.trim() || !password.trim()) {
+      setError("Please fill in both email and password.");
+      return;
     }
 
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError("Please enter a valid email address.");
+      return;
+    }
 
-  setLoading(false);
-};
+    try {
+      setLoading(true);
+      const res = await axios.post(`${apiUrl}/auth/login`, {
+        email:    email.trim().toLowerCase(),
+        password,
+        role:     selectedRole,
+      });
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role",  res.data.role);
+
+      toast.success("Login successful");
+
+      const role = res.data.role;
+      if (role === "admin")    navigate("/admin");
+      if (role === "provider") navigate("/provider");
+      if (role === "user")     navigate("/user");
+
+    } catch (err) {
+      const msg = err.response?.data?.message || "Something went wrong. Please try again.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8faff] overflow-y-auto">
 
-      {/* HEADER */}
-      <div className={`relative px-7 pt-10 pb-16 overflow-hidden`}
-      style={{
-            background: loading
-            ? "#B0BEC5"
-            : `linear-gradient(135deg, ${config.color}, ${config.color}dd)`
-          }}
+      {/* ── Header ── */}
+      <motion.div
+        key={selectedRole}
+        initial={{ opacity: 0.7 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="relative px-7 pt-10 pb-16 overflow-hidden"
+        style={{ background: loading ? "#B0BEC5" : config.gradient }}
       >
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10 pointer-events-none" />
+        <div className="absolute -bottom-8 -left-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
 
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10"></div>
-        <div className="absolute -bottom-8 -left-6 w-24 h-24 rounded-full bg-white/10"></div>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
 
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
           <div className="flex items-center gap-2 mb-5">
-
             <div className="w-9 h-9 p-1 rounded-lg bg-white/20 flex items-center justify-center">
-              <img src={logo} alt="" />
+              <img src={logo} alt="SASMS" className="w-full h-full object-contain" />
             </div>
-
             <span className="text-white font-bold text-sm tracking-wide">
-              Smart Asset & Service 
+              Smart Asset &amp; Service
             </span>
-
           </div>
 
-          <h1 className="text-white text-2xl font-extrabold mb-1">
-            Welcome back
-          </h1>
-
-          <p className="text-white/75 text-sm">
-            Sign in to your account to continue
-          </p>
-          
+          <h1 className="text-white text-2xl font-extrabold mb-1">Welcome back</h1>
+          <p className="text-white/75 text-sm">Sign in to your account to continue</p>
 
         </motion.div>
-      </div>
+      </motion.div>
 
-      {/* FORM CARD */}
+      {/* ── Form Card ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex-1 bg-white rounded-t-[28px] -mt-7 px-6 pt-7 pb-6 shadow-xl"
+        className="flex-1 bg-white rounded-t-[28px] -mt-7 px-6 pt-7 pb-10 shadow-xl"
       >
 
-        {/* ROLE TABS */}
+        {/* Role tabs */}
         <div className="my-6">
-
           <div className="flex bg-gray-100 rounded-2xl p-1 gap-1">
-
-            {["admin","provider","user"].map((role) => {
-
-              const rc = roleConfig[role];
+            {["admin", "provider", "user"].map((role) => {
+              const rc     = roleConfig[role];
               const active = selectedRole === role;
-
               return (
                 <button
                   key={role}
-                  onClick={() => setSelectedRole(role)}
-                  className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs rounded-xl transition
-                  ${active ? "bg-white shadow text-black font-bold" : "text-gray-500"}`}
+                  onClick={() => handleRoleChange(role)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs rounded-xl transition-all duration-200
+                    ${active ? "bg-white shadow font-bold text-gray-800" : "text-gray-400 font-medium"}`}
+                  style={active ? { color: rc.color } : {}}
                 >
                   {rc.icon}
                   {rc.label}
                 </button>
               );
-
             })}
-
           </div>
-
         </div>
 
-        {/* EMAIL */}
+        {/* Inline error banner */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="flex items-start gap-2 bg-red-50 border border-red-100 text-red-600 text-xs font-semibold rounded-xl px-3 py-3 mb-4"
+            >
+              <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Email */}
         <div className="mb-4">
-
-          <label className="block text-xs font-semibold text-gray-700 mb-2">
-            Email
+          <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+            Email Address
           </label>
-
           <div className="relative">
-
-            <Mail size={16} className="absolute left-3 top-3.5 text-gray-400"/>
-
+            <Mail size={15} className="absolute left-3 top-3.5 text-gray-400" />
             <input
+              type="email"
               value={email}
-              onChange={(e)=>setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-              className="w-full pl-9 pr-3 py-3 text-sm border rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+              onChange={handleEmailChange}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin(e)}
+              placeholder={config.placeholder}
+              autoComplete="email"
+              className="w-full pl-9 pr-3 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-400 focus:bg-white transition-colors"
             />
-
           </div>
-
         </div>
 
-        {/* PASSWORD */}
+        {/* Password */}
         <div className="mb-2">
-
-          <label className="block text-xs font-semibold text-gray-700 mb-2">
+          <label className="block text-xs font-semibold text-gray-700 mb-1.5">
             Password
           </label>
-
           <div className="relative">
-
-            <Lock size={16} className="absolute left-3 top-3.5 text-gray-400"/>
-
+            <Lock size={15} className="absolute left-3 top-3.5 text-gray-400" />
             <input
-              type={showPass ? "text":"password"}
+              type={showPass ? "text" : "password"}
               value={password}
-              onChange={(e)=>setPassword(e.target.value)}
+              onChange={handlePassChange}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin(e)}
               placeholder="Enter your password"
-              required
-              className="w-full pl-9 pr-9 py-3 text-sm border rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+              autoComplete="current-password"
+              className="w-full pl-9 pr-10 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-400 focus:bg-white transition-colors"
             />
-
             <button
-              onClick={()=>setShowPass(!showPass)}
-              className="absolute right-3 top-3 text-gray-400"
+              type="button"
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-3 top-3.5 text-gray-400"
             >
-              {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
+              {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
-
           </div>
-
         </div>
 
-        {/* FORGOT PASSWORD */}
+        {/* Forgot password */}
         <div className="text-right mb-6">
           <span
-            className="text-xs font-semibold cursor-pointer"
-            style={{color:config.color}}
+            className="text-xs font-semibold cursor-pointer hover:underline"
+            style={{ color: config.color }}
           >
             Forgot Password?
           </span>
         </div>
 
-        {/* LOGIN BUTTON */}
+        {/* Submit button */}
         <button
-          onClick={handleLogin}
           type="button"
+          onClick={handleLogin}
           disabled={loading}
-          className="w-full py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg"
+          className="w-full py-3.5 rounded-xl text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-opacity active:scale-[0.98]"
           style={{
-            background: loading
-            ? "#B0BEC5"
-            : `linear-gradient(135deg, ${config.color}, ${config.color}dd)`
+            background: loading ? "#B0BEC5" : config.gradient,
+            transition: "background 0.3s",
           }}
         >
-
-          {loading ? "Signing in..." :
-          <>
-          Sign In
-          <ArrowRight size={18}/>
-          </>}
-
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"/>
+                <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+              Signing in...
+            </span>
+          ) : (
+            <>
+              Sign In <ArrowRight size={17} />
+            </>
+          )}
         </button>
 
-        {/* DIVIDER */}
+        {/* Divider */}
         <div className="flex items-center gap-3 my-5">
-          <div className="flex-1 h-[1px] bg-gray-200"></div>
+          <div className="flex-1 h-px bg-gray-200" />
           <span className="text-xs text-gray-400">or</span>
-          <div className="flex-1 h-[1px] bg-gray-200"></div>
+          <div className="flex-1 h-px bg-gray-200" />
         </div>
 
-        {/* REGISTER */}
-        <div className="text-center text-sm text-gray-500">
-          <span>Don't have an account?</span>
-          <span
-            onClick={()=>navigate("/signup")}
-            className="font-bold ml-1 cursor-pointer"
-            style={{color:config.color}}
-          >
-            Register
-          </span>
-        </div>
-
-     
+        {/* Register / Provider note */}
+        {selectedRole === "provider" ? (
+          <div className="text-center text-xs text-gray-400 leading-relaxed px-4">
+            <UserCog size={16} className="mx-auto mb-1.5 text-gray-300" />
+            Providers cannot self-register. Contact your store admin to receive login credentials.
+          </div>
+        ) : (
+          <div className="text-center text-sm text-gray-500">
+            Don't have an account?{" "}
+            <span
+              onClick={() => navigate("/signup")}
+              className="font-bold cursor-pointer hover:underline"
+              style={{ color: config.color }}
+            >
+              Register
+            </span>
+          </div>
+        )}
 
       </motion.div>
-
     </div>
   );
 }
