@@ -12,6 +12,7 @@ import {
   Database,
   Users,
   Eye,
+  ArrowLeft,
 } from "lucide-react";
 import AdminDrawer from "../../component/AdminDrawer";
 import { motion, AnimatePresence } from "framer-motion";
@@ -152,18 +153,18 @@ const handleUpdatePassword = async () => {
       <AdminDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1565C0] to-[#1976D2] px-5 pt-4 pb-5">
-        <div className="flex items-center gap-3">
+      <div className="bg-gradient-to-r from-[#1565C0] to-[#1976D2] px-5 py-4 ">
+        <div className="flex items-center gap-3 mb-4">
           <button
-            onClick={() => setDrawerOpen(true)}
-            className="bg-white/20 p-2 rounded-lg text-white"
+            onClick={() => navigate("/admin")}
+            className="bg-white/20 text-white p-2 rounded-lg"
           >
-            <Menu size={18} />
+            <ArrowLeft size={18} />
           </button>
 
-          <h1 className="text-white text-[16px] font-bold flex-1">
+          <div className="flex-1 text-white font-bold text-lg">
             Settings
-          </h1>
+          </div>
         </div>
       </div>
 

@@ -297,7 +297,7 @@ const handleUpdatePassword = async () => {
 
         <button
           onClick={handleUpdatePassword}
-          className="flex-1 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold"
+          className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
         >
           Update
         </button>

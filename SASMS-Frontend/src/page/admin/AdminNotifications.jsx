@@ -12,24 +12,25 @@ import {
   XCircle,
   Info,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* ── Notification type → icon + colors ─────────────────── */
 const TYPE_CONFIG = {
-  booking_created:     { icon: ClipboardList, bg: "bg-blue-100",   color: "text-blue-600"   },
-  booking_assigned:    { icon: UserCheck,     bg: "bg-indigo-100", color: "text-indigo-600" },
-  booking_in_progress: { icon: Package,       bg: "bg-amber-100",  color: "text-amber-600"  },
-  booking_completed:   { icon: CheckCheck,    bg: "bg-green-100",  color: "text-green-600"  },
-  booking_cancelled:   { icon: XCircle,       bg: "bg-red-100",    color: "text-red-500"    },
-  default:             { icon: Info,          bg: "bg-gray-100",   color: "text-gray-500"   },
+  booking_created: { icon: ClipboardList, bg: "bg-blue-100", color: "text-blue-600" },
+  booking_assigned: { icon: UserCheck, bg: "bg-indigo-100", color: "text-indigo-600" },
+  booking_in_progress: { icon: Package, bg: "bg-amber-100", color: "text-amber-600" },
+  booking_completed: { icon: CheckCheck, bg: "bg-green-100", color: "text-green-600" },
+  booking_cancelled: { icon: XCircle, bg: "bg-red-100", color: "text-red-500" },
+  default: { icon: Info, bg: "bg-gray-100", color: "text-gray-500" },
 };
 
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-  if (diff < 60)     return "Just now";
-  if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
   return new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
@@ -42,11 +43,10 @@ function NotifCard({ notif, onMarkRead }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex items-start gap-3 p-4 rounded-2xl border transition-colors cursor-pointer ${
-        notif.isRead
+      className={`flex items-start gap-3 p-4 rounded-2xl border transition-colors cursor-pointer ${notif.isRead
           ? "bg-white border-gray-100"
           : "bg-blue-50/60 border-blue-100"
-      }`}
+        }`}
       onClick={() => !notif.isRead && onMarkRead([notif._id])}
     >
       {/* Icon */}
@@ -159,43 +159,45 @@ export default function AdminNotifications() {
   const groupOrder = ["Today", "Yesterday", "Earlier"];
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="flex-1 flex flex-col bg-[#F5F7FA] relative h-screen ">
 
       {/* Header — matches dashboard blue */}
-      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-6 pb-6 relative overflow-hidden">
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
-        <div className="absolute bottom-0 left-8 w-20 h-20 rounded-full bg-white/5" />
+     {/* Header */}
+<div className="sticky top-0 z-10 bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-6 pb-6 overflow-hidden">
+  <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
+  <div className="absolute bottom-0 left-8 w-20 h-20 rounded-full bg-white/5" />
 
-        <button
-          onClick={() => navigate("/admin")}
-          className="flex items-center gap-1.5 text-white/80 text-sm mb-4"
-        >
-          <ChevronLeft size={18} />
-          Dashboard
-        </button>
+  {/* Top row — back + mark all */}
+  <div className="flex items-center justify-between mb-3 relative">
+    <button
+      onClick={() => navigate(-1)}
+      className="bg-white/20 border border-white/30 text-white p-2 rounded-xl active:scale-95 transition-transform"
+    >
+      <ArrowLeft size={18} />
+    </button>
 
-        <div className="flex items-end justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-white">Notifications</h1>
-            <p className="text-white/60 text-xs mt-1">
-              {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
-            </p>
-          </div>
+    {unreadCount > 0 && (
+      <button
+        onClick={handleMarkAllRead}
+        className="flex items-center gap-1.5 bg-white/20 border border-white/30 text-white text-xs font-semibold px-3 py-2 rounded-xl"
+      >
+        <CheckCheck size={14} />
+        Mark all read
+      </button>
+    )}
+  </div>
 
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllRead}
-              className="flex items-center gap-1.5 bg-white/20 border border-white/30 text-white text-xs font-semibold px-3 py-2 rounded-xl"
-            >
-              <CheckCheck size={14} />
-              Mark all read
-            </button>
-          )}
-        </div>
-      </div>
+  {/* Title row */}
+  <div className="relative">
+    <h1 className="text-xl font-semibold text-white">Notifications</h1>
+    <p className="text-white/60 text-xs mt-0.5">
+      {unreadCount > 0 ? `${unreadCount} unread` : "All caught up ✓"}
+    </p>
+  </div>
+</div>
 
       {/* Content */}
-      <div className="mt-5 px-4 pb-24">
+      <div className="flex-1 mt-5 px-4 pb-10 overflow-y-auto">
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}

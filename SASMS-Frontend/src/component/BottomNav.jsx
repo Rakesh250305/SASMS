@@ -23,9 +23,11 @@ const providerNav = [
   { icon: <Settings size={22} />, label: "Settings", path: "/provider/settings", color: "text-fuchsia-600", bg: "bg-fuchsia-600" },
 ];
 
-export default function BottomNav({ role }) {
+export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const role = localStorage.getItem('role');
 
   const items = role === "user" ? userNav : providerNav;
 

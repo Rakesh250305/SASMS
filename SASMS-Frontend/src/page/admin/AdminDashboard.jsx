@@ -30,12 +30,13 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState([]);
   const [bookingStats, setBookingStats] = useState({});
   const [activities, setActivities] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const summaryCards = [
     { label: "Total Assets", value: stats.assets, icon: <Package size={22} />, color: "text-blue-700", bg: "bg-blue-50", trend: "+12", path: "/admin/assets" },
-    { label: "Active Services", value: stats.services, icon: <ClipboardList size={22} />, color: "text-green-700", bg: "bg-green-50", trend: "+5", path: "/admin/assignments" },
+    { label: "Active Services", value: stats.services, icon: <ClipboardList size={22} />, color: "text-green-700", bg: "bg-green-50", trend: "+5", path: "/admin/service" },
     { label: "Providers", value: stats.providers, icon: <UserCog size={22} />, color: "text-purple-700", bg: "bg-purple-50", trend: "+3", path: "/admin/providers" },
-    { label: "Service Bookings", value: stats.users, icon: <ServerIcon size={22} />, color: "text-orange-600", bg: "bg-orange-50", trend: "+24", path: "/admin/serviceRequested" },
+    { label: "Service Bookings", value: stats.users, icon: <ServerIcon size={22} />, color: "text-orange-600", bg: "bg-orange-50", trend: "+24", path: "/admin/serviceRequest" },
   ];
   const token = localStorage.getItem('token');
 
@@ -58,6 +59,18 @@ export default function AdminDashboard() {
         }
       }
     };
+
+    const fetchUnreadCount = async () => {
+  try {
+    const res = await axios.get(`${apiUrl}/admin/notifications`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setUnreadCount(res.data.unreadCount || 0);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 
     const fetchBookingStats = async () => {
       try {
@@ -116,17 +129,19 @@ export default function AdminDashboard() {
     fetchBookingStats();
     fetchStats();
     fetchAdminData();
+fetchUnreadCount();
+
   }, [token, navigate])
 
   return (
 
-    <div className="flex flex-col flex-1 bg-[#F5F7FA] relative overflow-hidden">
+    <div className="flex flex-col bg-[#F5F7FA] h-screen relative">
 
       <AdminDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       {/* Top Bar */}
 
-      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-4 pb-7 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-4 pb-15  relative overflow-hidden">
 
         <div className="absolute -top-8 -right-8 w-[120px] h-[120px] rounded-full bg-white/10" />
         <div className="absolute -bottom-15 -left-8 w-[120px] h-[120px] rounded-full bg-white/10" />
@@ -140,10 +155,6 @@ export default function AdminDashboard() {
             <Menu size={20} />
           </button>
 
-          <div className="text-white text-[15px] font-bold">
-            Dashboard
-          </div>
-
           <div className="relative">
 
             <button
@@ -153,7 +164,9 @@ export default function AdminDashboard() {
               <Bell size={20} />
             </button>
 
-            <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-blue-600" />
+{unreadCount > 0 && (
+  <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-blue-600" />
+)}
 
           </div>
 
@@ -161,16 +174,16 @@ export default function AdminDashboard() {
 
         <div className="mt-3 text-white/90">
 
-          <div className="text-xs opacity-70">
+          <div className="text-lg font-extrabold">
             Good morning, {data.name}
           </div>
 
-          <div className="text-lg flex flex-col font-extrabold">
+          <div className="font-semibold text-sm flex flex-col opacity-70">
             {data.storeName}
             <small>{data?.storeAddress + ","} {data?.city + ","} {data?.state + ","} {data?.pincode}</small>
           </div>
 
-          <p className="absolute right-1">GST: {data?.GSTNo || ""}</p>
+          <p className="font-semibold text-sm bottom-8 absolute">GST: {data?.GSTNo || ""}</p>
 
         </div>
 
@@ -178,24 +191,9 @@ export default function AdminDashboard() {
 
       {/* Content */}
 
-      <div className="flex-1 overflow-y-auto px-4 py-8 -mt-4">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-5 -mt-7 z-[10] bg-gray-100 rounded-t-4xl">
 
-        {/* Booking Stats */}
-
-        <div className="grid grid-cols-4 my-1 gap-2">
-          {STAT_CONFIG.map(({ key, label, icon: Icon, color, bg }) => (
-            <div key={key} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center">
-              <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center mx-auto mb-1.5`}>
-                <Icon size={15} className={color} />
-              </div>
-              <p className={`text-sm font-extrabold ${color}`}>{bookingStats[key] ?? "—"}</p>
-              <p className="text-[9px] text-gray-400 font-semibold mt-0.5">{label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Overview */}
-
+        {/* Analytics */}
         <div className="text-sm font-bold text-gray-900 mb-3">
           Overview
         </div>
@@ -241,6 +239,23 @@ export default function AdminDashboard() {
 
           ))}
 
+        </div>
+
+           <div className="text-sm font-bold text-gray-900 mb-3">
+          Booking Summary
+        </div>
+
+        {/* Booking stats */}
+        <div className="grid grid-cols-4 my-1 gap-2">
+          {STAT_CONFIG.map(({ key, label, icon: Icon, color, bg }) => (
+            <div key={key} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center">
+              <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center mx-auto mb-1.5`}>
+                <Icon size={15} className={color} />
+              </div>
+              <p className={`text-sm font-extrabold ${color}`}>{bookingStats[key] ?? "—"}</p>
+              <p className="text-[9px] text-gray-400 font-semibold mt-0.5">{label}</p>
+            </div>
+          ))}
         </div>
 
         {/* Quick Actions */}
@@ -344,6 +359,9 @@ export default function AdminDashboard() {
 
         </div>
 
+      <div className="text-[8px] text-center font-bold text-gray-400 pt-5">
+          Smart Assets & Service Management System
+      </div>     
       </div>
 
     </div>
