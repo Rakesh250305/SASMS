@@ -119,7 +119,37 @@ export default function AdminAssets() {
     return matchTab && matchSearch;
   });
 
+  const validateAsset = () => {
+  if (!newAsset.assetName.trim()) {
+    toast.error("Asset name is required");
+    return false;
+  }
+
+  if (!newAsset.category) {
+    toast.error("Please select a category");
+    return false;
+  }
+
+  if (!newAsset.quantity || newAsset.quantity <= 0) {
+    toast.error("Quantity must be greater than 0");
+    return false;
+  }
+
+  if (!newAsset.cost || newAsset.cost <= 0) {
+    toast.error("Cost must be valid");
+    return false;
+  }
+
+  if (!newAsset.status) {
+    toast.error("Please select status");
+    return false;
+  }
+
+  return true;
+};
+
   const handleCreateAsset = async () => {
+    if (!validateAsset()) return;
     try {
 
       const token = localStorage.getItem("token");
@@ -134,6 +164,7 @@ export default function AdminAssets() {
         }
       );
       setAssets((prev) => [...prev, res.data.data]);
+
       toast.success(res.data.message || "Asset created successfully");
       // reset form
       setNewAsset({
@@ -165,6 +196,8 @@ export default function AdminAssets() {
   };
 
   const handleUpdateAsset = async () => {
+    if (!validateAsset()) return;
+
     try {
 
       const res = await axios.put(
@@ -239,7 +272,7 @@ export default function AdminAssets() {
 
         <div className="flex items-center gap-3 mb-4">
           <button
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate(-1)}
             className="bg-white/20 text-white p-2 rounded-lg"
           >
             <ArrowLeft size={18} />
@@ -248,10 +281,6 @@ export default function AdminAssets() {
           <div className="flex-1 text-white font-bold text-lg">
             Asset Management
           </div>
-
-          <button className="bg-white/20 text-white p-2 rounded-lg">
-            <Filter size={18} />
-          </button>
         </div>
 
         {/* STATS */}

@@ -514,7 +514,7 @@ export default function AdminBookingDetail() {
       <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-6 pb-6 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
         <button
-          onClick={() => navigate("/admin/serviceRequest")}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-white/80 text-sm mb-4"
         >
           <ChevronLeft size={18} />

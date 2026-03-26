@@ -70,7 +70,7 @@ export default function AdminProviders() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
-
+const [errors, setErrors] = useState({});
 
   const token = localStorage.getItem("token");
 
@@ -104,6 +104,58 @@ export default function AdminProviders() {
 
   }, []);
 
+const validateProvider = () => {
+  let newErrors = {};
+
+  if (!newProvider.name.trim()) {
+    newErrors.name = "Name is required";
+  }
+
+  if (!newProvider.email.trim()) {
+    newErrors.email = "Email is required";
+  } else if (!/^\S+@\S+\.\S+$/.test(newProvider.email)) {
+    newErrors.email = "Invalid email format";
+  }
+
+  if (!newProvider.phone.trim()) {
+    newErrors.phone = "Phone is required";
+  } else if (!/^[0-9]{10}$/.test(newProvider.phone)) {
+    newErrors.phone = "Phone must be 10 digits";
+  }
+
+  if (!newProvider.password.trim()) {
+    newErrors.password = "Password is required";
+  } else if (newProvider.password.length < 6) {
+    newErrors.password = "Min 6 characters required";
+  }
+
+  if (!newProvider.city.trim()) {
+    newErrors.city = "City is required";
+  }
+
+  if (!newProvider.state.trim()) {
+    newErrors.state = "State is required";
+  }
+
+  if (!newProvider.pincode.trim()) {
+    newErrors.pincode = "Pincode is required";
+  } else if (!/^[0-9]{6}$/.test(newProvider.pincode)) {
+    newErrors.pincode = "Invalid pincode";
+  }
+
+  if (!newProvider.experience.trim()) {
+    newErrors.experience = "Experience is required";
+  }
+
+  if (!newProvider.serviceType.trim()) {
+    newErrors.serviceType = "At least one service required";
+  }
+
+  setErrors(newErrors);
+
+  return Object.keys(newErrors).length === 0;
+};
+
 
   const [newProvider, setNewProvider] = useState({
     name: "",
@@ -132,6 +184,10 @@ export default function AdminProviders() {
 
 
   const handleAddProvider = async () => {
+    if (!validateProvider()) {
+    toast.error("Please fix validation errors");
+    return;
+  }
 
     try {
 

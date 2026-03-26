@@ -16,6 +16,7 @@ import {
   UserCheck,
   SlidersHorizontal,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -162,25 +163,30 @@ export default function AdminServiceRequest() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] flex flex-col">
+    <div className="h-screen bg-[#F5F7FA] flex flex-1 flex-col relative">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-6 pb-6 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] sticky px-5 pt-6 pb-6 overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
         <div className="absolute bottom-0 left-8 w-20 h-20 rounded-full bg-white/5" />
 
-        <button
-          onClick={() => navigate("/admin")}
-          className="flex items-center gap-1.5 text-white/80 text-sm mb-5"
-        >
-          <ChevronLeft size={18} />
-          Dashboard
-        </button>
-
-        <h1 className="text-xl font-bold text-white mb-1">Service Requests</h1>
+        <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => navigate("/admin")}
+            className="bg-white/20 text-white p-2 rounded-lg"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+             <h1 className="text-xl font-bold text-white mb-1">Service Requests</h1>
         <p className="text-white/60 text-xs">
           {bookings.length} bookings · {pendingCount} need attention
-        </p>
+        </p>  
+          </div>
+
+        </div>
+
+       
 
         {/* Search + filter row */}
         <div className="flex items-center gap-2 mt-4">
@@ -285,7 +291,7 @@ export default function AdminServiceRequest() {
       </AnimatePresence>
 
       {/* Content */}
-      <div className="flex-1 px-4 pb-24 space-y-3">
+      <div className="flex-1 px-4 pb-10 space-y-3 overflow-y-auto">
 
         {loading ? (
           <><SkeletonCard /><SkeletonCard /><SkeletonCard /></>

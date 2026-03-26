@@ -146,10 +146,9 @@ export default function UserDashboard() {
 
       {/* Header */}
 
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 relative">
         <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10" />
         <div className="absolute bottom-0 left-6 w-20 h-20 rounded-full bg-white/5" />
-
 
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -216,7 +215,7 @@ export default function UserDashboard() {
 
           {/* SEARCH DROPDOWN */}
           {isSearching && (
-            <div className="absolute top-13 left-0 w-full bg-white  rounded-xl shadow-lg max-h-64 overflow-y-auto z-[999]">
+            <div className="absolute top-13 left-0 w-full bg-white  rounded-xl shadow-lg max-h-64 overflow-y-auto z-[99999]">
               {searchResults.length === 0 ? (
                 <div className="p-4 text-sm text-gray-400">
                   No services found for "{searchQuery}"
@@ -260,9 +259,7 @@ export default function UserDashboard() {
       {/* Content */}
 
       <div className="flex-1 overflow-y-auto px-4 pb-20 -mt-6">
-
         {/* Newly Added Services */}
-
         <div className="flex gap-3 mb-5">
 
           {services.slice(-2).map((s, i) => (
