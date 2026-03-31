@@ -28,7 +28,7 @@ const bookingSchema = new mongoose.Schema(
     // Booking details
     address: { type: addressSchema, required: true },
     scheduledDate: { type: Date },
-    providerNote: { type: String, default: "" }, // optional suggestion to provider
+    providerNote: { type: String, default: "" },
 
     // Status flow: pending → assigned → in_progress → completed | cancelled
     status: {

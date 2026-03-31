@@ -111,7 +111,7 @@ export default function AllServices() {
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-14">
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white">Browse Services</h1>
+            <h1 className="text-xl font-bold text-white">All Services</h1>
             <p className="text-white/60 text-xs mt-1">
               {loading ? "Loading..." : `${filteredServices.length} services available`}
             </p>
@@ -197,8 +197,7 @@ export default function AllServices() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              onClick={() => navigate(`/user/booking?serviceId=${service._id}`)}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex gap-3 cursor-pointer active:scale-[0.99] transition-transform"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex gap-3 active:scale-[0.99] transition-transform"
             >
               {/* Image */}
               {service.serviceImage ? (
@@ -215,7 +214,13 @@ export default function AllServices() {
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-slate-800 truncate">{service.serviceName}</h3>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/user/services/${service._id}`)}
+                  className="text-sm font-bold text-slate-800 truncate text-left hover:text-emerald-600 transition-colors"
+                >
+                  {service.serviceName}
+                </button>
 
                 <span className="inline-block mt-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
                   {service.category}
@@ -231,10 +236,14 @@ export default function AllServices() {
               {/* Price + Book */}
               <div className="flex flex-col items-end justify-between flex-shrink-0">
                 <p className="text-base font-bold text-emerald-600">₹{service.estimatedPrice}</p>
-                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/user/booking?serviceId=${service._id}`)}
+                  className="flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl hover:bg-emerald-100 transition-colors"
+                >
                   Book
                   <ChevronRight size={11} />
-                </span>
+                </button>
               </div>
             </motion.div>
           ))

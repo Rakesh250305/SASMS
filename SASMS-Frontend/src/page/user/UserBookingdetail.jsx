@@ -13,25 +13,28 @@ import {
   Circle,
   Phone,
   Mail,
+  Download,
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
+
+const PROVIDER_WORKING_CHARGE = 50;
 
 const STATUS_FLOW = ["pending", "assigned", "in_progress", "completed"];
 
 const STATUS_LABEL = {
-  pending:     "Pending",
-  assigned:    "Assigned",
+  pending: "Pending",
+  assigned: "Assigned",
   in_progress: "In Progress",
-  completed:   "Completed",
-  cancelled:   "Cancelled",
+  completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 const STATUS_CONFIG = {
-  pending:     { bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400"   },
-  assigned:    { bg: "bg-indigo-100",  text: "text-indigo-700",  dot: "bg-indigo-400"  },
-  in_progress: { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-400"    },
-  completed:   { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
-  cancelled:   { bg: "bg-red-100",     text: "text-red-600",     dot: "bg-red-400"     },
+  pending: { bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-400" },
+  assigned: { bg: "bg-indigo-100", text: "text-indigo-700", dot: "bg-indigo-400" },
+  in_progress: { bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-400" },
+  completed: { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
+  cancelled: { bg: "bg-red-100", text: "text-red-600", dot: "bg-red-400" },
 };
 
 function StatusBadge({ status }) {
@@ -58,8 +61,8 @@ export default function UserBookingDetail() {
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const [booking, setBooking] = useState(null);  
-  const [loading, setLoading] = useState(true); 
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
 
@@ -104,6 +107,13 @@ export default function UserBookingDetail() {
   // ✅ Safe — booking is guaranteed non-null below this line
   const isCancelled = booking.status === "cancelled";
   const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(booking.status);
+  const serviceCost = Number(booking.service?.estimatedPrice || 0);
+  const assetsCost = (booking.assets || []).reduce(
+    (sum, asset) => sum + Number(asset.cost || 0),
+    0
+  );
+  const providerCharge = booking.provider ? PROVIDER_WORKING_CHARGE : 0;
+  const totalCost = serviceCost + assetsCost + providerCharge;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -118,19 +128,29 @@ export default function UserBookingDetail() {
           Back
         </button>
 
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between uppercase">
           <div>
             <p className="text-white/60 text-xs font-mono mb-1">{booking.bookingId}</p>
-            <h1 className="text-xl font-bold text-white">
+            <h1 className="text-xl font-bold text-white normal-case">
               {booking.service?.serviceName || "Booking Detail"}
             </h1>
             <p className="text-white/60 text-xs mt-1">{booking.service?.category}</p>
           </div>
-          <StatusBadge status={booking.status} />
+          <div className="flex flex-col items-end gap-2">
+            <StatusBadge status={booking.status} />
+            <button
+              type="button"
+              onClick={()=> window.print()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 text-white text-xs font-semibold border border-white/20"
+            >
+              <Download size={12} />
+              Download
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="-mt-6 px-4 pb-24 max-w-xl mx-auto">
+      <div id="print-section" className="-mt-6 px-4 pb-24 max-w-xl mx-auto">
 
         {/* Progress tracker */}
         {!isCancelled ? (
@@ -149,24 +169,22 @@ export default function UserBookingDetail() {
                   )}
 
                   {/* Dot */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 ${
-                    i < currentStep
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 ${i < currentStep
                       ? "bg-emerald-500"
                       : i === currentStep
-                      ? "bg-emerald-600 ring-4 ring-emerald-100"
-                      : "bg-gray-200"
-                  }`}>
+                        ? "bg-emerald-600 ring-4 ring-emerald-100"
+                        : "bg-gray-200"
+                    }`}>
                     {i < currentStep
                       ? <CheckCircle2 size={14} className="text-white" />
                       : i === currentStep
-                      ? <div className="w-2 h-2 rounded-full bg-white" />
-                      : <Circle size={14} className="text-gray-300" />
+                        ? <div className="w-2 h-2 rounded-full bg-white" />
+                        : <Circle size={14} className="text-gray-300" />
                     }
                   </div>
 
-                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight ${
-                    i <= currentStep ? "text-emerald-600" : "text-gray-400"
-                  }`}>
+                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight ${i <= currentStep ? "text-emerald-600" : "text-gray-400"
+                    }`}>
                     {STATUS_LABEL[s]}
                   </span>
                 </div>
@@ -186,7 +204,7 @@ export default function UserBookingDetail() {
         )}
 
         {/* Service */}
-        <Section title="Service">
+        <Section title="Service Details">
           <div className="flex items-center gap-3">
             {booking.service?.serviceImage ? (
               <img
@@ -199,9 +217,11 @@ export default function UserBookingDetail() {
                 <Package size={22} className="text-emerald-400" />
               </div>
             )}
-            <div>
-              <p className="text-sm font-bold text-slate-800">{booking.service?.serviceName}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{booking.service?.category}</p>
+            <div className="flex justify-between w-full items-start">
+              <div>
+                <p className="text-sm font-bold text-slate-800">{booking.service?.serviceName}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{booking.service?.category}</p>
+              </div>
               {booking.service?.estimatedPrice && (
                 <p className="text-sm font-bold text-emerald-600 mt-1">
                   ₹{booking.service.estimatedPrice}
@@ -217,7 +237,7 @@ export default function UserBookingDetail() {
         </Section>
 
         {/* Address */}
-        <Section title="Service Address">
+        <Section title="User Address">
           <div className="flex items-start gap-2">
             <MapPin size={15} className="text-emerald-500 mt-0.5 flex-shrink-0" />
             <div>
@@ -243,20 +263,32 @@ export default function UserBookingDetail() {
                   {booking.provider.name?.split(" ").map(w => w[0]).join("").toUpperCase()}
                 </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-slate-800">{booking.provider.name}</p>
-                {booking.provider.phone && (
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Phone size={11} className="text-gray-400" />
-                    <p className="text-xs text-gray-500">{booking.provider.phone}</p>
-                  </div>
+              <div className="flex  justify-between w-full">
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-slate-800">{booking.provider.name}</p>
+                  {booking.provider.phone && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Phone size={11} className="text-gray-400" />
+                      <p className="text-xs text-gray-500">{booking.provider.phone}</p>
+                    </div>
+                  )}
+                  {booking.provider.email && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Mail size={11} className="text-gray-400" />
+                      <p className="text-xs text-gray-500">{booking.provider.email}</p>
+                    </div>
+                  )}
+                </div>
+                {booking.provider?.phone && (
+                  <a
+                    href={`tel:${booking.provider.phone}`}
+                    className="flex items-center h-[4vh] gap-1.5 px-3 py-2 rounded-xl bg-green-50 text-green-700 text-xs font-bold flex-shrink-0"
+                  >
+                    <Phone size={12} />
+                    Call Provider
+                  </a>
                 )}
-                {booking.provider.email && (
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Mail size={11} className="text-gray-400" />
-                    <p className="text-xs text-gray-500">{booking.provider.email}</p>
-                  </div>
-                )}
+
               </div>
             </div>
           ) : (
@@ -342,20 +374,54 @@ export default function UserBookingDetail() {
 
         {/* Assets */}
         {booking.assets?.length > 0 && (
-          <Section title="Assets">
+          <Section title="Assigned Assets">
             <div className="space-y-2">
               {booking.assets.map((a) => (
-                <div key={a._id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div key={a._id} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Package size={13} className="text-gray-400" />
-                    <span className="text-sm text-slate-700 font-medium">{a.name}</span>
+                    <div>
+                      <p className="text-sm text-slate-700 font-medium">{a.assetName}</p>
+                      {a.category && (
+                        <p className="text-[10px] text-gray-400">{a.category}</p>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-xs font-mono text-gray-400">{a.assetId}</span>
+                  <div className="text-right">
+                    <p className="text-xs font-mono text-gray-400">{a.assetId}</p>
+                    <p className="text-xs font-semibold text-emerald-600">Rs.{Number(a.cost || 0)}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </Section>
         )}
+
+        <Section title="Cost Breakdown">
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">Service Cost</span>
+              <span className="text-sm font-semibold text-slate-700">Rs.{serviceCost}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                Assets Cost
+                {booking.assets?.length > 0 && (
+                  <span className="ml-1 text-xs text-gray-400">({booking.assets.length} assigned)</span>
+                )}
+              </span>
+              <span className="text-sm font-semibold text-slate-700">Rs.{assetsCost}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">Provider Working Charge</span>
+              <span className="text-sm font-semibold text-slate-700">Rs.{providerCharge}</span>
+            </div>
+            <div className="pt-3 mt-1 border-t border-gray-100 flex items-center justify-between">
+              <span className="text-sm font-bold text-slate-800">Total Amount</span>
+              <span className="text-base font-extrabold text-emerald-600">Rs.{totalCost}</span>
+            </div>
+          </div>
+        </Section>
 
         {/* Notes */}
         {booking.providerNote && (

@@ -2,6 +2,7 @@ import User from '../models/User.js'
 import bcrypt from "bcrypt";
 import Service from '../models/Service.js';
 import Activity from '../models/Activity.js';
+import Admin from '../models/Admin.js';
 
 // User Signup
 export const userSignup = async (req, res) => {
@@ -162,11 +163,35 @@ export const updateProfile = async (req, res) => {
 export const getAllService = async (req, res) => {
   try {
 
-    const services = await Service.find().sort({ createdAt: -1 });
+    const services = await Service.find({ availability: "available" }).sort({ createdAt: -1 });
+    const tenantIds = [...new Set(services.map((service) => service.tenantId).filter(Boolean))];
+    const admins = await Admin.find({ tenantId: { $in: tenantIds } }).select(
+      "tenantId storeName storeAddress city state pincode website"
+    );
+    const adminByTenantId = new Map(
+      admins.map((admin) => [admin.tenantId, admin])
+    );
+
+    const servicesWithStore = services.map((service) => {
+      const admin = adminByTenantId.get(service.tenantId);
+      return {
+        ...service.toObject(),
+        store: admin
+          ? {
+              storeName: admin.storeName || "",
+              storeAddress: admin.storeAddress || "",
+              city: admin.city || "",
+              state: admin.state || "",
+              pincode: admin.pincode || "",
+              website: admin.website || "",
+            }
+          : null,
+      };
+    });
 
     res.status(200).json({
       success: true,
-      data: services,
+      data: servicesWithStore,
       message: "Services fetched successfully"
     });
 

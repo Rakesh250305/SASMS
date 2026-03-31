@@ -449,6 +449,7 @@ export default function AdminBookingDetail() {
   const [selectedProvider, setSelectedProvider] = useState("");
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [adminNote, setAdminNote] = useState("");
+  const [expectedDate, setExpectedDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -483,6 +484,9 @@ export default function AdminBookingDetail() {
         if (b?.provider) setSelectedProvider(b.provider._id || b.provider);
         if (b?.assets?.length) setSelectedAssets(b.assets.map((a) => a._id || a));
         if (b?.adminNote) setAdminNote(b.adminNote);
+        if (b?.expectedDate) {
+          setExpectedDate(new Date(b.expectedDate).toISOString().split("T")[0]);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -509,6 +513,7 @@ export default function AdminBookingDetail() {
             isAssetSelectable(assets.find((asset) => asset._id === assetId))
           ),
           adminNote,
+          scheduledDate: expectedDate || null,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -892,6 +897,20 @@ export default function AdminBookingDetail() {
                 <Plus size={16} />
                 {selectedAssetObjs.length > 0 ? `${selectedAssetObjs.length} Selected — Edit` : "Add Assets"}
               </button>
+            </div>
+
+            <div className="border-t border-gray-100" />
+            {/* Expected date */}
+            <div>
+              <p className="text-xs font-bold text-gray-700 mb-2">
+                Expected Date <span className="text-gray-400 font-normal">(optional)</span>
+              </p>
+              <input
+                type="date"
+                value={expectedDate}
+                onChange={(e) => setExpectedDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm text-slate-700 bg-gray-50 outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100"
+              />
             </div>
 
             <div className="border-t border-gray-100" />

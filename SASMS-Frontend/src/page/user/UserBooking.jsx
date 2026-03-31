@@ -22,11 +22,11 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 const STATUS_TABS = ["all", "pending", "assigned", "in_progress", "completed", "cancelled"];
 
 const STATUS_CONFIG = {
-  pending:     { label: "Pending",     bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400"   },
-  assigned:    { label: "Assigned",    bg: "bg-indigo-100",  text: "text-indigo-700",  dot: "bg-indigo-400"  },
-  in_progress: { label: "In Progress", bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-400"    },
-  completed:   { label: "Completed",   bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
-  cancelled:   { label: "Cancelled",   bg: "bg-red-100",     text: "text-red-600",     dot: "bg-red-400"     },
+  pending: { label: "Pending", bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-400" },
+  assigned: { label: "Assigned", bg: "bg-indigo-100", text: "text-indigo-700", dot: "bg-indigo-400" },
+  in_progress: { label: "In Progress", bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-400" },
+  completed: { label: "Completed", bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
+  cancelled: { label: "Cancelled", bg: "bg-red-100", text: "text-red-600", dot: "bg-red-400" },
 };
 
 function StatusBadge({ status }) {
@@ -41,6 +41,7 @@ function StatusBadge({ status }) {
 
 /* ── Cancel Confirmation Modal ─────────────────────────── */
 function CancelModal({ booking, onConfirm, onClose, loading }) {
+  const [cancelReason, setCancelReason] = useState("");
   return (
     <AnimatePresence>
       {booking && (
@@ -74,30 +75,14 @@ function CancelModal({ booking, onConfirm, onClose, loading }) {
               <p className="text-xs text-gray-400 text-center mb-5 leading-relaxed">
                 This action cannot be undone. Your booking will be permanently cancelled.
               </p>
-
-              {/* Booking summary */}
-              <div className="bg-slate-50 rounded-2xl p-3 flex items-center gap-3 mb-6 border border-gray-100">
-                {booking.service?.serviceImage ? (
-                  <img
-                    src={`${apiUrl}${booking.service.serviceImage}`}
-                    alt=""
-                    className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                    <Package size={16} className="text-emerald-400" />
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-xs font-mono text-emerald-600">{booking.bookingId}</p>
-                  <p className="text-sm font-bold text-slate-800 truncate">
-                    {booking.service?.serviceName || "Service"}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {booking.address?.city}, {booking.address?.state}
-                  </p>
-                </div>
-              </div>
+              
+              {/* Reason input */}
+              <textarea
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Enter reason for cancellation..."
+                className="w-full border border-gray-200 rounded-xl p-3 text-sm mb-4 outline-none focus:ring-2 focus:ring-red-200"
+              />
 
               {/* Buttons */}
               <div className="flex gap-3">
@@ -134,7 +119,7 @@ function CancelModal({ booking, onConfirm, onClose, loading }) {
 /* ── Booking Card ──────────────────────────────────────── */
 function BookingCard({ booking, onCancelClick }) {
   const navigate = useNavigate();
-  const canCancel = ["pending", "assigned"].includes(booking.status);
+  const canCancel = booking.status === "pending";
 
   return (
     <div
@@ -160,7 +145,7 @@ function BookingCard({ booking, onCancelClick }) {
           <p className="text-sm font-bold text-slate-800 truncate">
             {booking.service?.serviceName || "Service"}
           </p>
-          <p className="text-xs text-gray-400 truncate">{booking.service?.category}</p>
+          <p className="text-xs text-gray-400 truncate uppercase">{booking.service?.category}</p>
         </div>
 
         <StatusBadge status={booking.status} />
@@ -210,8 +195,8 @@ function BookingCard({ booking, onCancelClick }) {
             <p className="text-xs text-slate-700 font-medium">
               {booking.scheduledDate
                 ? new Date(booking.scheduledDate).toLocaleDateString("en-IN", {
-                    day: "numeric", month: "short",
-                  })
+                  day: "numeric", month: "short",
+                })
                 : "TBD"}
             </p>
           </div>
@@ -226,18 +211,6 @@ function BookingCard({ booking, onCancelClick }) {
             </div>
           </div>
         )}
-
-        {booking.assets?.length > 0 && (
-          <div className="col-span-2 flex items-start gap-2">
-            <Package size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Assets</p>
-              <p className="text-xs text-slate-700 font-medium">
-                {booking.assets.map((a) => a.name).join(", ")}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Cancel button */}
@@ -246,7 +219,7 @@ function BookingCard({ booking, onCancelClick }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onCancelClick(booking); // pass full booking object
+              onCancelClick(booking);
             }}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-200 text-red-500 text-xs font-semibold bg-red-50 active:bg-red-100 transition-colors"
           >
@@ -279,7 +252,7 @@ export default function UserBookings() {
     const load = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams({ page, limit: 10 });
+        const params = new URLSearchParams({ page, limit: 5 });
         if (activeTab !== "all") params.append("status", activeTab);
 
         const res = await axios.get(
@@ -354,11 +327,10 @@ export default function UserBookings() {
             <button
               key={t}
               onClick={() => handleTabChange(t)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === t
+              className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${activeTab === t
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-gray-500 hover:bg-gray-50"
-              }`}
+                }`}
             >
               {tabLabel(t)}
             </button>

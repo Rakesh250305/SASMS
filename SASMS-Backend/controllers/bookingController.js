@@ -162,6 +162,13 @@ export const cancelBooking = async (req, res) => {
     booking.status = "cancelled";
     await booking.save();
 
+    await Service.findByIdAndUpdate(booking.service, {
+      availability: "available",
+      provider: null,
+      asset: null,
+      assignTo: null,
+    });
+
     // Notify admin
     await createNotification({
       recipientId: booking.admin,
@@ -311,7 +318,7 @@ export const getAdminBookingById = async (req, res) => {
 // PUT /admin/booking/:id/assign  — assign provider + assets
 export const assignBooking = async (req, res) => {
   try {
-    const { providerId, assetIds, adminNote } = req.body;
+    const { providerId, assetIds, adminNote, scheduledDate } = req.body;
     const booking = await Booking.findOne({ _id: req.params.id, admin: req.user.id });
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
@@ -325,9 +332,17 @@ export const assignBooking = async (req, res) => {
     booking.provider = providerId;
     booking.assets = assetIds || [];
     booking.adminNote = adminNote || "";
+    booking.scheduledDate = scheduledDate || null;
     booking.status = "assigned";
     booking.assignedAt = new Date();
     await booking.save();
+
+    await Service.findByIdAndUpdate(booking.service, {
+      availability: "assigned",
+      provider: providerId,
+      asset: assetIds?.[0] || null,
+      assignTo: booking.user,
+    });
 
     await booking.populate([
       { path: "user", select: "name email phone" },
@@ -441,6 +456,15 @@ export const updateBookingStatus = async (req, res) => {
     if (status === "in_progress") booking.startedAt = new Date();
     if (status === "completed") booking.completedAt = new Date();
     await booking.save();
+
+    if (status === "completed") {
+      await Service.findByIdAndUpdate(booking.service, {
+        availability: "available",
+        provider: null,
+        asset: null,
+        assignTo: null,
+      });
+    }
 
     // Notify user
     const notifType = status === "in_progress" ? "booking_in_progress" : "booking_completed";

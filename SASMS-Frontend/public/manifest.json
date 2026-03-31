@@ -2,7 +2,7 @@
   "name": "Smart Asset and Service Management System",
   "short_name": "SASMS",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
