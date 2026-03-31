@@ -8,10 +8,12 @@ import {
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
 
-const STATUS_TABS = ["all", "assigned", "in_progress", "completed", "cancelled"];
+const STATUS_TABS = ["all", "assigned", "accepted", "picked_up", "in_progress", "completed", "cancelled"];
 
 const STATUS_CONFIG = {
   assigned:    { bg: "bg-purple-100", text: "text-purple-700", dot: "bg-purple-500", label: "Assigned"    },
+  accepted:    { bg: "bg-violet-100", text: "text-violet-700", dot: "bg-violet-500", label: "Accepted"    },
+  picked_up:   { bg: "bg-cyan-100",   text: "text-cyan-700",   dot: "bg-cyan-500",   label: "Picked Up"   },
   in_progress: { bg: "bg-blue-100",   text: "text-blue-700",   dot: "bg-blue-500",   label: "In Progress" },
   completed:   { bg: "bg-green-100",  text: "text-green-700",  dot: "bg-green-500",  label: "Completed"   },
   cancelled:   { bg: "bg-red-100",    text: "text-red-600",    dot: "bg-red-400",    label: "Cancelled"   },
@@ -35,7 +37,13 @@ function timeAgo(d) {
 }
 
 const tabLabel = (t) =>
-  t === "all" ? "All" : t === "in_progress" ? "In Progress" : t.charAt(0).toUpperCase() + t.slice(1);
+  t === "all"
+    ? "All"
+    : t === "in_progress"
+    ? "In Progress"
+    : t === "picked_up"
+    ? "Picked Up"
+    : t.charAt(0).toUpperCase() + t.slice(1);
 
 export default function ProviderTasks() {
   const navigate = useNavigate();
@@ -65,16 +73,16 @@ export default function ProviderTasks() {
     setAccepting(id);
     try {
       await axios.put(`${apiUrl}/provider/booking/${id}/status`,
-        { status: "in_progress" },
+        { status: "accepted" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setTasks(prev => prev.map(t => t._id === id ? { ...t, status: "in_progress" } : t));
+      navigate(`/provider/task/${id}`);
     } catch(e) { console.error(e); }
     setAccepting(null);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
 
       {/* Header */}
       <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-6 pb-6 relative overflow-hidden">
@@ -84,7 +92,7 @@ export default function ProviderTasks() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-5 mx-4 bg-white rounded-2xl shadow-sm border border-gray-100 px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar mb-4">
+      <div className="mt-5 mx-4 h-[10vh] bg-white rounded-2xl shadow-sm border border-gray-100 px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar mb-4">
         {STATUS_TABS.map(t => (
           <button key={t} onClick={() => setActiveTab(t)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
@@ -97,7 +105,7 @@ export default function ProviderTasks() {
         ))}
       </div>
 
-      <div className="px-4 pb-24 space-y-3">
+      <div className="px-4 pb-24 space-y-3 overflow-y-auto">
         {loading ? (
           [1,2,3].map(i => <div key={i} className="bg-white rounded-2xl h-32 animate-pulse border border-gray-100" />)
         ) : tasks.length === 0 ? (
@@ -124,7 +132,7 @@ export default function ProviderTasks() {
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-mono text-purple-500 mb-0.5">{t.bookingId}</p>
                 <p className="text-sm font-bold text-slate-800 truncate">{t.service?.serviceName}</p>
-                <p className="text-xs text-gray-400">{t.service?.category}</p>
+                <p className="text-xs text-gray-400 uppercase mt-1">{t.service?.category}</p>
               </div>
               <StatusBadge status={t.status} />
             </div>

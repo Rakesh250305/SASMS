@@ -156,7 +156,6 @@ export default function UserDashboard() {
     <div className="flex flex-col min-h-screen bg-slate-50 relative">
 
       {/* Header */}
-
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 relative">
         <div className="absolute bottom-0 left-6 w-20 h-20 rounded-full bg-white/5" />
 

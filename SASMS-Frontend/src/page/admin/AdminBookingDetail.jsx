@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 
 /* ─────────────────────────── constants ─────────────── */
-const STATUS_FLOW = ["pending", "assigned", "in_progress", "completed"];
+const STATUS_FLOW = ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"];
 const PROVIDER_WORKING_CHARGE = 50;
 
 const STATUS_CONFIG = {
@@ -36,6 +36,8 @@ const STATUS_CONFIG = {
   in_progress: { label: "In Progress", bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-400"    },
   completed:   { label: "Completed",   bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500"   },
   cancelled:   { label: "Cancelled",   bg: "bg-red-100",     text: "text-red-600",     dot: "bg-red-400"     },
+  accepted:    { label: "Accepted",    bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-400"  },
+  picked_up:   { label: "Assets Picked", bg: "bg-cyan-100",  text: "text-cyan-700",    dot: "bg-cyan-400"    },
 };
 
 const getCategoryStyle = (category) => {
@@ -563,7 +565,8 @@ export default function AdminBookingDetail() {
   const canAssign = ["pending", "assigned"].includes(booking.status);
   const isInProgress = booking.status === "in_progress";
   const isCancelled = booking.status === "cancelled";
-  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(booking.status);
+  const workflowStatus = booking.status;
+  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(workflowStatus);
   const selectedAssetsCost = validSelectedAssetObjs.reduce(
     (sum, asset) => sum + Number(asset.cost || 0),
     0
@@ -621,7 +624,11 @@ export default function AdminBookingDetail() {
                      i === currentStep ? <div className="w-2 h-2 rounded-full bg-white" /> : null}
                   </div>
                   <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight ${i <= currentStep ? "text-[#1976D2]" : "text-gray-400"}`}>
-                    {s === "in_progress" ? "In Progress" : s.charAt(0).toUpperCase() + s.slice(1)}
+                    {s === "in_progress"
+                      ? "In Progress"
+                      : s === "picked_up"
+                      ? "Assets Picked"
+                      : s.charAt(0).toUpperCase() + s.slice(1)}
                   </span>
                 </div>
               ))}
@@ -711,6 +718,8 @@ export default function AdminBookingDetail() {
           <TimelineRow label="Booked on" value={new Date(booking.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} />
           {booking.scheduledDate && <TimelineRow label="Scheduled" value={new Date(booking.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.assignedAt && <TimelineRow label="Assigned at" value={new Date(booking.assignedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.providerAcceptedAt && <TimelineRow label="Accepted at" value={new Date(booking.providerAcceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.assetsPickedUpAt && <TimelineRow label="Assets picked up" value={new Date(booking.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.startedAt && <TimelineRow label="Started at" value={new Date(booking.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.completedAt && <TimelineRow label="Completed at" value={new Date(booking.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight />}
         </Section>

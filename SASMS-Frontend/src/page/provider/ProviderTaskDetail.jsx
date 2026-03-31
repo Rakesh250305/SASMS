@@ -12,39 +12,55 @@ import {
   Mail,
   AlertCircle,
   Wrench,
-  User,
   Clock,
-  Calendar,
   Laptop,
   Printer,
   Monitor,
   Settings,
   Tag,
-  ArrowRight,
   CheckCheck,
   Truck,
-  PlayCircle,
   XCircle,
   IndianRupee,
+  Navigation,
+  PhoneCall,
+  Map,
+  Wallet,
+  BadgeIndianRupee,
+  Layers,
 } from "lucide-react";
 
-/* ── Status config ───────────────────────────────────── */
+/* ── Status config ─────────────────────────────────── */
 const STATUS_CONFIG = {
   assigned:    { label: "Assigned",    bg: "bg-purple-100",  text: "text-purple-700",  dot: "bg-purple-400"  },
+  accepted:    { label: "Accepted",    bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-400"  },
+  picked_up:   { label: "Picked Up",   bg: "bg-cyan-100",    text: "text-cyan-700",    dot: "bg-cyan-400"    },
   in_progress: { label: "In Progress", bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-400"    },
   completed:   { label: "Completed",   bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500"   },
   cancelled:   { label: "Cancelled",   bg: "bg-red-100",     text: "text-red-600",     dot: "bg-red-400"     },
 };
 
+const PROVIDER_WORKING_CHARGE = 50;
+
 // Provider-side workflow steps
 const WORKFLOW = [
-  { key: "assigned",    label: "Assigned",      icon: Tag     },
-  { key: "picked_up",  label: "Assets Picked",  icon: Truck   },
-  { key: "in_progress",label: "In Progress",    icon: Wrench  },
-  { key: "completed",  label: "Completed",      icon: CheckCheck },
+  { key: "assigned",     label: "Assigned",       icon: Tag        },
+  { key: "accepted",     label: "Accepted",        icon: CheckCircle2 },
+  { key: "picked_up",   label: "Assets Picked",   icon: Truck      },
+  { key: "in_progress", label: "In Progress",     icon: Wrench     },
+  { key: "completed",   label: "Completed",        icon: CheckCheck },
 ];
 
-/* ── Category helpers ────────────────────────────────── */
+const getWorkflowStep = (task) => {
+  if (!task) return 0;
+  if (task.status === "completed") return 4;
+  if (task.status === "in_progress") return 3;
+  if (task.status === "picked_up") return 2;
+  if (task.status === "accepted") return 1;
+  return 0;
+};
+
+/* ── Category helpers ──────────────────────────────── */
 const getCategoryStyle = (cat) => {
   switch (cat) {
     case "laptop":     return { background: "#EFF6FF", color: "#1976D2" };
@@ -66,7 +82,7 @@ const getCategoryIcon = (cat) => {
   }
 };
 
-/* ── Small components ───────────────────────────────── */
+/* ── Small reusable components ─────────────────────── */
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.assigned;
   return (
@@ -77,9 +93,9 @@ function StatusBadge({ status }) {
   );
 }
 
-function Section({ title, children }) {
+function Section({ title, children, accent }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-4 ${accent ? "border-l-4 border-l-purple-400" : ""}`}>
       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">{title}</p>
       {children}
     </div>
@@ -95,12 +111,27 @@ function TimelineRow({ label, value, highlight }) {
   );
 }
 
-/* ── Confirm Action Modal ─────────────────────────── */
+function CostRow({ label, value, sub, bold, accent }) {
+  return (
+    <div className={`flex items-center justify-between py-2 border-b border-gray-50 last:border-0 ${bold ? "pt-3 border-t border-gray-100 last:border-t" : ""}`}>
+      <div>
+        <span className={`text-sm ${bold ? "font-bold text-slate-800" : "text-gray-500"}`}>{label}</span>
+        {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+      </div>
+      <span className={`text-sm font-bold flex items-center gap-0.5 ${accent ? "text-purple-600 text-base" : bold ? "text-slate-800" : "text-slate-700"}`}>
+        <IndianRupee size={accent ? 14 : 12} />
+        {value}
+      </span>
+    </div>
+  );
+}
+
+/* ── Confirm Action Modal ──────────────────────────── */
 function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, onClose, loading }) {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm "
+        className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -113,6 +144,8 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
           transition={{ type: "spring", damping: 26, stiffness: 300 }}
           className="bg-white w-full max-w-sm rounded-t-3xl overflow-hidden shadow-2xl"
         >
+          {/* Handle */}
+          <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mt-3" />
           <div className="p-6">
             <h2 className="text-base font-bold text-slate-800 text-center mb-1">{title}</h2>
             <p className="text-xs text-gray-400 text-center mb-6 leading-relaxed">{message}</p>
@@ -128,14 +161,14 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
                 onClick={onConfirm}
                 disabled={loading}
                 className={`flex-1 py-3 rounded-2xl text-white text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2 ${
-                  confirmColor === "purple" ? "bg-[#c026d3]"
+                  confirmColor === "purple" ? "bg-gradient-to-br from-[#86198f] to-[#c026d3]"
                   : confirmColor === "green" ? "bg-green-600"
                   : "bg-red-500"
                 }`}
               >
-                {loading ? (
-                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                ) : confirmLabel}
+                {loading
+                  ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  : confirmLabel}
               </button>
             </div>
           </div>
@@ -145,42 +178,39 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
   );
 }
 
-/* ── Main Page ──────────────────────────────────────── */
+/* ── Main Page ─────────────────────────────────────── */
 export default function ProviderTaskDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
-  const [task, setTask] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [modal, setModal] = useState(null); // { type: "accept"|"reject"|"picked"|"progress"|"complete" }
-  const [msg, setMsg] = useState(null);
 
-  // Local workflow step — tracked separately since backend only has assigned/in_progress/completed
+  const [task, setTask]               = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [modal, setModal]             = useState(null);
+  const [msg, setMsg]                 = useState(null);
+
+  // workflowStep: 0=assigned, 1=accepted, 2=picked_up, 3=in_progress, 4=completed
   const [workflowStep, setWorkflowStep] = useState(0);
 
   const token = localStorage.getItem("token");
-const fetchTask = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${apiUrl}/provider/booking/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const t = res.data.booking || res.data.data;
-        setTask(t);
-        // Set workflow step based on current status
-        if (t?.status === "in_progress") setWorkflowStep(2);
-        else if (t?.status === "completed") setWorkflowStep(3);
-        else setWorkflowStep(0); // assigned
-      } catch (err) {
-        console.error(err);
-      }
-      setLoading(false);
-    };
-  useEffect(() => {
-    
-    fetchTask();
-  }, [id, token]);
+
+  const fetchTask = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${apiUrl}/provider/booking/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const t = res.data.booking || res.data.data;
+      setTask(t);
+      setWorkflowStep(getWorkflowStep(t));
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchTask(); }, [id]);
 
   const updateStatus = async (newStatus) => {
     setActionLoading(true);
@@ -192,18 +222,30 @@ const fetchTask = async () => {
       );
       const updated = res.data.booking || res.data.data;
       setTask(updated || { ...task, status: newStatus });
-      if (newStatus === "in_progress") setWorkflowStep(2);
-      if (newStatus === "completed")   setWorkflowStep(3);
+      setWorkflowStep(getWorkflowStep(updated || { ...task, status: newStatus }));
       setMsg({ type: "success", text: `Status updated to ${newStatus.replace("_", " ")}` });
     } catch (err) {
       setMsg({ type: "error", text: err.response?.data?.message || "Update failed" });
     }
-    fetchTask();
+    await fetchTask();
     setActionLoading(false);
     setModal(null);
   };
 
-  // Loading / not found guards
+  /* Cost calculations */
+  const serviceCost   = Number(task?.service?.estimatedPrice || 0);
+  const assetsCost    = (task?.assets || []).reduce((s, a) => s + Number(a.cost || 0), 0);
+  const providerCharge = task ? PROVIDER_WORKING_CHARGE : 0;
+  const totalCost     = serviceCost + assetsCost + providerCharge;
+
+  /* Maps URL */
+  const mapsUrl = task?.address
+    ? `https://maps.google.com/?q=${encodeURIComponent(
+        [task.address.addressLine1, task.address.city, task.address.state, task.address.pincode]
+          .filter(Boolean).join(", ")
+      )}`
+    : null;
+
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-purple-200 border-t-[#c026d3] rounded-full animate-spin" />
@@ -217,88 +259,115 @@ const fetchTask = async () => {
     </div>
   );
 
-  const isAssigned    = task.status === "assigned";
-  const isInProgress  = task.status === "in_progress";
-  const isCompleted   = task.status === "completed";
-  const isCancelled   = task.status === "cancelled";
-
-  // Workflow progress bar steps
-  const currentWorkflowStep = workflowStep;
+  const isAssigned   = task.status === "assigned";
+  const isInProgress = task.status === "in_progress";
+  const isCompleted  = task.status === "completed";
+  const isCancelled  = task.status === "cancelled";
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
 
-      {/* Header */}
-      <div className="bg-gradient-to-br from-[#86198f] via-[#c026d3] to-[#d946ef] px-5 pt-6 pb-6 relative overflow-hidden">
+      {/* ── Header ──────────────────────────────────── */}
+      <div className="bg-gradient-to-br from-[#86198f] via-[#c026d3] to-[#d946ef] h-[60vh] px-5 pt-6 pb-6 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
+        <div className="absolute bottom-0 left-8 w-16 h-16 rounded-full bg-white/5" />
 
         <button
           onClick={() => navigate("/provider/tasks")}
           className="flex items-center gap-1.5 text-white/80 text-sm mb-4"
         >
-          <ChevronLeft size={18} />
-          My Tasks
+          <ChevronLeft size={18} /> My Tasks
         </button>
 
         <div className="flex items-start justify-between">
-          <div>
-            <p className="text-white/60 text-xs font-mono mb-1">{task.bookingId}</p>
-            <h1 className="text-xl font-bold text-white">{task.service?.serviceName || "Task Detail"}</h1>
-            <p className="text-white/60 text-xs mt-1">{task.service?.category}</p>
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="text-white/50 text-xs font-mono mb-1">{task.bookingId}</p>
+            <h1 className="text-xl font-bold text-white leading-tight">{task.service?.serviceName || "Task Detail"}</h1>
+            <p className="text-white/60 text-xs mt-1 capitalize">{task.service?.category}</p>
           </div>
           <StatusBadge status={task.status} />
         </div>
       </div>
 
-      <div className="mt-2 px-4 pb-32 space-y-3 max-w-xl mx-auto">
+      {/* ── Body ────────────────────────────────────── */}
+      <div className="px-4 pt-3 pb-24 space-y-3 max-w-xl overflow-y-auto">
 
-        {/* Status message */}
-        {msg && (
-          <div className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl text-xs font-semibold ${
-            msg.type === "success" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"
-          }`}>
-            {msg.type === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
-            {msg.text}
-          </div>
-        )}
-        
-        {/* Workflow progress */}
+        {/* Status toast */}
+        <AnimatePresence>
+          {msg && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl text-xs font-semibold ${
+                msg.type === "success"
+                  ? "bg-green-50 text-green-700 border border-green-100"
+                  : "bg-red-50 text-red-600 border border-red-100"
+              }`}
+            >
+              {msg.type === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+              {msg.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Workflow progress ─────────────────────── */}
         {!isCancelled && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Workflow Progress</p>
             <div className="flex items-start">
               {WORKFLOW.map(({ key, label, icon: Icon }, i) => (
                 <div key={key} className="flex-1 flex flex-col items-center relative">
+                  {/* Connector line */}
                   {i < WORKFLOW.length - 1 && (
-                    <div className={`absolute top-3 left-1/2 w-full h-0.5 ${i < currentWorkflowStep ? "bg-purple-400" : "bg-gray-200"}`} />
+                    <div className={`absolute top-3 left-1/2 w-full h-0.5 transition-colors ${
+                      i < workflowStep ? "bg-purple-400" : "bg-gray-200"
+                    }`} />
                   )}
+                  {/* Circle */}
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 transition-all ${
-                    i < currentWorkflowStep  ? "bg-purple-500"
-                    : i === currentWorkflowStep ? "bg-[#c026d3] ring-4 ring-purple-100"
-                    : "bg-gray-200"
+                    i < workflowStep
+                      ? "bg-purple-500"
+                      : i === workflowStep
+                      ? "bg-[#c026d3] ring-4 ring-purple-100"
+                      : "bg-gray-200"
                   }`}>
-                    {i < currentWorkflowStep
+                    {i < workflowStep
                       ? <CheckCircle2 size={13} className="text-white" />
-                      : i === currentWorkflowStep
-                      ? <Icon size={12} className="text-white" />
-                      : <Icon size={12} className="text-gray-400" />
+                      : <Icon size={12} className={i === workflowStep ? "text-white" : "text-gray-400"} />
                     }
                   </div>
-                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight ${
-                    i <= currentWorkflowStep ? "text-[#c026d3]" : "text-gray-400"
+                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight px-0.5 ${
+                    i <= workflowStep ? "text-[#c026d3]" : "text-gray-400"
                   }`}>
                     {label}
                   </span>
                 </div>
               ))}
             </div>
+
+            {/* Contextual step hint */}
+            {!isCompleted && !isCancelled && (
+              <div className={`mt-4 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold ${
+                workflowStep === 0 ? "bg-purple-50 text-purple-700"
+                : workflowStep === 1 ? "bg-amber-50 text-amber-700"
+                : workflowStep === 2 ? "bg-blue-50 text-blue-700"
+                : workflowStep === 3 ? "bg-green-50 text-green-700"
+                : "bg-gray-50 text-gray-500"
+              }`}>
+                {workflowStep === 0 && <><Tag size={12} /> Accept or reject this task to begin</>}
+                {workflowStep === 1 && <><Truck size={12} /> Collect assets from customer, then confirm pickup</>}
+                {workflowStep === 2 && <><Wrench size={12} /> Assets collected — start work and mark In Progress</>}
+                {workflowStep === 3 && <><CheckCheck size={12} /> Work in progress — mark completed when done</>}
+              </div>
+            )}
           </div>
         )}
 
         {/* Cancelled banner */}
         {isCancelled && (
           <div className="bg-red-50 rounded-2xl border border-red-100 p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
               <AlertCircle size={18} className="text-red-500" />
             </div>
             <div>
@@ -308,7 +377,7 @@ const fetchTask = async () => {
           </div>
         )}
 
-        {/* Service info */}
+        {/* ── Service info ──────────────────────────── */}
         <Section title="Service">
           <div className="flex items-center gap-3">
             {task.service?.serviceImage ? (
@@ -322,31 +391,40 @@ const fetchTask = async () => {
                 <Wrench size={22} className="text-purple-400" />
               </div>
             )}
-            <div className="flex justify-between w-full ">
-              <span>
-                <p className="text-sm font-bold text-slate-800">{task.service?.serviceName}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{task.service?.category}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-800">{task.service?.serviceName}</p>
+              <p className="text-xs text-gray-400 mt-0.5 capitalize">{task.service?.category}</p>
               {task.service?.description && (
                 <p className="text-xs text-gray-400 mt-1 line-clamp-2">{task.service.description}</p>
               )}
-              </span>
-              {task.service?.estimatedPrice && (
-                <p className="flex items-center text-xs text-green-600 mt-1 line-clamp-2"><IndianRupee size={10} /> {task.service.estimatedPrice}</p>
-              )}
             </div>
+            {task.service?.estimatedPrice && (
+              <div className="flex-shrink-0 text-right">
+                <p className="text-[10px] text-gray-400">Service</p>
+                <p className="flex items-center text-sm font-bold text-purple-600">
+                  <IndianRupee size={11} />{task.service.estimatedPrice}
+                </p>
+              </div>
+            )}
           </div>
         </Section>
 
-        {/* Customer */}
+        {/* ── Customer ─────────────────────────────── */}
         <Section title="Customer">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-purple-700 font-bold text-xs">
+            <div className="w-11 h-11 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-purple-700 font-bold text-sm">
                 {task.user?.name?.split(" ").map(w => w[0]).join("").toUpperCase()}
               </span>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-slate-800">{task.user?.name}</p>
+              {task.user?.email && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Mail size={11} className="text-gray-400" />
+                  <p className="text-xs text-gray-500 truncate">{task.user.email}</p>
+                </div>
+              )}
               {task.user?.phone && (
                 <div className="flex items-center gap-1 mt-0.5">
                   <Phone size={11} className="text-gray-400" />
@@ -354,14 +432,24 @@ const fetchTask = async () => {
                 </div>
               )}
             </div>
+            {/* Direct call button */}
+            {task.user?.phone && (
+              <a
+                href={`tel:${task.user.phone}`}
+                className="flex items-center gap-1.5 bg-green-50 border border-green-100 text-green-700 px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0"
+              >
+                <PhoneCall size={13} />
+                Call
+              </a>
+            )}
           </div>
         </Section>
 
-        {/* Address */}
+        {/* ── Service Address ───────────────────────── */}
         <Section title="Service Address">
           <div className="flex items-start gap-2">
             <MapPin size={15} className="text-[#c026d3] mt-0.5 flex-shrink-0" />
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-slate-800">{task.address?.fullName}</p>
               <p className="text-xs text-gray-500 mt-0.5">{task.address?.phone}</p>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed">
@@ -373,9 +461,22 @@ const fetchTask = async () => {
               </p>
             </div>
           </div>
+
+          {/* Open in Maps button */}
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold"
+            >
+              <Navigation size={13} />
+              Open in Maps
+            </a>
+          )}
         </Section>
 
-        {/* Assets */}
+        {/* ── Assets ───────────────────────────────── */}
         {task.assets?.length > 0 && (
           <Section title="Assets to Collect">
             <div className="space-y-2">
@@ -398,6 +499,11 @@ const fetchTask = async () => {
                         {a.quantity && <span className="ml-1">· {a.quantity} pcs</span>}
                       </p>
                     </div>
+                    {a.cost && (
+                      <span className="text-xs font-bold text-slate-700 flex items-center gap-0.5 flex-shrink-0">
+                        <IndianRupee size={10} />{a.cost}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -405,12 +511,79 @@ const fetchTask = async () => {
           </Section>
         )}
 
-        {/* Timeline */}
+        {/* ── Cost Breakdown ────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Cost Breakdown</p>
+
+          <CostRow
+            label="Service Charge"
+            sub={task.service?.serviceName}
+            value={serviceCost}
+          />
+          {task.assets?.length > 0 && (
+            <CostRow
+              label="Assets Cost"
+              sub={`${task.assets.length} item${task.assets.length > 1 ? "s" : ""} assigned`}
+              value={assetsCost}
+            />
+          )}
+          <CostRow
+            label="Provider Working Charge"
+            sub="Fixed per task"
+            value={providerCharge}
+          />
+
+          {/* Total */}
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center">
+                <Wallet size={14} className="text-purple-600" />
+              </div>
+              <span className="text-sm font-bold text-slate-800">Total Payable</span>
+            </div>
+            <span className="text-base font-extrabold text-purple-600 flex items-center gap-0.5">
+              <IndianRupee size={14} />{totalCost}
+            </span>
+          </div>
+        </div>
+
+        {/* ── Timeline ─────────────────────────────── */}
         <Section title="Timeline">
-          <TimelineRow label="Assigned on" value={new Date(task.assignedAt || task.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} />
-          {task.scheduledDate && <TimelineRow label="Scheduled" value={new Date(task.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {task.startedAt && <TimelineRow label="Started" value={new Date(task.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {task.completedAt && <TimelineRow label="Completed" value={new Date(task.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight />}
+          <TimelineRow
+            label="Assigned on"
+            value={new Date(task.assignedAt || task.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+          />
+          {task.scheduledDate && (
+            <TimelineRow
+              label="Scheduled"
+              value={new Date(task.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+            />
+          )}
+          {task.providerAcceptedAt && (
+            <TimelineRow
+              label="Accepted on"
+              value={new Date(task.providerAcceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+            />
+          )}
+          {task.assetsPickedUpAt && (
+            <TimelineRow
+              label="Assets Picked on"
+              value={new Date(task.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+            />
+          )}
+          {task.startedAt && (
+            <TimelineRow
+              label="Started on"
+              value={new Date(task.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+            />
+          )}
+          {task.completedAt && (
+            <TimelineRow
+              label="Completed"
+              value={new Date(task.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+              highlight
+            />
+          )}
         </Section>
 
         {/* Admin note */}
@@ -434,59 +607,63 @@ const fetchTask = async () => {
         )}
       </div>
 
-      {/* ── Sticky action bar ─────────────────────────── */}
+      {/* ── Sticky action bar ──────────────────────── */}
       {!isCancelled && !isCompleted && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 safe-area-bottom">
-          <div className="max-w-xl mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 pt-3 pb-5 safe-area-bottom shadow-lg">
+          <div className="max-w-xl mx-auto space-y-2">
 
-            {/* ASSIGNED → Accept or Reject */}
-            {isAssigned && (
+            {/* Step 0 — ASSIGNED: Accept or Reject */}
+            {workflowStep === 0 && (
               <div className="flex gap-3">
                 <button
                   onClick={() => setModal("reject")}
                   className="flex-1 py-3.5 rounded-2xl border border-red-200 text-red-500 text-sm font-bold flex items-center justify-center gap-2 bg-red-50"
                 >
-                  <XCircle size={16} />
-                  Reject
+                  <XCircle size={16} /> Reject
                 </button>
                 <button
                   onClick={() => setModal("accept")}
-                  className="flex-1 py-3.5 rounded-2xl bg-gradient-to-br from-[#86198f] to-[#c026d3] text-white text-sm font-bold flex items-center justify-center gap-2"
+                  className="flex-2 flex-[2] py-3.5 rounded-2xl bg-gradient-to-br from-[#86198f] to-[#c026d3] text-white text-sm font-bold flex items-center justify-center gap-2"
                 >
-                  <CheckCircle2 size={16} />
-                  Accept Task
+                  <CheckCircle2 size={16} /> Accept Task
                 </button>
               </div>
             )}
 
-            {/* workflowStep 1 = accepted, waiting to pick up assets */}
-            {isAssigned && workflowStep === 1 && (
+            {/* Step 1 — ACCEPTED: waiting to pick up assets */}
+            {workflowStep === 1 && (
               <button
                 onClick={() => setModal("picked")}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-br from-[#86198f] to-[#c026d3] text-white text-sm font-bold flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white text-sm font-bold flex items-center justify-center gap-2"
               >
-                <Truck size={16} />
-                Mark Assets Picked Up
+                <Truck size={16} /> Confirm Assets Picked Up
               </button>
             )}
 
-            {/* IN_PROGRESS → Mark Completed */}
-            {isInProgress && (
-              <div className="space-y-2">
-                <button
-                  onClick={() => setModal("complete")}
-                  className="w-full py-3.5 rounded-2xl bg-green-600 text-white text-sm font-bold flex items-center justify-center gap-2"
-                >
-                  <CheckCheck size={16} />
-                  Mark as Completed
-                </button>
-              </div>
+            {/* Step 2 — PICKED UP: start work */}
+            {workflowStep === 2 && (
+              <button
+                onClick={() => setModal("progress")}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white text-sm font-bold flex items-center justify-center gap-2"
+              >
+                <Wrench size={16} /> Start Work (Mark In Progress)
+              </button>
+            )}
+
+            {/* Step 3 — IN PROGRESS: complete */}
+            {workflowStep === 3 && (
+              <button
+                onClick={() => setModal("complete")}
+                className="w-full py-3.5 rounded-2xl bg-green-600 text-white text-sm font-bold flex items-center justify-center gap-2"
+              >
+                <CheckCheck size={16} /> Mark as Completed
+              </button>
             )}
           </div>
         </div>
       )}
 
-      {/* Completed banner */}
+      {/* Completed sticky banner */}
       {isCompleted && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4">
           <div className="max-w-xl mx-auto flex items-center gap-3 bg-green-50 border border-green-100 rounded-2xl p-3">
@@ -499,7 +676,7 @@ const fetchTask = async () => {
         </div>
       )}
 
-      {/* ── Modals ───────────────────────────────────── */}
+      {/* ── Modals ─────────────────────────────────── */}
       {modal === "accept" && (
         <ConfirmModal
           title="Accept this Task?"
@@ -508,9 +685,7 @@ const fetchTask = async () => {
           confirmColor="purple"
           loading={actionLoading}
           onConfirm={() => {
-            setWorkflowStep(1);
-            setModal(null);
-            setMsg({ type: "success", text: "Task accepted! Proceed to collect assets." });
+            updateStatus("accepted");
           }}
           onClose={() => setModal(null)}
         />
@@ -531,8 +706,20 @@ const fetchTask = async () => {
       {modal === "picked" && (
         <ConfirmModal
           title="Assets Picked Up?"
-          message="Confirm that you've collected all the assigned assets and are ready to start."
+          message="Confirm that you've collected all the assigned assets from the customer and are ready to start."
           confirmLabel={<><Truck size={14} /> Confirm Pickup</>}
+          confirmColor="purple"
+          loading={actionLoading}
+          onConfirm={() => updateStatus("picked_up")}
+          onClose={() => setModal(null)}
+        />
+      )}
+
+      {modal === "progress" && (
+        <ConfirmModal
+          title="Start Work?"
+          message="This will mark the task as In Progress and notify the customer that work has begun."
+          confirmLabel={<><Wrench size={14} /> Start Work</>}
           confirmColor="purple"
           loading={actionLoading}
           onConfirm={() => updateStatus("in_progress")}
@@ -543,7 +730,7 @@ const fetchTask = async () => {
       {modal === "complete" && (
         <ConfirmModal
           title="Mark as Completed?"
-          message="Confirm the service has been successfully completed. This cannot be undone."
+          message="Confirm the service has been successfully completed and assets returned. This cannot be undone."
           confirmLabel={<><CheckCheck size={14} /> Mark Completed</>}
           confirmColor="green"
           loading={actionLoading}

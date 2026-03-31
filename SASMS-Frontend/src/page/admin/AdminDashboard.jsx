@@ -174,7 +174,7 @@ export default function AdminDashboard() {
 
       {/* Top Bar */}
 
-      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-4 pb-15  relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-4 pb-15 relative overflow-hidden">
 
         <div className="absolute -top-8 -right-8 w-[120px] h-[120px] rounded-full bg-white/10" />
         <div className="absolute -bottom-15 -left-8 w-[120px] h-[120px] rounded-full bg-white/10" />

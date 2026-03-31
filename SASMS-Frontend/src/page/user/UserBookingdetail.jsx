@@ -19,11 +19,13 @@ import BottomNav from "../../component/BottomNav";
 
 const PROVIDER_WORKING_CHARGE = 50;
 
-const STATUS_FLOW = ["pending", "assigned", "in_progress", "completed"];
+const STATUS_FLOW = ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"];
 
 const STATUS_LABEL = {
   pending: "Pending",
   assigned: "Assigned",
+  accepted: "Accepted",
+  picked_up: "Assets Picked",
   in_progress: "In Progress",
   completed: "Completed",
   cancelled: "Cancelled",
@@ -32,6 +34,8 @@ const STATUS_LABEL = {
 const STATUS_CONFIG = {
   pending: { bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-400" },
   assigned: { bg: "bg-indigo-100", text: "text-indigo-700", dot: "bg-indigo-400" },
+  accepted: { bg: "bg-violet-100", text: "text-violet-700", dot: "bg-violet-400" },
+  picked_up: { bg: "bg-cyan-100", text: "text-cyan-700", dot: "bg-cyan-400" },
   in_progress: { bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-400" },
   completed: { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
   cancelled: { bg: "bg-red-100", text: "text-red-600", dot: "bg-red-400" },
@@ -106,7 +110,8 @@ export default function UserBookingDetail() {
 
   // ✅ Safe — booking is guaranteed non-null below this line
   const isCancelled = booking.status === "cancelled";
-  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(booking.status);
+  const workflowStatus = booking.status;
+  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(workflowStatus);
   const serviceCost = Number(booking.service?.estimatedPrice || 0);
   const assetsCost = (booking.assets || []).reduce(
     (sum, asset) => sum + Number(asset.cost || 0),
@@ -336,6 +341,34 @@ export default function UserBookingDetail() {
                 </div>
                 <span className="text-xs font-semibold text-slate-700">
                   {new Date(booking.assignedAt).toLocaleDateString("en-IN", {
+                    day: "numeric", month: "short",
+                  })}
+                </span>
+              </div>
+            )}
+
+            {booking.providerAcceptedAt && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <CheckCircle2 size={13} />
+                  <span className="text-xs">Accepted at</span>
+                </div>
+                <span className="text-xs font-semibold text-slate-700">
+                  {new Date(booking.providerAcceptedAt).toLocaleDateString("en-IN", {
+                    day: "numeric", month: "short",
+                  })}
+                </span>
+              </div>
+            )}
+
+            {booking.assetsPickedUpAt && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Package size={13} />
+                  <span className="text-xs">Assets picked up</span>
+                </div>
+                <span className="text-xs font-semibold text-slate-700">
+                  {new Date(booking.assetsPickedUpAt).toLocaleDateString("en-IN", {
                     day: "numeric", month: "short",
                   })}
                 </span>
