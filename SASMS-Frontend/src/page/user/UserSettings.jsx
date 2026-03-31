@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Menu,
@@ -142,8 +142,13 @@ const handleUpdatePassword = async () => {
   }
 };
 
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/login");
+};
+
   return (
-    <div className="flex flex-col min-h-screen pb-16 bg-[#F5F7FA]">
+    <div className={`flex flex-col min-h-screen pb-16 bg-[#F5F7FA]`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-6">  
@@ -163,12 +168,12 @@ const handleUpdatePassword = async () => {
           <div key={section.title} className="mb-5">
 
             {/* Section Title */}
-            <div className="text-[11px] font-bold text-gray-400 tracking-wider uppercase mb-2 pl-1">
+            <div className={`text-[11px] font-bold tracking-wider uppercase mb-2 pl-1 text-gray-400`}>
               {section.title}
             </div>
 
             {/* Card */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            <div className={`bg-white rounded-2xl overflow-hidden shadow-sm`}>
 
               {section.items.map((item, i) => (
                 <div
@@ -181,8 +186,6 @@ const handleUpdatePassword = async () => {
                     }
                     else if (item.label === "Change Password") {
                       setShowPasswordModal(true);
-                    } else if (item.toggle) {
-                      setDarkMode((d) => !d);
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${i !== section.items.length - 1
@@ -200,7 +203,7 @@ const handleUpdatePassword = async () => {
 
                   {/* Text */}
                   <div className="flex-1">
-                    <div className="text-[13px] font-semibold text-[#1A1A2E]">
+                    <div className={`text-[13px] font-semibold text-[#1A1A2E]`}>
                       {item.label}
                     </div>
                     <div className="text-[11px] text-gray-400 mt-0.5">
@@ -211,12 +214,10 @@ const handleUpdatePassword = async () => {
                   {/* Toggle */}
                   {item.toggle ? (
                     <div
-                      className={`w-11 h-6 rounded-full transition-all ${darkMode ? "bg-blue-600" : "bg-gray-300"
-                        } relative`}
+                      className={`w-11 h-6 rounded-full transition-all bg-gray-300 relative`}
                     >
                       <div
-                        className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all ${darkMode ? "left-6" : "left-[2px]"
-                          }`}
+                        className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all left-[2px]`}
                       ></div>
                     </div>
                   ) : (
@@ -230,8 +231,8 @@ const handleUpdatePassword = async () => {
 
         {/* Logout Button */}
         <button
-          onClick={() => navigate("/login")}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-sm"
+          onClick={handleLogout}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm bg-red-50 text-red-600`}
         >
           <LogOut size={18} />
           Sign Out
@@ -247,7 +248,7 @@ const handleUpdatePassword = async () => {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[60vh] rounded-t-3xl p-6 z-50 overflow-y-auto"
+              className={`absolute bottom-0 left-0 right-0 bg-white h-[60vh] rounded-t-3xl p-6 z-50 overflow-y-auto`}
             >
 
       <h2 className="text-lg font-bold mb-4">Change Password</h2>

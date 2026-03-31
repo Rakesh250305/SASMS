@@ -82,12 +82,11 @@ function App() {
         closeOnClick
         pauseOnHover
         draggable
-        theme="light"
         toastClassName={() =>
           "w-full flex items-center px-5 py-4 mt-2 rounded-xl shadow-md border border-gray-200 bg-white text-gray-800 text-sm "
         }
         bodyClassName={() => "flex items-center gap-2"}
-        progressClassName="bg-blue-500"
+        progressClassName={"bg-blue-500"}
       />
     </BrowserRouter>
   );

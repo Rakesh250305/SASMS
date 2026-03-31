@@ -45,6 +45,7 @@ export default function UserDashboard() {
   const [services, setServices] = useState([]);
   const searchRef = useRef(null);
   const [bookingHistory, setBookingHistory] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const token = localStorage.getItem("token");
 
@@ -70,6 +71,17 @@ export default function UserDashboard() {
         if (error.response?.status === 401) {
           navigate("/login");
         }
+      }
+    };
+
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await axios.get(`${apiUrl}/user/notifications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUnreadCount(res.data.unreadCount || 0);
+      } catch (error) {
+        console.error(error);
       }
     };
 
@@ -106,8 +118,6 @@ export default function UserDashboard() {
         }
       );
 
-      console.log(res.data.data);
-
       setBookingHistory(res.data.data);
 
     };
@@ -115,6 +125,7 @@ export default function UserDashboard() {
     fetchUserData();
     fetchRecentBookings();
     fetchServices();
+    fetchUnreadCount();
 
   }, [token, navigate]);
 
@@ -146,7 +157,7 @@ export default function UserDashboard() {
 
       {/* Header */}
 
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 relative">
+      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 overflow-hidden relative">
         <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10" />
         <div className="absolute bottom-0 left-6 w-20 h-20 rounded-full bg-white/5" />
 
@@ -168,8 +179,10 @@ export default function UserDashboard() {
                 <Bell size={20} />
               </button>
 
-              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-400 rounded-full"></span>
 
+              {unreadCount > 0 && (
+                <div className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full" />
+              )}
 
             </div>
 
@@ -275,9 +288,9 @@ export default function UserDashboard() {
 
               <div className="flex justify-between items-center">
                 <p className="text-[10px] font-semibold opacity-80 mb-1">
-                Newly Added
-              </p>
-              <BadgeCheck size={20}/>
+                  Newly Added
+                </p>
+                <BadgeCheck size={20} />
               </div>
 
               <p className="text-sm font-extrabold leading-tight mb-1">
@@ -285,12 +298,12 @@ export default function UserDashboard() {
               </p>
 
               <p className="text-xs flex items-center gap-1 opacity-80 mb-2">
-                <Bookmark size={14}/> {s.category.toUpperCase()}
+                <Bookmark size={14} /> {s.category.toUpperCase()}
               </p>
 
               <p className="flex  gap-2 text-lg font-bold">
                 From
-                <span className="flex items-center"> 
+                <span className="flex items-center">
                   ₹ {s.estimatedPrice}
                 </span>
               </p>
@@ -351,7 +364,7 @@ export default function UserDashboard() {
               <span className="text-xs font-semibold text-slate-700">
                 {cat.name}
               </span>
-{/* 
+              {/* 
               <span className="absolute top-1 right-1 w-4 h-4 text-[8px] flex items-center justify-center bg-gray-100 text-gray-500 rounded-full font-bold">
                 {cat.count}
               </span> */}

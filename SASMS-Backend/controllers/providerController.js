@@ -3,36 +3,39 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 // POST /provider/login
-export const providerLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const provider = await Provider.findOne({ email }).select("+password");
-    if (!provider) return res.status(401).json({ success: false, message: "Invalid credentials" });
+// export const providerLogin = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
 
-    const isMatch = await bcrypt.compare(password, provider.password);
-    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
+//     const loweremail = email.toLowerCase().trim();
 
-    const token = jwt.sign(
-      { id: provider._id, role: "provider" },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+//     const provider = await Provider.findOne({ email:loweremail }).select("+password");
+//     if (!provider) return res.status(401).json({ success: false, message: "Invalid credentials" });
 
-    res.json({
-      success: true,
-      token,
-      provider: {
-        id: provider._id,
-        name: provider.name,
-        email: provider.email,
-        phone: provider.phone,
-        role: "provider",
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+//     const isMatch = await bcrypt.compare(password, provider.password);
+//     if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
+
+//     const token = jwt.sign(
+//       { id: provider._id, role: "provider" },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "7d" }
+//     );
+
+//     res.status(201).json({
+//       success: true,
+//       token,
+//       provider: {
+//         id: provider._id,
+//         name: provider.name,
+//         email: provider.email,
+//         phone: provider.phone,
+//         role: "provider",
+//       },
+//     });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
 
 // GET /provider/
 export const getProviderInfo = async (req, res) => {

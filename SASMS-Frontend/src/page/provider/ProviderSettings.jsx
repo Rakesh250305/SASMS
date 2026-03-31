@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -74,8 +74,13 @@ export function ProviderSettings() {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
-    <div className="flex flex-col min-h-screen pb-18 bg-[#F5F7FA]">
+    <div className={`flex flex-col min-h-screen pb-18 bg-[#F5F7FA]`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-6 pb-6 relative overflow-hidden">
@@ -91,12 +96,12 @@ export function ProviderSettings() {
           <div key={section.title} className="mb-5">
 
             {/* Section Title */}
-            <div className="text-[11px] font-bold text-gray-400 tracking-wider uppercase mb-2 pl-1">
+            <div className={`text-[11px] font-bold tracking-wider uppercase mb-2 pl-1 text-gray-400`}>
               {section.title}
             </div>
 
             {/* Card */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            <div className={`bg-white rounded-2xl overflow-hidden shadow-sm`}>
 
               {section.items.map((item, i) => (
                 <div
@@ -104,8 +109,6 @@ export function ProviderSettings() {
                   onClick={() => {
                     if (item.label === "Profile Settings") {
                       navigate('/provider/profile');
-                    } else if (item.toggle) {
-                      setDarkMode((d) => !d);
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${i !== section.items.length - 1
@@ -123,7 +126,7 @@ export function ProviderSettings() {
 
                   {/* Text */}
                   <div className="flex-1">
-                    <div className="text-[13px] font-semibold text-[#1A1A2E]">
+                    <div className={`text-[13px] font-semibold text-[#1A1A2E]`}>
                       {item.label}
                     </div>
                     <div className="text-[11px] text-gray-400 mt-0.5">
@@ -134,12 +137,10 @@ export function ProviderSettings() {
                   {/* Toggle */}
                   {item.toggle ? (
                     <div
-                      className={`w-11 h-6 rounded-full transition-all ${darkMode ? "bg-blue-600" : "bg-gray-300"
-                        } relative`}
+                      className={`w-11 h-6 rounded-full transition-all bg-gray-300 relative`}
                     >
                       <div
-                        className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all ${darkMode ? "left-6" : "left-[2px]"
-                          }`}
+                        className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all left-[2px]`}
                       ></div>
                     </div>
                   ) : (
@@ -153,8 +154,8 @@ export function ProviderSettings() {
 
         {/* Logout Button */}
         <button
-          onClick={() => navigate("/login")}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-sm"
+          onClick={handleLogout}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm bg-red-50 text-red-600`}
         >
           <LogOut size={18} />
           Sign Out

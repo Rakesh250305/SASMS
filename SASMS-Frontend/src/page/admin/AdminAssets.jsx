@@ -47,6 +47,7 @@ export default function AdminAssets() {
   const [menuOpen, setMenuOpen] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
 
   const [newAsset, setNewAsset] = useState({
@@ -120,33 +121,33 @@ export default function AdminAssets() {
   });
 
   const validateAsset = () => {
-  if (!newAsset.assetName.trim()) {
-    toast.error("Asset name is required");
-    return false;
-  }
+    if (!newAsset.assetName.trim()) {
+      toast.error("Asset name is required");
+      return false;
+    }
 
-  if (!newAsset.category) {
-    toast.error("Please select a category");
-    return false;
-  }
+    if (!newAsset.category) {
+      toast.error("Please select a category");
+      return false;
+    }
 
-  if (!newAsset.quantity || newAsset.quantity <= 0) {
-    toast.error("Quantity must be greater than 0");
-    return false;
-  }
+    if (!newAsset.quantity || newAsset.quantity <= 0) {
+      toast.error("Quantity must be greater than 0");
+      return false;
+    }
 
-  if (!newAsset.cost || newAsset.cost <= 0) {
-    toast.error("Cost must be valid");
-    return false;
-  }
+    if (!newAsset.cost || newAsset.cost <= 0) {
+      toast.error("Cost must be valid");
+      return false;
+    }
 
-  if (!newAsset.status) {
-    toast.error("Please select status");
-    return false;
-  }
+    if (!newAsset.status) {
+      toast.error("Please select status");
+      return false;
+    }
 
-  return true;
-};
+    return true;
+  };
 
   const handleCreateAsset = async () => {
     if (!validateAsset()) return;
@@ -385,7 +386,9 @@ export default function AdminAssets() {
 
               {/* INFO */}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-[#1A1A2E] truncate">
+                <div className="text-sm font-bold text-gray-800 truncate" 
+                    onClick={() => handleView(asset)}
+                >
                   {asset.assetName}
                 </div>
 
@@ -413,13 +416,6 @@ export default function AdminAssets() {
                 <div className="absolute right-10  mt-8 w-32 bg-white shadow-lg rounded-xl border border-gray-300 text-sm z-50">
 
                   <button
-                    onClick={() => handleView(asset)}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                  >
-                    View
-                  </button>
-
-                  <button
                     onClick={() => handleEdit(asset)}
                     className="w-full text-left px-3 py-2 hover:bg-gray-100"
                   >
@@ -427,7 +423,11 @@ export default function AdminAssets() {
                   </button>
 
                   <button
-                    onClick={() => handleDelete(asset._id)}
+                    onClick={() => {
+                      setShowDeleteModal(true)
+                      setSelectedAsset(asset)
+                      setMenuOpen(false)
+                    }}
                     className="w-full text-left px-3 py-2 text-red-500 hover:bg-gray-100"
                   >
                     Delete
@@ -477,8 +477,14 @@ export default function AdminAssets() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl p-6 z-50"
+              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
             >
+
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
+
               <div className="flex justify-between items-center mb-5">
                 <div className="font-bold text-lg">
                   Add New Asset
@@ -597,7 +603,7 @@ export default function AdminAssets() {
         {showEditModal && (
           <>
             <motion.div
-              onClick={() => setShowAddModal(false)}
+              onClick={() => setShowEditModal(false)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -609,8 +615,14 @@ export default function AdminAssets() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl p-6 z-50"
+              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
             >
+
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
+
               <div className="flex justify-between items-center mb-5">
                 <div className="font-bold text-lg">
                   Edit Asset
@@ -654,7 +666,7 @@ export default function AdminAssets() {
                     <select name="category" value={newAsset.category} onChange={handleChange}
                       className="w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
                     >
-                        <option value="">Select category</option>
+                      <option value="">Select category</option>
                       <option value="hvac">HVAC</option>
                       <option value="electrical">Electrical</option>
                       <option value="plumbing">Plumbing</option>
@@ -662,7 +674,6 @@ export default function AdminAssets() {
                       <option value="security">Security</option>
                       <option value="repair">Repair</option>
                       <option value="other">Other</option>
-                    
                     </select>
                   </div>
                 </div>
@@ -724,12 +735,16 @@ export default function AdminAssets() {
         )}
       </AnimatePresence>
 
-      {/* View Asset model */}
+
+      {/* View Asset Modal */}
       <AnimatePresence>
         {showViewModal && selectedAsset && (
           <>
             <motion.div
               onClick={() => setShowViewModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/50 z-40"
             />
 
@@ -737,31 +752,147 @@ export default function AdminAssets() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[55vh] rounded-t-3xl p-6 z-50"
+              transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
             >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
 
-              <div className="flex justify-between mb-5">
-                <h2 className="font-bold text-lg">Asset Details</h2>
-                <button onClick={() => setShowViewModal(false)}>
-                  <X size={18} />
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={getCategoryStyle(selectedAsset.category)}
+                  >
+                    {selectedAsset.category === "hvac" ? <Wind size={18} />
+                      : selectedAsset.category === "electrical" ? <Zap size={18} />
+                        : selectedAsset.category === "plumbing" ? <Droplets size={18} />
+                          : selectedAsset.category === "it support" ? <Laptop size={18} />
+                            : selectedAsset.category === "security" ? <Shield size={18} />
+                              : selectedAsset.category === "repair" ? <Wrench size={18} />
+                                : <Settings size={18} />}
+                  </div>
+                  <div>
+                    <h2 className="font-extrabold text-base text-slate-800 leading-tight">
+                      {selectedAsset.assetName}
+                    </h2>
+                    <span className="text-[11px] font-semibold text-gray-400 capitalize">
+                      {selectedAsset.category}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center"
+                >
+                  <X size={15} className="text-gray-500" />
                 </button>
               </div>
 
-              <div className="space-y-3 text-sm">
+              {/* Status bar */}
+              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  Status
+                </span>
+                <StatusBadge status={selectedAsset.status} />
+              </div>
 
-                <p><b>Name:</b> {selectedAsset.assetName}</p>
-                <p><b>Description:</b> {selectedAsset.assetDescription}</p>
-                <p><b>Category:</b> {selectedAsset.category}</p>
-                <p><b>Quantity:</b> {selectedAsset.quantity}</p>
-                <p><b>Cost:</b> ₹{selectedAsset.cost}</p>
+              {/* Details grid */}
+              <div className="px-5 py-4 grid grid-cols-2 gap-3">
 
-                <div className="flex items-center gap-2">
-                  <b>Status:</b>
-                  <StatusBadge status={selectedAsset.status} />
+                <div className="bg-blue-50 rounded-2xl p-3.5">
+                  <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">
+                    Quantity
+                  </p>
+                  <p className="text-xl font-extrabold text-blue-700">
+                    {selectedAsset.quantity}
+                    <span className="text-sm font-semibold ml-1">pcs</span>
+                  </p>
+                </div>
+
+                <div className="bg-green-50 rounded-2xl p-3.5">
+                  <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">
+                    Cost
+                  </p>
+                  <p className="text-xl font-extrabold text-green-700">
+                    ₹{selectedAsset.cost}
+                  </p>
                 </div>
 
               </div>
 
+              {/* Description */}
+              {selectedAsset.assetDescription && (
+                <div className="px-5 pb-2">
+                  <div className="bg-gray-50 rounded-2xl p-3.5">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                      Description
+                    </p>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {selectedAsset.assetDescription}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+
+      {/* Delete Confirmation Modal */}
+
+        <AnimatePresence>
+        {showDeleteModal &&  selectedAsset &&(
+          <>
+            <motion.div
+              onClick={() => setShowDeleteModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 z-40"
+            />
+
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
+
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="font-bold text-lg text-slate-800 mb-2">Confirm Deletion</h3>
+            <p className="text-slate-600 mb-4">
+              Are you sure you want to delete this asset? This action cannot be undone.
+            </p>
+            <div className="flex justify-between gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 w-1/2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDelete(selectedAsset._id);
+                  setShowDeleteModal(false);
+                }}
+                className="px-4 py-2 w-1/2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
             </motion.div>
           </>
         )}

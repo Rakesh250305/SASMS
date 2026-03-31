@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   ArrowLeft,
   Plus,
   Search,
   Star,
-  MoreVertical,
   X,
   Check,
   UserCog,
@@ -17,245 +16,108 @@ import {
   MapIcon,
   Hash,
   Building,
-  BookAIcon
+  BookAIcon,
+  Edit,
+  MapPin,
+  Shield,
+  Eye,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StatusBadge from "../../component/StatusBadge";
 import InputField from "../../component/InputField";
-import { useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const providers = [
-  {
-    id: "P001",
-    name: "Marcus Williams",
-    role: "Senior Technician",
-    rating: 4.8,
-    services: 142,
-    status: "active",
-    skills: ["HVAC", "Electrical", "Plumbing"],
-    avatar: "MW",
-  },
-  {
-    id: "P002",
-    name: "Emma Rodriguez",
-    role: "IT Specialist",
-    rating: 4.6,
-    services: 98,
-    status: "active",
-    skills: ["IT Support", "Networking", "CCTV"],
-    avatar: "ER",
-  },
-  {
-    id: "P003",
-    name: "David Kim",
-    role: "Maintenance Tech",
-    rating: 4.3,
-    services: 67,
-    status: "inactive",
-    skills: ["Painting", "Carpentry", "AC"],
-    avatar: "DK",
-  },
-];
-
 export default function AdminProviders() {
-
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
+  const token = localStorage.getItem("token");
+
   const [search, setSearch] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
   const [providerList, setProviderList] = useState([]);
-  const [menuOpen, setMenuOpen] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
-const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({});
+  const [skillInput, setSkillInput] = useState("");
 
-  const token = localStorage.getItem("token");
+  const emptyProvider = {
+    name: "", description: "", email: "", phone: "",
+    password: "", city: "", state: "", pincode: "",
+    experience: "", serviceType: [],
+  };
+  const [newProvider, setNewProvider] = useState(emptyProvider);
 
+  /* ── fetch ── */
   useEffect(() => {
-
     const fetchProviders = async () => {
-
       try {
-
-        const res = await axios.get(
-          `${apiUrl}/admin/provider`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
-
-        setProviderList(res.data.data);
-        console.log(res.data.data);
-
-      } catch (error) {
-
+        const res = await axios.get(`${apiUrl}/admin/provider`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProviderList(res.data.data || []);
+      } catch {
         toast.error("Failed to fetch providers");
-
       }
-
     };
-
     fetchProviders();
+  }, [apiUrl, token]);
 
-  }, []);
-
-const validateProvider = () => {
-  let newErrors = {};
-
-  if (!newProvider.name.trim()) {
-    newErrors.name = "Name is required";
-  }
-
-  if (!newProvider.email.trim()) {
-    newErrors.email = "Email is required";
-  } else if (!/^\S+@\S+\.\S+$/.test(newProvider.email)) {
-    newErrors.email = "Invalid email format";
-  }
-
-  if (!newProvider.phone.trim()) {
-    newErrors.phone = "Phone is required";
-  } else if (!/^[0-9]{10}$/.test(newProvider.phone)) {
-    newErrors.phone = "Phone must be 10 digits";
-  }
-
-  if (!newProvider.password.trim()) {
-    newErrors.password = "Password is required";
-  } else if (newProvider.password.length < 6) {
-    newErrors.password = "Min 6 characters required";
-  }
-
-  if (!newProvider.city.trim()) {
-    newErrors.city = "City is required";
-  }
-
-  if (!newProvider.state.trim()) {
-    newErrors.state = "State is required";
-  }
-
-  if (!newProvider.pincode.trim()) {
-    newErrors.pincode = "Pincode is required";
-  } else if (!/^[0-9]{6}$/.test(newProvider.pincode)) {
-    newErrors.pincode = "Invalid pincode";
-  }
-
-  if (!newProvider.experience.trim()) {
-    newErrors.experience = "Experience is required";
-  }
-
-  if (!newProvider.serviceType.trim()) {
-    newErrors.serviceType = "At least one service required";
-  }
-
-  setErrors(newErrors);
-
-  return Object.keys(newErrors).length === 0;
-};
-
-
-  const [newProvider, setNewProvider] = useState({
-    name: "",
-    description: "",
-    email: "",
-    phone: "",
-    password: "",
-    tenantId: "",
-    city: "",
-    state: "",
-    pincode: "",
-    experience: "",
-    serviceType: ""
-  });
+  /* ── validation ── */
+  const validateProvider = (isEdit = false) => {
+    const e = {};
+    if (!newProvider.name.trim()) e.name = "Name is required";
+    if (!newProvider.email.trim()) e.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(newProvider.email)) e.email = "Invalid email";
+    if (!newProvider.phone.trim()) e.phone = "Phone is required";
+    else if (!/^[0-9]{10}$/.test(newProvider.phone)) e.phone = "Must be 10 digits";
+    if (!isEdit && !newProvider.password.trim()) e.password = "Password is required";
+    else if (!isEdit && newProvider.password.length < 6) e.password = "Min 6 characters";
+    if (!newProvider.city.trim()) e.city = "City is required";
+    if (!newProvider.state.trim()) e.state = "State is required";
+    if (!newProvider.pincode.trim()) e.pincode = "Pincode is required";
+    else if (!/^[0-9]{6}$/.test(newProvider.pincode)) e.pincode = "Invalid pincode";
+    if (!newProvider.experience.trim()) e.experience = "Experience is required";
+    if (!Array.isArray(newProvider.serviceType) || newProvider.serviceType.length === 0) {
+      e.serviceType = "At least one skill is required";
+    }
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const handleChange = (e) => {
-
-    const { name, value } = e.target;
-
-    setNewProvider({
-      ...newProvider,
-      [name]: value
-    });
-
+    setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    setNewProvider((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-
+  /* ── add ── */
   const handleAddProvider = async () => {
-    if (!validateProvider()) {
-    toast.error("Please fix validation errors");
-    return;
-  }
-
+    if (!validateProvider()) { toast.warning("Please fix the errors"); return; }
     try {
-
       const res = await axios.post(
         `${apiUrl}/admin/provider/create`,
-        {
-          ...newProvider,
-          serviceType: newProvider.serviceType.split(",")
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      setProviderList((prev) => [...prev, res.data.data]);
-
-      toast.success("Provider created");
-
-      setShowAddModal(false);
-
-      setNewProvider({
-        name: "",
-        description: "",
-        email: "",
-        phone: "",
-        password: "",
-        tenantId: "",
-        city: "",
-        state: "",
-        pincode: "",
-        experience: "",
-        serviceType: ""
-      });
-
-    } catch (error) {
-
-      toast.error(error.response?.data?.message || "Provider creation failed");
-
-    }
-
-  };
-
-  const filtered = providerList.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Menu Open
-  const handleView = (provider) => {
-    setSelectedProvider(provider);
-    setShowViewModal(true);
-    setMenuOpen(null);
-  };
-
-  const handleEdit = (provider) => {
-    setSelectedProvider(provider);
-    setNewProvider(provider);
-    setShowEditModal(true);
-    setMenuOpen(null);
-  };
-
-  const handleUpdateProvider = async () => {
-    try {
-
-      const res = await axios.put(
-        `${apiUrl}/admin/Provider/${selectedProvider._id}`,
         newProvider,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProviderList((prev) => [...prev, res.data.data || res.data.provider]);
+      toast.success("Provider created");
+      setShowAddModal(false);
+      setNewProvider(emptyProvider);
+      setSkillInput("");
+      setErrors({});
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Provider creation failed");
+    }
+  };
+
+  const handleToggleStatus = async (provider) => {
+    try {
+      const newStatus = provider.status === "active" ? "inactive" : "active";
+
+      const res = await axios.patch(
+        `${apiUrl}/admin/provider/${provider._id}/status`,
+        { status: newStatus },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -263,555 +125,481 @@ const validateProvider = () => {
         }
       );
 
-      const updatedProviderList = res.data.data;
-
       setProviderList((prev) =>
-        prev.map((provider) =>
-          provider._id === selectedProvider._id ? updatedProviderList : provider
+        prev.map((p) =>
+          p._id === provider._id ? { ...p, status: res.data.data?.status || newStatus } : p
         )
       );
 
-
-      toast.success("Provider updated");
-
-      setProviderList((prev) =>
-        prev.map((a) =>
-          a._id === selectedProvider._id ? res.data.data : a
-        )
+      setSelectedProvider((prev) =>
+        prev && prev._id === provider._id
+          ? { ...prev, status: res.data.data?.status || newStatus }
+          : prev
       );
 
-      // reset form
-      setNewProvider({
-        name: "",
-        description: "",
-        email: "",
-        phone: "",
-        password: "",
-        tenantId: "",
-        city: "",
-        state: "",
-        pincode: "",
-        experience: "",
-        serviceType: ""
-      });
-
-
-      setShowEditModal(false);
-
-    } catch (error) {
-      toast.error("Update failed");
+      toast.success(`Provider ${newStatus === "active" ? "activated" : "deactivated"}`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Status update failed");
     }
   };
 
+  const addSkill = () => {
+    const value = skillInput.trim();
+    if (!value) return;
 
+    setNewProvider((prev) => {
+      const exists = prev.serviceType.some(
+        (skill) => skill.toLowerCase() === value.toLowerCase()
+      );
+      if (exists) return prev;
+
+      return { ...prev, serviceType: [...prev.serviceType, value] };
+    });
+
+    setErrors((prev) => ({ ...prev, serviceType: "" }));
+    setSkillInput("");
+  };
+
+  const removeSkill = (index) => {
+    setNewProvider((prev) => ({
+      ...prev,
+      serviceType: prev.serviceType.filter((_, i) => i !== index),
+    }));
+  };
+
+  /* ── update ── */
+  const handleUpdateProvider = async () => {
+    if (!validateProvider(true)) { toast.warning("Please fix the errors"); return; }
+    try {
+      // BUG FIX: was "/admin/Provider/" (capital P) — now lowercase
+      const res = await axios.put(
+        `${apiUrl}/admin/provider/${selectedProvider._id}`,
+        newProvider,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // BUG FIX: was updating twice — removed duplicate setProviderList call
+      setProviderList((prev) =>
+        prev.map((p) => p._id === selectedProvider._id ? res.data.data : p)
+      );
+      setSelectedProvider((prev) =>
+        prev && prev._id === selectedProvider._id ? res.data.data : prev
+      );
+      toast.success("Provider updated");
+      setShowEditModal(false);
+      setNewProvider(emptyProvider);
+      setSkillInput("");
+      setErrors({});
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Update failed");
+    }
+  };
+
+  /* ── helpers ── */
+  const handleView = (p) => { setSelectedProvider(p); setShowViewModal(true); };
+  const handleEdit = (p) => {
+    setSelectedProvider(p);
+    setNewProvider({
+      ...p,
+      serviceType: Array.isArray(p.serviceType) ? p.serviceType : [],
+    });
+    setSkillInput("");
+    setErrors({});
+    setShowEditModal(true);
+  };
+
+  const filtered = providerList.filter((p) =>
+    p.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const initials = (name) =>
+    name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "??";
+
+  /* ── shared form fields ── */
+  const providerForm = (
+    <>
+      <InputField label="Name" icon={<User size={16} />} name="name" placeholder="Enter provider name" value={newProvider.name} onChange={handleChange} error={errors.name} />
+      <InputField label="Description" icon={<Text size={16} />} name="description" placeholder="Senior Electrician" value={newProvider.description} onChange={handleChange} />
+      <InputField label="Email" icon={<Mail size={16} />} name="email" type="email" placeholder="provider@email.com" value={newProvider.email} onChange={handleChange} error={errors.email} />
+      <InputField label="Phone" icon={<Phone size={16} />} name="phone" type="tel" placeholder="10-digit number" value={newProvider.phone} onChange={handleChange} error={errors.phone} />
+      <InputField label="Password" icon={<Lock size={16} />} name="password" type="password" placeholder="Min 6 characters" value={newProvider.password} onChange={handleChange} error={errors.password} />
+      <InputField label="City" icon={<Building size={16} />} name="city" placeholder="Bhopal" value={newProvider.city} onChange={handleChange} error={errors.city} />
+      <InputField label="State" icon={<MapIcon size={16} />} name="state" placeholder="Madhya Pradesh" value={newProvider.state} onChange={handleChange} error={errors.state} />
+      <InputField label="Pincode" icon={<Hash size={16} />} name="pincode" placeholder="485221" value={newProvider.pincode} onChange={handleChange} error={errors.pincode} />
+      <InputField label="Experience (yrs)" icon={<Star size={16} />} name="experience" placeholder="e.g. 5" value={newProvider.experience} onChange={handleChange} error={errors.experience} />
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-gray-700 mb-2">
+          Skills
+        </label>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <BookAIcon size={16} />
+            </div>
+            <input
+              value={skillInput}
+              onChange={(e) => setSkillInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addSkill();
+                }
+              }}
+              placeholder="Type a skill and press Enter"
+              className={`w-full pl-10 pr-3 py-3 text-sm border rounded-xl bg-gray-50 outline-none focus:border-blue-500 ${
+                errors.serviceType ? "border-red-400" : "border-gray-200"
+              }`}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={addSkill}
+            className="px-4 py-3 bg-blue-500 text-white rounded-xl text-sm font-semibold"
+          >
+            Add
+          </button>
+        </div>
+        {errors.serviceType && (
+          <p className="text-xs text-red-500 mt-1">{errors.serviceType}</p>
+        )}
+        <div className="flex flex-wrap gap-2 mt-3">
+          {newProvider.serviceType.map((skill, index) => (
+            <div
+              key={`${skill}-${index}`}
+              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs flex items-center gap-1"
+            >
+              {skill}
+              <button type="button" onClick={() => removeSkill(index)} className="flex items-center">
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
 
   return (
-
     <div className="flex flex-col flex-1 bg-gray-100 relative h-screen">
 
-      {/* HEADER */}
-      <div className="bg-gradient-to-r from-[#1565C0] to-[#1976D2] p-5">
+      {/* ── Header ── */}
+      <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-4 pb-5 relative overflow-hidden">
+        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
 
         <div className="flex items-center gap-3 mb-4">
-
-          <button
-            onClick={() => navigate("/admin")}
-            className="bg-white/20 p-2 rounded-lg text-white"
-          >
+          <button onClick={() => navigate(-1)} className="bg-white/20 p-2 rounded-xl text-white">
             <ArrowLeft size={18} />
           </button>
-
-          <h1 className="flex-1 text-white font-bold text-lg">
-            Service Providers
-          </h1>
-
+          <h1 className="flex-1 text-white font-extrabold text-lg">Service Providers</h1>
+          <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+            {providerList.length} total
+          </span>
         </div>
 
-        <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl">
-
-          <Search size={16} className="text-white/70" />
-
+        <div className="flex items-center gap-2 bg-white/20 border border-white/25 px-4 py-2.5 rounded-xl">
+          <Search size={15} className="text-white/70 flex-shrink-0" />
           <input
-            className="bg-transparent outline-none text-white placeholder-white/70 w-full text-sm"
+            className="bg-transparent outline-none text-white placeholder-white/60 w-full text-sm"
             placeholder="Search providers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-
         </div>
-
       </div>
 
-      {/* PROVIDER LIST */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {filtered.map((p, i) => (
-          <motion.div
-            key={p._id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="bg-white rounded-2xl p-4 mb-3 shadow"
-          >
+      {/* ── List ── */}
+      <div className="flex-1 overflow-y-auto p-4 pb-24">
+        {filtered.length === 0 ? (
+          <div className="text-center py-20 text-gray-400">
+            <UserCog size={48} className="mx-auto mb-3 opacity-30" />
+            <p className="font-semibold text-sm">No providers found</p>
+          </div>
+        ) : (
+          filtered.map((p, i) => (
+            <motion.div
+              key={p._id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100"
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  onClick={() => handleView(p)}
+                  className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center font-extrabold text-blue-700 text-sm flex-shrink-0 cursor-pointer"
+                >
+                  {initials(p.name)}
+                </div>
 
-            <div className="flex items-start gap-3">
+                <div className="flex-1 min-w-0" onClick={() => handleView(p)}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-800 text-sm">{p.name}</span>
+                    <StatusBadge status={p.status} small />
+                  </div>
+                  <p className="text-xs text-gray-400 truncate mt-0.5">{p.description || "—"}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Star size={11} className="text-yellow-400 fill-yellow-400" />
+                    <span className="text-xs font-semibold text-gray-600">{p.experience} yrs exp</span>
+                  </div>
+                </div>
 
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center font-bold text-blue-700">
-                {p.name.split(" ").map(word => word[0]).join("").toUpperCase() || "N/A"}
+                <button onClick={() => handleEdit(p)} className="p-2 bg-blue-50 rounded-xl text-blue-600 flex-shrink-0">
+                  <Edit size={15} />
+                </button>
               </div>
 
-              <div className="flex-1">
-
-                <div className="flex items-center gap-2">
-
-                  <span className="font-semibold text-gray-800">
-                    {p.name || "N/A"}
-                  </span>
-
-                  <StatusBadge status={p.status} small />
-
-                </div>
-
-                <div className="text-xs text-gray-500">
-                  {p.description || "N/A"}
-                </div>
-
-                <div className="flex items-center gap-2 mt-1">
-
-                  <Star size={12} className="text-yellow-400 fill-yellow-400" />
-
-                  <span className="text-xs font-semibold">
-                    {p.experience || "N/A"} Years
-                  </span>
-
-                </div>
-
-              </div>
-
-              <button
-                className="text-gray-400 p-1 relative"
-                onClick={() =>
-                  setMenuOpen(menuOpen === p._id ? null : p._id)
-                }
-              >
-                <MoreVertical size={18} />
-              </button>
-
-              {/* MenuOpen */}
-              {menuOpen === p._id && (
-                <div className="absolute right-10  mt-8 w-32 bg-white shadow-lg rounded-xl border border-gray-300 text-sm z-50">
-
-                  <button
-                    onClick={() => handleView(p)}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                  >
-                    View
-                  </button>
-
-                  <button
-                    onClick={() => handleEdit(p)}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                  >
-                    Edit
-                  </button>
-
+              {p.serviceType?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {p.serviceType.map((s) => (
+                    <span key={s} className="px-2.5 py-0.5 text-[10px] font-semibold bg-blue-50 text-blue-600 rounded-full">
+                      {s}
+                    </span>
+                  ))}
                 </div>
               )}
 
-            </div>
-
-            {/* SKILLS */}
-
-            <div className="flex flex-wrap gap-3 mt-3">
-
-              {p.serviceType.map((s) => (
-                <span
-                  key={s}
-                  className="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded-full"
-                >
-                  {s}
-                </span>
-              ))}
-
-            </div>
-
-          </motion.div>
-
-        ))}
-
+              <button
+                    onClick={() => handleToggleStatus(p)}
+                    className={`text-[10px] mt-1 px-2 py-2 w-full rounded-full font-semibold
+    ${p.status === "active"
+                        ? "bg-red-100 text-red-500"
+                        : "bg-green-100 text-green-600"
+                      }`}
+                  >
+                    {p.status === "active" ? "Deactivate" : "Activate"}
+                  </button>
+            </motion.div>
+          ))
+        )}
       </div>
 
-      {/* FLOAT BUTTON */}
+      {/* ── FAB ── */}
       <button
-        onClick={() => {
-          setShowAddModal(true)
-          setNewProvider({
-            name: "",
-            description: "",
-            email: "",
-            phone: "",
-            password: "",
-            tenantId: "",
-            city: "",
-            state: "",
-            pincode: "",
-            experience: "",
-            serviceType: ""
-          })
-        }}
+        onClick={() => { setNewProvider(emptyProvider); setErrors({}); setSkillInput(""); setShowAddModal(true); }}
         className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white flex items-center justify-center shadow-lg"
       >
         <Plus size={24} />
       </button>
 
-      {/* ADD PROVIDER MODAL */}
+      {/* ── Add Modal ── */}
       <AnimatePresence>
-        {showAddModal && (
-          <>
-            <motion.div
-              className="absolute inset-0 bg-black/50 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAddModal(false)}
-            />
+      {showAddModal && (
+        <>
+          <motion.div
+            key="add-backdrop"
+            onClick={() => setShowAddModal(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 z-40"
+          />
 
-            <motion.div
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 h-[80vh] overflow-y-auto"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-            >
+          <motion.div
+            key="add-modal"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25 }}
+            className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+          >
 
-              <div className="flex items-center justify-between mb-4">
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
 
-                <div className="flex items-center gap-2">
-
-                  <div className="bg-blue-50 p-2 rounded-lg">
-                    <UserCog size={18} className="text-blue-600" />
-                  </div>
-
-                  <span className="font-bold text-gray-800">
-                    Add Provider
-                  </span>
-
-                </div>
-
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="p-2 bg-gray-100 rounded-lg"
-                >
-                  <X size={16} />
-                </button>
-
+            <div className="flex items-center justify-between pb-3">
+              <div className="flex items-center gap-2">
+                <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
+                <span className="font-bold text-gray-800">Add Provider</span>
               </div>
-
-              <InputField
-                label="Name"
-                icon={<User size={16} />}
-                name="name"
-                placeholder="Enter Provider Name"
-                value={newProvider.name}
-                onChange={handleChange}
-              />
-
-              <InputField
-                label="Description"
-                icon={<Text size={16} />}
-                name="description"
-                placeholder="Senior Electrician"
-                value={newProvider.description}
-                onChange={handleChange}
-              />
-
-              <InputField
-              type="email"
-                label="Email"
-                icon={<Mail size={16} />}
-                name="email"
-                placeholder="Provider@gmail.com"
-                value={newProvider.email}
-                onChange={handleChange}
-              />
-
-              <InputField
-              type="number"
-                label="Phone"
-                icon={<Phone size={16} />}
-                name="phone"
-                placeholder="+91 1234567890"
-                value={newProvider.phone}
-                onChange={handleChange}
-              />
-
-              <InputField
-                label="Password"
-                icon={<Lock size={16} />}
-                name="password"
-                type="password"
-                placeholder="Password"
-                value={newProvider.password}
-                onChange={handleChange}
-              />
-
-              <InputField
-                label="City"
-                icon={<Building size={16} />}
-                name="city"
-                value={newProvider.city}
-                placeholder="Bhopal, Satna"
-                onChange={handleChange}
-              />
-
-              <InputField
-                label="State"
-                icon={<MapIcon size={16} />}
-                name="state"
-                placeholder="Madhya Pradesh, Maharastra"
-                value={newProvider.state}
-                onChange={handleChange}
-              />
-
-              <InputField
-                label="Pincode"
-                icon={<Hash size={16} />}
-                name="pincode"
-                placeholder="485221"
-                value={newProvider.pincode}
-                onChange={handleChange}
-              />
-
-              <InputField
-                label="Experience"
-                icon={<Hash size={16} />}
-                name="experience"
-                placeholder="5+ years"
-                value={newProvider.experience}
-                onChange={handleChange}
-              />
-
-              <InputField
-                label="Service Types (comma separated)"
-                icon={<BookAIcon size={16} />}
-                name="serviceType"
-                placeholder="Electrician, Plumber, Carpenter"
-                value={newProvider.serviceType}
-                onChange={handleChange}
-              />
-
-              <button
-                onClick={handleAddProvider}
-                className="w-full mt-6 py-3 bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2"
-              >
-                <Check size={18} />
-                Add Provider
+              <button onClick={() => setShowAddModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
+                <X size={15} />
               </button>
+            </div>
+            <div className="flex flex-col h-full flex-1 overflow-y-auto pb-6">
+              {providerForm}
+              <button onClick={handleAddProvider} className="w-full mt-4 py-3.5 bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white rounded-xl font-bold flex items-center justify-center gap-2">
+                <Check size={17} /> Add Provider
+              </button>
+            </div>
+          </motion.div>
+        </>
 
-            </motion.div>
-
-          </>
-
-        )}
-
+      )}
       </AnimatePresence>
 
-
-      {/* EDIT PROVIDER MODAL */}
+      {/* ── Edit Modal ── */}
       <AnimatePresence>
+      {showEditModal && (
+        <>
+          <motion.div
+            key="edit-backdrop"
+            onClick={() => setShowEditModal(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 z-40"
+          />
 
-        {showEditModal && (
-          <>
-            <motion.div
-              className="absolute inset-0 bg-black/50 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAddModal(false)}
-            />
+          <motion.div
+            key="edit-modal"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25 }}
+            className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+          >
 
-            <motion.div
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 h-[80vh] overflow-y-auto"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-            >
-
-              <div className="flex items-center justify-between mb-4">
-
-                <div className="flex items-center gap-2">
-
-                  <div className="bg-blue-50 p-2 rounded-lg">
-                    <UserCog size={18} className="text-blue-600" />
-                  </div>
-
-                  <span className="font-bold text-gray-800">
-                    Edit Provider
-                  </span>
-
-                </div>
-
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="p-2 bg-gray-100 rounded-lg"
-                >
-                  <X size={16} />
-                </button>
-
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between pb-3 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
+                <span className="font-bold text-gray-800">Edit Provider</span>
               </div>
-
-              <div className="flex flex-col h-full overfloe-y-auto">
-                <InputField
-                  label="Name"
-                  icon={<User size={16} />}
-                  name="name"
-                  placeholder="Enter Provider Name"
-                  value={newProvider.name}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                  label="Description"
-                  icon={<Text size={16} />}
-                  name="description"
-                  placeholder="Senior Electrician"
-                  value={newProvider.description}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                type="email"
-                  label="Email"
-                  icon={<Mail size={16} />}
-                  name="email"
-                  placeholder="Provider@gmail.com"
-                  value={newProvider.email}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                type="number"
-                  label="Phone"
-                  icon={<Phone size={16} />}
-                  name="phone"
-                  placeholder="+91 1234567890"
-                  value={newProvider.phone}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                  label="Password"
-                  icon={<Lock size={16} />}
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  value={newProvider.password}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                  label="City"
-                  icon={<Building size={16} />}
-                  name="city"
-                  value={newProvider.city}
-                  placeholder="Bhopal, Satna"
-                  onChange={handleChange}
-                />
-
-                <InputField
-                  label="State"
-                  icon={<MapIcon size={16} />}
-                  name="state"
-                  placeholder="Madhya Pradesh, Maharastra"
-                  value={newProvider.state}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                  label="Pincode"
-                  icon={<Hash size={16} />}
-                  name="pincode"
-                  placeholder="485221"
-                  value={newProvider.pincode}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                  label="Experience"
-                  icon={<Hash size={16} />}
-                  name="experience"
-                  placeholder="5+ years"
-                  value={newProvider.experience}
-                  onChange={handleChange}
-                />
-
-                <InputField
-                  label="Service Types (comma separated)"
-                  icon={<BookAIcon size={16} />}
-                  name="serviceType"
-                  placeholder="Electrician, Plumber, Carpenter"
-                  value={newProvider.serviceType}
-                  onChange={handleChange}
-                />
-
-                <button
-                  onClick={handleUpdateProvider}
-                  className="w-full my-6 py-3 bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2"
-                >
-                  <Check size={18} />
-                  Update
-                </button>
-              </div>
-
-            </motion.div>
-
-          </>
-
-        )}
-
+              <button onClick={() => setShowEditModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
+                <X size={15} />
+              </button>
+            </div>
+            <div className="flex-1 h-full overflow-y-auto pb-6">
+              {providerForm}
+              <button onClick={handleUpdateProvider} className="w-full mt-4 py-3.5 bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white rounded-xl font-bold flex items-center justify-center gap-2">
+                <Check size={17} /> Update Provider
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
       </AnimatePresence>
 
-      {/* View Provider model */}
+      {/* ── View Modal ── */}
       <AnimatePresence>
         {showViewModal && selectedProvider && (
           <>
             <motion.div
               onClick={() => setShowViewModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/50 z-40"
             />
-
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[55vh] rounded-t-3xl p-6 z-50"
+              transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 overflow-hidden"
             >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
 
-              <div className="flex justify-between mb-5">
-                <h2 className="font-bold text-lg">Provider Details</h2>
-                <button onClick={() => setShowViewModal(false)}>
-                  <X size={18} />
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-2 pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center font-extrabold text-blue-700 flex-shrink-0">
+                    {initials(selectedProvider.name)}
+                  </div>
+                  <div>
+                    <h2 className="font-extrabold text-base text-slate-800 leading-tight">
+                      {selectedProvider.name}
+                    </h2>
+                    <p className="text-[11px] text-gray-400 mt-0.5">{selectedProvider.description || "—"}</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowViewModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <X size={15} className="text-gray-500" />
                 </button>
               </div>
 
-              <div className="space-y-3 text-sm">
-
-                <p><b>Name:</b> {selectedProvider.name}</p>
-                <p><b>Description:</b> {selectedProvider.description}</p>
-                <p><b>Email:</b> {selectedProvider.email}</p>
-                <p><b>Phone:</b> {selectedProvider.phone}</p>
-                <p><b>Address:</b> {selectedProvider.city}, {selectedProvider.state}, {selectedProvider.pincode}</p>
-                <p><b>Experience:</b> {selectedProvider.experience} years</p>
-                <p><b>Registered On:</b> {new Date(selectedProvider.createdAt).toLocaleDateString()}</p>
-                <p><b>Password:</b> {selectedProvider.password}</p>
-                <p><b>Service Type:</b> {selectedProvider.serviceType?.join(", ")}</p>
-                <p><b>Tenant ID:</b> {selectedProvider.tenantId}</p>
-
-                <div className="flex items-center gap-2">
-                  <b>Status:</b>
-                  <StatusBadge status={selectedProvider.status} />
-                </div>
-
+              {/* Status bar */}
+              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
+                <StatusBadge status={selectedProvider.status} />
               </div>
 
+              {/* Stats row */}
+              <div className="px-5 py-4 grid grid-cols-2 gap-3">
+                <div className="bg-blue-50 rounded-2xl p-3.5">
+                  <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Experience</p>
+                  <p className="text-xl font-extrabold text-blue-700">
+                    {selectedProvider.experience}
+                    <span className="text-sm font-semibold ml-1">yrs</span>
+                  </p>
+                </div>
+                <div className="bg-purple-50 rounded-2xl p-3.5">
+                  <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Joined</p>
+                  <p className="text-sm font-extrabold text-purple-700">
+                    {new Date(selectedProvider.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Current Password */}
+               <div className="bg-gray-50 rounded-2xl mx-5 px-4 py-2 my-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Password</p>
+                   <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Eye size={13} className="text-blue-500" />
+                    </div>
+                    <span className="text-sm text-slate-700 font-medium">{selectedProvider.password}</span>
+                  </div>
+                </div>
+
+              {/* Info rows */}
+              <div className="px-5 pb-2 space-y-2">
+
+                <div className="bg-gray-50 rounded-2xl p-3.5 space-y-2.5">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contact</p>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Mail size={13} className="text-blue-500" />
+                    </div>
+                    <span className="text-sm text-slate-700 font-medium">{selectedProvider.email}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                      <Phone size={13} className="text-green-600" />
+                    </div>
+                    <span className="text-sm text-slate-700 font-medium">{selectedProvider.phone || "—"}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                      <MapPin size={13} className="text-orange-500" />
+                    </div>
+                    <span className="text-sm text-slate-700 font-medium">
+                      {[selectedProvider.city, selectedProvider.state, selectedProvider.pincode].filter(Boolean).join(", ")}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                      <Shield size={13} className="text-purple-500" />
+                    </div>
+                    <span className="text-sm text-slate-500 font-mono">{selectedProvider.tenantId || "—"}</span>
+                  </div>
+                </div>
+
+                {/* Service types */}
+                {selectedProvider.serviceType?.length > 0 && (
+                  <div className="bg-gray-50 rounded-2xl p-3.5">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Service Types</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedProvider.serviceType.map((s) => (
+                        <span key={s} className="px-2.5 py-1 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </>
         )}
@@ -819,5 +607,4 @@ const validateProvider = () => {
 
     </div>
   );
-
 }
