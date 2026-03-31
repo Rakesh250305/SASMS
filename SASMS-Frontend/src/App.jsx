@@ -30,6 +30,7 @@ import ProviderTaskDetail from "./page/provider/ProviderTaskDetail";
 import ProviderNotifications from "./page/provider/ProviderNotifications";
 import { ProviderSettings } from "./page/provider/ProviderSettings";
 import InstallButton from "./component/InstallButton";
+import UserAddress from "./page/user/UserAddress";
 
 function App() {
 
@@ -63,6 +64,7 @@ function App() {
         <Route path="/user/services/:id" element={<UserServiceDetail />} />
         <Route path="/user/settings" element={<UserSettings />} />
         <Route path="/user/profile" element={<UserProfile/>} />
+        <Route path="/user/address" element={<UserAddress/>} />
         <Route path="/user/notifications" element={<UserNotification />} />
 
 

@@ -153,10 +153,38 @@ export const changePassword = async (req, res) => {
   }
 };
 
-
 // update Profile 
 export const updateProfile = async (req, res) => {
-  console.log("Update Profile");
+  try {
+    const { name, phone, bio, gender, address, city, state, pincode } = req.body;
+ 
+    // Build update object — only include fields that were sent
+    const updates = {};
+    if (name    !== undefined) updates.name    = name.trim();
+    if (phone   !== undefined) updates.phone   = phone.trim();
+    if (bio     !== undefined) updates.bio     = bio.trim();
+    if (gender  !== undefined) updates.gender  = gender.toLowerCase();
+    if (address !== undefined) updates.address = address.trim();
+    if (city    !== undefined) updates.city    = city.trim();
+    if (state   !== undefined) updates.state   = state.trim();
+    if (pincode !== undefined) updates.pincode = pincode.trim();
+ 
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select("-password");
+ 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+ 
+    res.status(200).json({ message: "Profile updated successfully", data: user });
+ 
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 }
 
 // Get All Services
