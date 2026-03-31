@@ -28,6 +28,7 @@ import {
 
 /* ─────────────────────────── constants ─────────────── */
 const STATUS_FLOW = ["pending", "assigned", "in_progress", "completed"];
+const PROVIDER_WORKING_CHARGE = 50;
 
 const STATUS_CONFIG = {
   pending:     { label: "Pending",     bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400"   },
@@ -86,21 +87,40 @@ function TimelineRow({ label, value, highlight }) {
   );
 }
 
+const formatCategory = (value) =>
+  value
+    ? value.replace(/([a-z])([A-Z])/g, "$1 $2").toUpperCase()
+    : "UNCATEGORIZED";
+
+const isAssetSelectable = (asset) =>
+  asset &&
+  Number(asset.quantity ?? 0) > 0 &&
+  ["available"].includes(
+    String(asset.status || "").toLowerCase()
+  );
+
 /* ─────────────────────────── Provider Modal ─────────── */
 function ProviderModal({ providers, selected, onConfirm, onClose }) {
   const [query, setQuery] = useState("");
   const [tempSelected, setTempSelected] = useState(selected);
+  const activeProviders = useMemo(
+    () =>
+      providers.filter(
+        (provider) => String(provider.status || "").toLowerCase() === "active"
+      ),
+    [providers]
+  );
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return providers;
+    if (!query.trim()) return activeProviders;
     const q = query.toLowerCase();
-    return providers.filter(
+    return activeProviders.filter(
       (p) =>
         p.name?.toLowerCase().includes(q) ||
         p.email?.toLowerCase().includes(q) ||
         p.phone?.toLowerCase().includes(q)
     );
-  }, [providers, query]);
+  }, [activeProviders, query]);
 
   return (
     <AnimatePresence>
@@ -122,7 +142,7 @@ function ProviderModal({ providers, selected, onConfirm, onClose }) {
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
               <h2 className="text-base font-bold text-slate-800">Select Provider</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{providers.length} providers available</p>
+              <p className="text-xs text-gray-400 mt-0.5">{activeProviders.length} active providers available</p>
             </div>
             <button
               onClick={onClose}
@@ -153,10 +173,10 @@ function ProviderModal({ providers, selected, onConfirm, onClose }) {
 
           {/* Provider list */}
           <div className="overflow-y-auto max-h-72 px-5 py-3 space-y-2">
-            {providers.length === 0 ? (
+            {activeProviders.length === 0 ? (
               <div className="text-center py-10">
                 <UserCheck size={32} className="text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-400">No providers found</p>
+                <p className="text-sm text-gray-400">No active providers found</p>
               </div>
             ) : filtered.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-8">No results for "{query}"</p>
@@ -251,6 +271,9 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
   }, [assets, query]);
 
   const toggle = (id) => {
+    const asset = assets.find((item) => item._id === id);
+    if (!isAssetSelectable(asset)) return;
+
     setTempSelected((prev) =>
       prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
     );
@@ -331,6 +354,7 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
               <div className="flex flex-col gap-2">
                 {filtered.map((a) => {
                   const isSelected = tempSelected.includes(a._id);
+                  const isSelectable = isAssetSelectable(a);
                   const catStyle = getCategoryStyle(a.category);
                   const CatIcon = getCategoryIcon(a.category);
                   return (
@@ -338,7 +362,9 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
                       key={a._id}
                       onClick={() => toggle(a._id)}
                       className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${
-                        isSelected
+                        !isSelectable
+                          ? "border-red-100 bg-red-50/50 opacity-60 cursor-not-allowed"
+                          : isSelected
                           ? "border-[#1976D2] bg-blue-50"
                           : "border-gray-100 hover:bg-gray-50"
                       }`}
@@ -357,8 +383,8 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span className="text-[10px] font-mono text-gray-400">#{a.assetId}</span>
                           {a.category && (
-                            <span className="text-[10px] font-semibold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full capitalize">
-                              {a.category}
+                            <span className="text-[10px] font-semibold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+                              {formatCategory(a.category)}
                             </span>
                           )}
                         </div>
@@ -466,8 +492,10 @@ export default function AdminBookingDetail() {
   }, [id, token]);
 
   const handleAssign = async () => {
-    if (!selectedProvider) {
-      setMsg({ type: "error", text: "Please select a provider first" });
+    const selectedProviderRecord = providers.find((provider) => provider._id === selectedProvider);
+
+    if (!selectedProvider || String(selectedProviderRecord?.status || "").toLowerCase() !== "active") {
+      setMsg({ type: "error", text: "Please select an active provider first" });
       return;
     }
     setAssigning(true);
@@ -475,7 +503,13 @@ export default function AdminBookingDetail() {
     try {
       const res = await axios.put(
         `${apiUrl}/admin/booking/${id}/assign`,
-        { providerId: selectedProvider, assetIds: selectedAssets, adminNote },
+        {
+          providerId: selectedProvider,
+          assetIds: selectedAssets.filter((assetId) =>
+            isAssetSelectable(assets.find((asset) => asset._id === assetId))
+          ),
+          adminNote,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setBooking(res.data.booking);
@@ -487,8 +521,26 @@ export default function AdminBookingDetail() {
   };
 
   // helpers to get objects from IDs
-  const selectedProviderObj = providers.find((p) => p._id === selectedProvider);
+  const activeProviders = providers.filter(
+    (provider) => String(provider.status || "").toLowerCase() === "active"
+  );
+  const selectedProviderObj = activeProviders.find((p) => p._id === selectedProvider);
   const selectedAssetObjs = assets.filter((a) => selectedAssets.includes(a._id));
+  const validSelectedAssetIds = selectedAssets.filter((assetId) =>
+    isAssetSelectable(assets.find((asset) => asset._id === assetId))
+  );
+  const validSelectedAssetObjs = assets.filter((asset) =>
+    validSelectedAssetIds.includes(asset._id)
+  );
+
+  useEffect(() => {
+    if (
+      selectedProvider &&
+      !activeProviders.some((provider) => provider._id === selectedProvider)
+    ) {
+      setSelectedProvider("");
+    }
+  }, [activeProviders, selectedProvider]);
 
   if (loading) return (
     <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center">
@@ -504,8 +556,23 @@ export default function AdminBookingDetail() {
   );
 
   const canAssign = ["pending", "assigned"].includes(booking.status);
+  const isInProgress = booking.status === "in_progress";
   const isCancelled = booking.status === "cancelled";
   const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(booking.status);
+  const selectedAssetsCost = validSelectedAssetObjs.reduce(
+    (sum, asset) => sum + Number(asset.cost || 0),
+    0
+  );
+  const assignedAssetsCost = (booking?.assets || []).reduce(
+    (sum, asset) => sum + Number(asset.cost || 0),
+    0
+  );
+  const serviceCost = Number(booking?.service?.estimatedPrice || 0);
+  const showProviderCharge = canAssign ? Boolean(selectedProviderObj) : Boolean(booking?.provider);
+  const providerCharge = showProviderCharge ? PROVIDER_WORKING_CHARGE : 0;
+  const totalCost = canAssign
+    ? serviceCost + selectedAssetsCost + providerCharge
+    : serviceCost + assignedAssetsCost + providerCharge;
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
@@ -524,7 +591,7 @@ export default function AdminBookingDetail() {
           <div>
             <p className="text-white/60 text-xs font-mono mb-1">{booking.bookingId}</p>
             <h1 className="text-xl font-bold text-white">{booking.service?.serviceName || "Booking Detail"}</h1>
-            <p className="text-white/60 text-xs mt-1">{booking.service?.category}</p>
+            <p className="text-white/60 text-xs mt-1">{formatCategory(booking.service?.category)}</p>
           </div>
           <StatusBadge status={booking.status} />
         </div>
@@ -584,6 +651,15 @@ export default function AdminBookingDetail() {
                 <div className="flex items-center gap-1 mt-0.5"><Phone size={11} className="text-gray-400" /><p className="text-xs text-gray-500">{booking.user.phone}</p></div>
               )}
             </div>
+            {booking.user?.phone && (
+              <a
+                href={`tel:${booking.user.phone}`}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-green-50 text-green-700 text-xs font-bold flex-shrink-0"
+              >
+                <Phone size={12} />
+                Call Customer
+              </a>
+            )}
           </div>
         </Section>
 
@@ -600,7 +676,7 @@ export default function AdminBookingDetail() {
             <div className="flex justify-between w-full">
               <div>
                 <p className="text-sm font-bold text-slate-800">{booking.service?.serviceName}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{booking.service?.category}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{formatCategory(booking.service?.category)}</p>
                 {booking.service?.description && <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{booking.service.description}</p>}
               </div>
               {booking.service?.estimatedPrice && (
@@ -679,8 +755,46 @@ export default function AdminBookingDetail() {
           </Section>
         )}
 
+        <Section title="Cost Summary">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between py-1.5">
+              <span className="text-sm text-gray-500">Service Cost</span>
+              <span className="text-sm font-semibold text-slate-800">₹{serviceCost}</span>
+            </div>
+
+            <div className="flex items-center justify-between py-1.5">
+              <span className="text-sm text-gray-500">
+                Assets Cost
+                {canAssign && validSelectedAssetObjs.length > 0 && (
+                  <span className="ml-1 text-xs text-gray-400">
+                    ({validSelectedAssetObjs.length} selected)
+                  </span>
+                )}
+                {!canAssign && (booking.assets || []).length > 0 && (
+                  <span className="ml-1 text-xs text-gray-400">
+                    ({booking.assets.length} assigned)
+                  </span>
+                )}
+              </span>
+              <span className="text-sm font-semibold text-slate-800">
+                ₹{canAssign ? selectedAssetsCost : assignedAssetsCost}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between py-1.5">
+              <span className="text-sm text-gray-500">Provider Working Charge</span>
+              <span className="text-sm font-semibold text-slate-800">₹{providerCharge}</span>
+            </div>
+
+            <div className="border-t border-gray-100 pt-3 mt-1 flex items-center justify-between">
+              <span className="text-sm font-bold text-slate-800">Total Cost</span>
+              <span className="text-base font-extrabold text-[#1976D2]">₹{totalCost}</span>
+            </div>
+          </div>
+        </Section>
+
         {/* ── ASSIGN PANEL ─────────────────────────── */}
-        {canAssign && (
+        {canAssign && !isInProgress && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               {booking.status === "assigned" ? "Re-assign Task" : "Assign Task"}
@@ -808,7 +922,7 @@ export default function AdminBookingDetail() {
                 <>
                   <UserCheck size={16} />
                   {booking.status === "assigned" ? "Re-assign" : "Assign Provider"}
-                  {selectedAssets.length > 0 && ` + ${selectedAssets.length} asset${selectedAssets.length > 1 ? "s" : ""}`}
+                  {validSelectedAssetIds.length > 0 && ` + ${validSelectedAssetIds.length} asset${validSelectedAssetIds.length > 1 ? "s" : ""}`}
                 </>
               )}
             </button>
@@ -847,7 +961,7 @@ export default function AdminBookingDetail() {
       {/* Provider Modal */}
       {showProviderModal && (
         <ProviderModal
-          providers={providers}
+          providers={activeProviders}
           selected={selectedProvider}
           onConfirm={(id) => setSelectedProvider(id)}
           onClose={() => setShowProviderModal(false)}

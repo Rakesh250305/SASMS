@@ -2,7 +2,7 @@ import express from "express";
 import { authenticate } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
 import {
-  providerLogin,
+  // providerLogin,
   getProviderInfo,
   updateProviderProfile,
   changeProviderPassword,
@@ -19,7 +19,7 @@ import {
 const router = express.Router();
 
 /* ── Auth ── */
-router.post("/login", providerLogin);
+// router.post("/login", providerLogin);
 
 /* ── Profile ── */
 router.get("/", authenticate, authorizeRoles("provider"), getProviderInfo);

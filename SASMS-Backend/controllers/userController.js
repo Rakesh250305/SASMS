@@ -8,7 +8,7 @@ export const userSignup = async (req, res) => {
 
   try {
     const { name, email, phone, password, role, address, city, state, pincode} = req.body;
-    const lowerEmail = email.toLowerCase();
+    const loweremail = email.toLowerCase().trim();
     // Check if user already exists
     const existingUser = await User.findOne({ email: lowerEmail });
 

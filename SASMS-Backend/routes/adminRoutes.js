@@ -4,6 +4,7 @@ import { authorizeRoles } from "../middleware/roleMiddleware.js";
 import {
   adminSignup,
   getInfo,
+  updateInfo,
   getStats,
   getRecentActivities,
   changePassword,
@@ -14,6 +15,7 @@ import {
   createProvider,
   getAdminProviders,
   updateProvider,
+  updateProviderStatus,
   createService,
   getAdminService,
   updateService,
@@ -37,6 +39,7 @@ router.post("/signup", adminSignup);
 
 /* Profile and Dashboard */
 router.get("/", authenticate, authorizeRoles("admin"), getInfo);
+router.put("/profile", authenticate, authorizeRoles("admin"), updateInfo);
 router.get("/stats", authenticate, authorizeRoles("admin"), getStats);
 router.get("/activities", authenticate, authorizeRoles("admin"), getRecentActivities);
 router.put("/change-password", authenticate, authorizeRoles("admin"), changePassword);
@@ -51,6 +54,7 @@ router.delete("/assets/:id", authenticate, authorizeRoles("admin"), deleteAsset,
 router.post("/provider/create", authenticate, authorizeRoles("admin"), createProvider);
 router.get("/provider", authenticate, authorizeRoles("admin"), getAdminProviders);
 router.put("/provider/:id", authenticate, authorizeRoles("admin"), updateProvider);
+router.patch("/provider/:id/status", authenticate, authorizeRoles("admin"), updateProviderStatus);
 
 // Services
 router.post( "/service/create", authenticate, authorizeRoles("admin"), upload.single("serviceImage"), createService);

@@ -15,10 +15,10 @@ import AdminDrawer from "../../component/AdminDrawer";
 import axios from "axios";
 
 const STAT_CONFIG = [
-  { key: "pending",     label: "Pending",     icon: Clock,         color: "text-amber-600",  bg: "bg-amber-50"  },
-  { key: "assigned",    label: "Assigned",    icon: UserCheck,     color: "text-indigo-600", bg: "bg-indigo-50" },
-  { key: "in_progress", label: "In Progress", icon: ClipboardList, color: "text-blue-600",   bg: "bg-blue-50"   },
-  { key: "completed",   label: "Completed",   icon: CheckCircle2,  color: "text-green-600",  bg: "bg-green-50"  },
+  { key: "pending", label: "Pending", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+  { key: "assigned", label: "Assigned", icon: UserCheck, color: "text-indigo-600", bg: "bg-indigo-50" },
+  { key: "in_progress", label: "In Progress", icon: ClipboardList, color: "text-blue-600", bg: "bg-blue-50" },
+  { key: "completed", label: "Completed", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
 ];
 
 export default function AdminDashboard() {
@@ -27,17 +27,50 @@ export default function AdminDashboard() {
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [data, setData] = useState([]);
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState({});
   const [bookingStats, setBookingStats] = useState({});
   const [activities, setActivities] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   const summaryCards = [
-    { label: "Total Assets", value: stats.assets, icon: <Package size={22} />, color: "text-blue-700", bg: "bg-blue-50", trend: "+12", path: "/admin/assets" },
-    { label: "Active Services", value: stats.services, icon: <ClipboardList size={22} />, color: "text-green-700", bg: "bg-green-50", trend: "+5", path: "/admin/service" },
-    { label: "Providers", value: stats.providers, icon: <UserCog size={22} />, color: "text-purple-700", bg: "bg-purple-50", trend: "+3", path: "/admin/providers" },
-    { label: "Service Bookings", value: stats.users, icon: <ServerIcon size={22} />, color: "text-orange-600", bg: "bg-orange-50", trend: "+24", path: "/admin/serviceRequest" },
+    {
+      label: "Total Assets",
+      value: stats.assets?.total ?? 0,
+      trend: `+${stats.assets?.weeklyChange ?? 0}`,
+      icon: <Package size={22} />,
+      color: "text-blue-700",
+      bg: "bg-blue-50",
+      path: "/admin/assets",
+    },
+    {
+      label: "Active Services",
+      value: stats.services?.total ?? 0,
+      trend: `+${stats.services?.weeklyChange ?? 0}`,
+      icon: <ClipboardList size={22} />,
+      color: "text-green-700",
+      bg: "bg-green-50",
+      path: "/admin/service",
+    },
+    {
+      label: "Providers",
+      value: stats.providers?.total ?? 0,
+      trend: `+${stats.providers?.weeklyChange ?? 0}`,
+      icon: <UserCog size={22} />,
+      color: "text-purple-700",
+      bg: "bg-purple-50",
+      path: "/admin/providers",
+    },
+    {
+      label: "Service Bookings",
+      value: stats.users?.total ?? 0,
+      trend: `+${stats.users?.weeklyChange ?? 0}`,
+      icon: <ServerIcon size={22} />,
+      color: "text-orange-600",
+      bg: "bg-orange-50",
+      path: "/admin/serviceRequest",
+    },
   ];
+
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -61,15 +94,15 @@ export default function AdminDashboard() {
     };
 
     const fetchUnreadCount = async () => {
-  try {
-    const res = await axios.get(`${apiUrl}/admin/notifications`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setUnreadCount(res.data.unreadCount || 0);
-  } catch (error) {
-    console.error(error);
-  }
-};
+      try {
+        const res = await axios.get(`${apiUrl}/admin/notifications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUnreadCount(res.data.unreadCount || 0);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
 
     const fetchBookingStats = async () => {
@@ -129,7 +162,7 @@ export default function AdminDashboard() {
     fetchBookingStats();
     fetchStats();
     fetchAdminData();
-fetchUnreadCount();
+    fetchUnreadCount();
 
   }, [token, navigate])
 
@@ -164,9 +197,9 @@ fetchUnreadCount();
               <Bell size={20} />
             </button>
 
-{unreadCount > 0 && (
-  <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-blue-600" />
-)}
+            {unreadCount > 0 && (
+              <div className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full" />
+            )}
 
           </div>
 
@@ -221,7 +254,7 @@ fetchUnreadCount();
                 {card.value}
               </div>
 
-              <div className="text-[11px] text-gray-500 mt-1 font-medium">
+              <div className={`text-[11px] dark text-gray-500 mt-1 font-medium`}>
                 {card.label}
               </div>
 
@@ -241,7 +274,7 @@ fetchUnreadCount();
 
         </div>
 
-           <div className="text-sm font-bold text-gray-900 mb-3">
+        <div className="text-sm font-bold text-gray-900 mb-3">
           Booking Summary
         </div>
 
@@ -291,14 +324,14 @@ fetchUnreadCount();
         </div>
 
         <div className="flex gap-2 mb-5">
-            <button
-              onClick={() => navigate("/admin/serviceRequest")}
-              className={`flex-1 flex flex-row items-center justify-center gap-1 py-3 rounded-xl border bg-orange-50 text-orange-600`}
-            >
-              <span className="text-[11px] font-bold">
-                Service Requests
-              </span>
-            </button>
+          <button
+            onClick={() => navigate("/admin/serviceRequest")}
+            className={`flex-1 flex flex-row items-center justify-center gap-1 py-3 rounded-xl border bg-orange-50 text-orange-600`}
+          >
+            <span className="text-[11px] font-bold">
+              Service Requests
+            </span>
+          </button>
         </div>
 
         {/* Recent Activity */}
@@ -322,7 +355,7 @@ fetchUnreadCount();
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
 
-          {activities.slice(0,5).map((act, i) => {
+          {activities.slice(0, 5).map((act, i) => {
 
             const ui = getActivityUI(act);
 
@@ -359,9 +392,9 @@ fetchUnreadCount();
 
         </div>
 
-      <div className="text-[8px] text-center font-bold text-gray-400 pt-5">
+        <div className="text-[8px] text-center font-bold text-gray-400 pt-5">
           Smart Assets & Service Management System
-      </div>     
+        </div>
       </div>
 
     </div>

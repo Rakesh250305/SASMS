@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -14,6 +14,7 @@ import {
   Shield,
 } from "lucide-react";
 import logo from '../assets/main-Logo.png'
+import axios from "axios";
 
 const navItems = [
   { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin" },
@@ -26,8 +27,32 @@ const navItems = [
 ];
 
 export default function AdminDrawer({ open, onClose }) {
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const location = useLocation();
+  const [data, setData] = useState([]);
+   const fetchAdminData = async () => {
+      try {
+        const res = await axios.get(
+          `${apiUrl}/admin`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        setData(res.data.data);
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) {
+          navigate("/login");
+        }
+      }
+    }
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
 
   const goTo = (path) => {
     navigate(path);
@@ -51,7 +76,7 @@ export default function AdminDrawer({ open, onClose }) {
         } w-[280px] h-screen bg-white z-[300] transition-all duration-300 ease-in-out flex flex-col shadow-lg`}
       >
         {/* Header */}
-        <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] p-6 pt-8 pb-6 relative">
+        <div className="bg-gradient-to-br h-45 from-[#1565C0] via-[#1976D2] to-[#42A5F5] p-6 pt-8 pb-6 relative">
 
           {/* Close */}
           <button
@@ -66,13 +91,15 @@ export default function AdminDrawer({ open, onClose }) {
             <img  src={logo} alt="" />
           </div>
 
-          <div className="text-white text-base font-bold">Admin Panel</div>
+          <div className="text-white text-sm font-bold">{data.tenantId || "Admin Panel"}</div>
 
-          {/* Role Badge */}
-          <div className="mt-3 inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1">
+          <div className="text-gray-300 text-xs font-semibold">{data.storeName || "Admin Panel"}</div>
+
+
+          <div className="absolute bottom-3 right-3 mt-3 inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1">
             <div className="w-1.5 h-1.5 bg-emerald-300 rounded-full" />
             <span className="text-white text-[11px] font-semibold">
-              Admin
+              Active
             </span>
           </div>
         </div>

@@ -25,7 +25,9 @@ export const adminSignup = async (req, res) => {
       pincode,
     } = req.body;
 
-    const existing = await Admin.findOne({ email });
+    const loweremail = email.toLowerCase().trim();
+
+    const existing = await Admin.findOne({ email:loweremail });
 
     if (existing) {
       return res.status(400).json({
@@ -39,7 +41,7 @@ export const adminSignup = async (req, res) => {
 
     const admin = new Admin({
       name,
-      email,
+      email: loweremail,
       phone,
       role,
       password: hashed,
@@ -90,29 +92,96 @@ export const getInfo = async (req, res) => {
   }
 };
 
+// Update admin profile
+export const updateInfo = async (req, res) => {
+  try {
+    const allowedFields = [
+      "name",
+      "phone",
+      "storeName",
+      "storeAddress",
+      "GSTNo",
+      "businessDescription",
+      "website",
+      "city",
+      "state",
+      "pincode",
+    ];
+
+    const updateData = {};
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
+
+    const account = await Admin.findByIdAndUpdate(
+      req.user.id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: account,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Get Dashboard Stats
 export const getStats = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
     const adminId = req.user.id;
 
-    const totalAssets = await Asset.countDocuments({ createdBy: adminId });
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    const day = startOfWeek.getDay(); // 0=Sun
+    const diffToMonday = day === 0 ? 6 : day - 1;
+    startOfWeek.setDate(startOfWeek.getDate() - diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
 
-    const totalProviders = await Provider.countDocuments({ tenantId });
+    const [
+      totalAssets,
+      totalProviders,
+      totalServices,
+      totalBookings,
+      weeklyAssets,
+      weeklyProviders,
+      weeklyServices,
+      weeklyBookings,
+    ] = await Promise.all([
+      Asset.countDocuments({ createdBy: adminId }),
+      Provider.countDocuments({ tenantId }),
+      Service.countDocuments({ tenantId }),
+      Bookings.countDocuments({ admin: adminId }),
 
-    const totalServices = await Service.countDocuments({ tenantId });
-
-    const totalServiceRequests = await Bookings.countDocuments({
-      admin: adminId,
-    });
+      Asset.countDocuments({ createdBy: adminId, createdAt: { $gte: startOfWeek } }),
+      Provider.countDocuments({ tenantId, createdAt: { $gte: startOfWeek } }),
+      Service.countDocuments({ tenantId, createdAt: { $gte: startOfWeek } }),
+      Bookings.countDocuments({ admin: adminId, createdAt: { $gte: startOfWeek } }),
+    ]);
 
     res.status(200).json({
       success: true,
       data: {
-        assets: totalAssets,
-        providers: totalProviders,
-        services: totalServices,
-        users: totalServiceRequests,
+        assets: { total: totalAssets, weeklyChange: weeklyAssets },
+        providers: { total: totalProviders, weeklyChange: weeklyProviders },
+        services: { total: totalServices, weeklyChange: weeklyServices },
+        users: { total: totalBookings, weeklyChange: weeklyBookings },
       },
     });
   } catch (error) {
@@ -122,6 +191,7 @@ export const getStats = async (req, res) => {
     });
   }
 };
+
 
 // Get Recent Activities
 export const getRecentActivities = async (req, res) => {
@@ -335,14 +405,14 @@ export const createProvider = async (req, res) => {
       });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
+    // const hashed = await bcrypt.hash(password, 10);
 
     const provider = new Provider({
       name,
       description,
       email: lowerEmail,
       phone,
-      password: hashed,
+      password,
       tenantId: req.user?.tenantId,
       city,
       state,
@@ -436,6 +506,45 @@ export const updateProvider = async (req, res) => {
       message:error.message
     });
 
+  }
+};
+
+// Update Provider Status
+export const updateProviderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["active", "inactive"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid provider status",
+      });
+    }
+
+    const updatedProvider = await Provider.findOneAndUpdate(
+      { _id: id, tenantId: req.user.tenantId },
+      { status },
+      { new: true }
+    );
+
+    if (!updatedProvider) {
+      return res.status(404).json({
+        success: false,
+        message: "Service Provider not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedProvider,
+      message: `Provider ${status === "active" ? "activated" : "deactivated"} successfully`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 

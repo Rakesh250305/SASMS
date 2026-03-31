@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const providerSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
 
   description: String,
@@ -11,24 +11,24 @@ const providerSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
 
   phone: String,
 
   password: {
     type: String,
-    required: true
+    required: true,
   },
 
   role: {
     type: String,
-    default: "provider"
+    default: "provider",
   },
 
   tenantId: {
     type: String,
-    required: true
+    required: true,
   },
 
   city: String,
@@ -39,19 +39,20 @@ const providerSchema = new mongoose.Schema({
 
   serviceType: [
     {
-      type: String
-    }
+      type: String,
+    },
   ],
 
   status: {
     type: String,
-    default: "active"
+    enum: ["active", "inactive"],
+    default: "active",
   },
 
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 export default mongoose.model("Provider", providerSchema);

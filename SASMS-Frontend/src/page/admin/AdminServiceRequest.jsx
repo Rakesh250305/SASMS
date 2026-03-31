@@ -39,6 +39,13 @@ const AVATAR_COLORS = [
   { bg: "bg-rose-100",   text: "text-rose-700"   },
 ];
 
+const PAGE_SIZE = 8;
+
+const formatCategory = (value) =>
+  value
+    ? value.replace(/([a-z])([A-Z])/g, "$1 $2").toUpperCase()
+    : "UNCATEGORIZED";
+
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
   return (
@@ -84,6 +91,7 @@ export default function AdminServiceRequest() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   const token = localStorage.getItem("token");
 
@@ -156,6 +164,25 @@ export default function AdminServiceRequest() {
         u.phone?.toLowerCase().includes(q)
     );
   }, [derivedUsers, search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, search, statusFilter]);
+
+  const pagedBookings = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredBookings.slice(start, start + PAGE_SIZE);
+  }, [filteredBookings, page]);
+
+  const pagedUsers = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  }, [filteredUsers, page]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil((activeTab === "bookings" ? filteredBookings.length : filteredUsers.length) / PAGE_SIZE)
+  );
 
   const TABS = [
     { key: "bookings", label: "Bookings", icon: ClipboardList, count: pendingCount },
@@ -320,7 +347,7 @@ export default function AdminServiceRequest() {
               )}
             </div>
           ) : (
-            filteredBookings.map((b, i) => (
+            pagedBookings.map((b, i) => (
               <motion.div
                 key={b._id}
                 initial={{ opacity: 0, y: 8 }}
@@ -347,7 +374,9 @@ export default function AdminServiceRequest() {
                     <p className="text-sm font-bold text-slate-800 truncate">
                       {b.service?.serviceName || "Service"}
                     </p>
-                    <p className="text-xs text-gray-400">{b.service?.category}</p>
+                    <p className="text-[10px] font-bold tracking-wide text-gray-400">
+                      {formatCategory(b.service?.category)}
+                    </p>
                   </div>
                   <StatusBadge status={b.status} />
                 </div>
@@ -430,7 +459,7 @@ export default function AdminServiceRequest() {
               </p>
             </div>
           ) : (
-            filteredUsers.map((user, i) => {
+            pagedUsers.map((user, i) => {
               const clr = AVATAR_COLORS[i % AVATAR_COLORS.length];
               const initials = user.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "?";
               const userBookings = bookings.filter(b => b.user?._id === user._id);
@@ -496,6 +525,34 @@ export default function AdminServiceRequest() {
               );
             })
           )
+        )}
+        {!loading && totalPages > 1 && (
+          <div className="sticky bottom-0 bg-[#F5F7FA] pt-2 pb-1">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-3 py-3 flex items-center justify-between">
+              <button
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page === 1}
+                className="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-50 text-gray-600 disabled:opacity-40"
+              >
+                Prev
+              </button>
+
+              <div className="text-center">
+                <p className="text-xs font-semibold text-slate-700">Page {page} of {totalPages}</p>
+                <p className="text-[10px] text-gray-400">
+                  {activeTab === "bookings" ? filteredBookings.length : filteredUsers.length} total
+                </p>
+              </div>
+
+              <button
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page === totalPages}
+                className="px-3 py-2 rounded-xl text-xs font-semibold bg-blue-50 text-[#1976D2] disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

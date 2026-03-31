@@ -121,7 +121,7 @@ export const getUserBookings = async (req, res) => {
     const bookings = await Booking.find(filter)
       .populate("service", "serviceName category price serviceImage")
       .populate("provider", "name email phone")
-      .populate("assets", "assetName assetId")
+      .populate("assets", "assetName assetId cost")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -140,7 +140,7 @@ export const getUserBookingById = async (req, res) => {
     const booking = await Booking.findOne({ _id: req.params.id, user: req.user.id })
       .populate("service", "serviceName category estimatedPrice serviceImage description")
       .populate("provider", "name email phone")
-      .populate("assets", "assetName assetId category");
+      .populate("assets", "assetName assetId category cost");
 
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
     res.json({ success: true, data: booking }); // returns res.data.data on frontend
@@ -299,7 +299,7 @@ export const getAdminBookingById = async (req, res) => {
       .populate("user", "name email phone")
       .populate("service", "serviceName category estimatedPrice description serviceImage")
       .populate("provider", "name email phone")
-      .populate("assets", "assetName assetId category status");
+      .populate("assets", "assetName assetId category status cost");
 
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
     res.json({ success: true, booking });
@@ -329,7 +329,12 @@ export const assignBooking = async (req, res) => {
     booking.assignedAt = new Date();
     await booking.save();
 
-    await booking.populate(["user", "service", "provider"]);
+    await booking.populate([
+      { path: "user", select: "name email phone" },
+      { path: "service", select: "serviceName category estimatedPrice description serviceImage" },
+      { path: "provider", select: "name email phone" },
+      { path: "assets", select: "assetName assetId category status cost" },
+    ]);
 
     // Notify user
     await createNotification({
@@ -388,7 +393,7 @@ export const getProviderBookings = async (req, res) => {
     const bookings = await Booking.find(filter)
       .populate("user", "name phone")
       .populate("service", "serviceName category description estimatedPrice serviceImage")
-      .populate("assets", "assetName assetId category")
+      .populate("assets", "assetName assetId category cost")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -406,7 +411,7 @@ export const getProviderBookingById = async (req, res) => {
     const booking = await Booking.findOne({ _id: req.params.id, provider: req.user.id })
       .populate("user", "name phone")
       .populate("service", "serviceName category estimatedPrice description serviceImage")
-      .populate("assets", "assetName assetId category");
+      .populate("assets", "assetName assetId category cost");
 
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
     res.json({ success: true, booking });

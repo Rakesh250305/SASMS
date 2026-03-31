@@ -39,7 +39,24 @@ export default function ProviderDashboard() {
   const [tasks, setTasks]       = useState([]);
   const [stats, setStats]       = useState({});
   const [loading, setLoading]   = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
   const token = localStorage.getItem("token");
+
+   const fetchUnreadCount = async () => {
+      try {
+        const res = await axios.get(`${apiUrl}/provider/notifications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUnreadCount(res.data.unreadCount || 0);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    useEffect(()=>{
+      fetchUnreadCount();
+    },[])
 
   useEffect(() => {
     (async () => {
@@ -85,9 +102,14 @@ export default function ProviderDashboard() {
             </div>
           </div>
            <div className="flex items-center gap-2 justify-center">
-              <button onClick={() => navigate("/provider/notifications")} className="relative bg-white/20 p-2.5 rounded-xl">
+              <div className="relative">
+                <button onClick={() => navigate("/provider/notifications")} className="relative bg-white/20 p-2.5 rounded-xl">
             <Bell size={18} className="text-white" />
           </button>
+          {unreadCount > 0 && (
+              <div className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full " />
+            )}
+              </div>
           <button onClick={() => navigate("/provider/profile")} className="relative bg-white/20 p-2.5 text-white font-extrabold text-sm rounded-xl">
             {initials}
           </button>
