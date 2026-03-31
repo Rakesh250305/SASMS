@@ -17,6 +17,18 @@ const userSchema = new mongoose.Schema({
   state: String,
   pincode: String,
 
+  bio: {
+    type: String,
+    default: "",
+  },
+
+  gender: {
+    type: String,
+    enum :["male", "female", "other", ""], 
+    default: "",
+  },
+
+
   createdAt: {
     type: Date,
     default: Date.now,

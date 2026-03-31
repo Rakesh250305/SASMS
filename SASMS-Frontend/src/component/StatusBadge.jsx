@@ -74,7 +74,7 @@ export default function StatusBadge({ status, small }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full font-semibold whitespace-nowrap
+      className={`inline-flex items-center gap-1 rounded-3xl h-[5vh] font-semibold whitespace-nowrap
       ${config.bg} ${config.text}
       ${small ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs"}`}
     >

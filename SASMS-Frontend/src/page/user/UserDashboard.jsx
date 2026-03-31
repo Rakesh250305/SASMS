@@ -156,9 +156,7 @@ export default function UserDashboard() {
     <div className="flex flex-col min-h-screen bg-slate-50 relative">
 
       {/* Header */}
-
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 overflow-hidden relative">
-        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10" />
+      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 relative">
         <div className="absolute bottom-0 left-6 w-20 h-20 rounded-full bg-white/5" />
 
         <div className="flex items-start justify-between mb-4">
@@ -237,7 +235,6 @@ export default function UserDashboard() {
                 searchResults.map((s) => (
                   <div
                     key={s._id}
-                    onClick={() => navigate(`/user/booking?serviceId=${s._id}`)}
                     className="flex items-center gap-3 p-3 border-b last:border-none hover:bg-gray-50 cursor-pointer"
                   >
                     {s.serviceImage && (
@@ -248,7 +245,8 @@ export default function UserDashboard() {
                       />
                     )}
 
-                    <div className="flex-1">
+                    <div className="flex-1"
+                    onClick={() => navigate(`/user/services/${s._id}`)}>
                       <div className="text-sm font-semibold text-gray-800">
                         {s.serviceName}
                       </div>
@@ -257,7 +255,8 @@ export default function UserDashboard() {
                       </div>
                     </div>
 
-                    <span className="text-xs text-emerald-600 font-semibold">
+                    <span className="text-xs text-emerald-600 font-semibold"
+                    onClick={() => navigate(`/user/booking?serviceId=${s._id}`)}>
                       Book →
                     </span>
                   </div>
@@ -364,8 +363,8 @@ export default function UserDashboard() {
               <span className="text-xs font-semibold text-slate-700">
                 {cat.name}
               </span>
-              {/* 
-              <span className="absolute top-1 right-1 w-4 h-4 text-[8px] flex items-center justify-center bg-gray-100 text-gray-500 rounded-full font-bold">
+              
+              {/* <span className="absolute top-1 right-1 w-4 h-4 text-[8px] flex items-center justify-center bg-gray-100 text-gray-500 rounded-full font-bold">
                 {cat.count}
               </span> */}
 

@@ -80,17 +80,17 @@ export function ProviderSettings() {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen pb-18 bg-[#F5F7FA]`}>
+    <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-6 pb-6 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] h-[13vh] px-5 pt-6 pb-6 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
         <h1 className="text-xl font-extrabold text-white">Settings</h1>
         <p className="text-white/50 text-xs mt-0.5">System Settings</p>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto pb-24 px-4 py-4">
 
         {settingsSections.map((section) => (
           <div key={section.title} className="mb-5">

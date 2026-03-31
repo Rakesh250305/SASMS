@@ -121,10 +121,10 @@ export default function ProviderNotifications() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-6 pb-6 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-6 pb-6 h-[30vh] relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
         <div className="flex items-end justify-between">
           <div>
@@ -142,7 +142,7 @@ export default function ProviderNotifications() {
         </div>
       </div>
 
-      <div className="mt-5 px-4 pb-24">
+      <div className="mt-5 px-4 pb-24 overflow-y-auto">
         {loading ? (
           <div className="space-y-3">{[1,2,3,4].map(i => <Skeleton key={i} />)}</div>
         ) : notifs.length === 0 ? (

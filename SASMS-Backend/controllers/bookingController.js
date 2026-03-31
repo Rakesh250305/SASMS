@@ -162,6 +162,13 @@ export const cancelBooking = async (req, res) => {
     booking.status = "cancelled";
     await booking.save();
 
+    await Service.findByIdAndUpdate(booking.service, {
+      availability: "available",
+      provider: null,
+      asset: null,
+      assignTo: null,
+    });
+
     // Notify admin
     await createNotification({
       recipientId: booking.admin,
@@ -311,7 +318,7 @@ export const getAdminBookingById = async (req, res) => {
 // PUT /admin/booking/:id/assign  — assign provider + assets
 export const assignBooking = async (req, res) => {
   try {
-    const { providerId, assetIds, adminNote } = req.body;
+    const { providerId, assetIds, adminNote, scheduledDate } = req.body;
     const booking = await Booking.findOne({ _id: req.params.id, admin: req.user.id });
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
@@ -325,9 +332,17 @@ export const assignBooking = async (req, res) => {
     booking.provider = providerId;
     booking.assets = assetIds || [];
     booking.adminNote = adminNote || "";
+    booking.scheduledDate = scheduledDate || null;
     booking.status = "assigned";
     booking.assignedAt = new Date();
     await booking.save();
+
+    await Service.findByIdAndUpdate(booking.service, {
+      availability: "assigned",
+      provider: providerId,
+      asset: assetIds?.[0] || null,
+      assignTo: booking.user,
+    });
 
     await booking.populate([
       { path: "user", select: "name email phone" },
@@ -424,38 +439,79 @@ export const getProviderBookingById = async (req, res) => {
 export const updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const allowedTransitions = {
-      assigned: ["in_progress"],
-      in_progress: ["completed"],
-    };
 
     const booking = await Booking.findOne({ _id: req.params.id, provider: req.user.id });
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
-    const allowed = allowedTransitions[booking.status];
+    const workflowState = booking.status;
+
+    const allowedTransitions = {
+      assigned: ["accepted", "cancelled"],
+      accepted: ["picked_up", "cancelled"],
+      picked_up: ["in_progress", "cancelled"],
+      in_progress: ["completed"],
+    };
+
+    const allowed = allowedTransitions[workflowState];
     if (!allowed || !allowed.includes(status)) {
-      return res.status(400).json({ success: false, message: `Cannot transition from ${booking.status} to ${status}` });
+      return res.status(400).json({ success: false, message: `Cannot transition from ${workflowState} to ${status}` });
     }
 
-    booking.status = status;
-    if (status === "in_progress") booking.startedAt = new Date();
-    if (status === "completed") booking.completedAt = new Date();
+    if (status === "accepted") {
+      booking.status = "accepted";
+      booking.providerAcceptedAt = booking.providerAcceptedAt || new Date();
+    } else if (status === "picked_up") {
+      booking.status = "picked_up";
+      booking.assetsPickedUpAt = booking.assetsPickedUpAt || new Date();
+    } else if (status === "in_progress") {
+      booking.status = "in_progress";
+      booking.startedAt = new Date();
+    } else if (status === "completed") {
+      booking.status = "completed";
+      booking.completedAt = new Date();
+    } else if (status === "cancelled") {
+      booking.status = "cancelled";
+    }
+
     await booking.save();
 
-    // Notify user
-    const notifType = status === "in_progress" ? "booking_in_progress" : "booking_completed";
-    const notifMsg = status === "in_progress"
-      ? `Your booking #${booking.bookingId} is now in progress`
-      : `Your booking #${booking.bookingId} has been completed`;
+    if (status === "completed" || status === "cancelled") {
+      await Service.findByIdAndUpdate(booking.service, {
+        availability: "available",
+        provider: null,
+        asset: null,
+        assignTo: null,
+      });
+    }
 
-    await createNotification({
-      recipientId: booking.user,
-      recipientModel: "User",
-      title: status === "in_progress" ? "Work In Progress" : "Booking Completed",
-      message: notifMsg,
-      type: notifType,
-      bookingId: booking._id,
-    });
+    if (status === "in_progress" || status === "completed" || status === "cancelled") {
+      const notifType =
+        status === "in_progress"
+          ? "booking_in_progress"
+          : status === "completed"
+          ? "booking_completed"
+          : "booking_cancelled";
+      const notifMsg =
+        status === "in_progress"
+          ? `Your booking #${booking.bookingId} is now in progress`
+          : status === "completed"
+          ? `Your booking #${booking.bookingId} has been completed`
+          : `Your booking #${booking.bookingId} has been cancelled`;
+
+      await createNotification({
+        recipientId: booking.user,
+        recipientModel: "User",
+        title:
+          status === "in_progress"
+            ? "Work In Progress"
+            : status === "completed"
+            ? "Booking Completed"
+            : "Booking Cancelled",
+        message: notifMsg,
+        type: notifType,
+        bookingId: booking._id,
+      });
+    }
 
     res.json({ success: true, message: `Status updated to ${status}`, booking });
   } catch (err) {

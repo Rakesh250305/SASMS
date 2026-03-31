@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 
 /* ─────────────────────────── constants ─────────────── */
-const STATUS_FLOW = ["pending", "assigned", "in_progress", "completed"];
+const STATUS_FLOW = ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"];
 const PROVIDER_WORKING_CHARGE = 50;
 
 const STATUS_CONFIG = {
@@ -36,6 +36,8 @@ const STATUS_CONFIG = {
   in_progress: { label: "In Progress", bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-400"    },
   completed:   { label: "Completed",   bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500"   },
   cancelled:   { label: "Cancelled",   bg: "bg-red-100",     text: "text-red-600",     dot: "bg-red-400"     },
+  accepted:    { label: "Accepted",    bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-400"  },
+  picked_up:   { label: "Assets Picked", bg: "bg-cyan-100",  text: "text-cyan-700",    dot: "bg-cyan-400"    },
 };
 
 const getCategoryStyle = (category) => {
@@ -449,6 +451,7 @@ export default function AdminBookingDetail() {
   const [selectedProvider, setSelectedProvider] = useState("");
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [adminNote, setAdminNote] = useState("");
+  const [expectedDate, setExpectedDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -483,6 +486,9 @@ export default function AdminBookingDetail() {
         if (b?.provider) setSelectedProvider(b.provider._id || b.provider);
         if (b?.assets?.length) setSelectedAssets(b.assets.map((a) => a._id || a));
         if (b?.adminNote) setAdminNote(b.adminNote);
+        if (b?.expectedDate) {
+          setExpectedDate(new Date(b.expectedDate).toISOString().split("T")[0]);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -509,6 +515,7 @@ export default function AdminBookingDetail() {
             isAssetSelectable(assets.find((asset) => asset._id === assetId))
           ),
           adminNote,
+          scheduledDate: expectedDate || null,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -558,7 +565,8 @@ export default function AdminBookingDetail() {
   const canAssign = ["pending", "assigned"].includes(booking.status);
   const isInProgress = booking.status === "in_progress";
   const isCancelled = booking.status === "cancelled";
-  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(booking.status);
+  const workflowStatus = booking.status;
+  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(workflowStatus);
   const selectedAssetsCost = validSelectedAssetObjs.reduce(
     (sum, asset) => sum + Number(asset.cost || 0),
     0
@@ -616,7 +624,11 @@ export default function AdminBookingDetail() {
                      i === currentStep ? <div className="w-2 h-2 rounded-full bg-white" /> : null}
                   </div>
                   <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight ${i <= currentStep ? "text-[#1976D2]" : "text-gray-400"}`}>
-                    {s === "in_progress" ? "In Progress" : s.charAt(0).toUpperCase() + s.slice(1)}
+                    {s === "in_progress"
+                      ? "In Progress"
+                      : s === "picked_up"
+                      ? "Assets Picked"
+                      : s.charAt(0).toUpperCase() + s.slice(1)}
                   </span>
                 </div>
               ))}
@@ -706,6 +718,8 @@ export default function AdminBookingDetail() {
           <TimelineRow label="Booked on" value={new Date(booking.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} />
           {booking.scheduledDate && <TimelineRow label="Scheduled" value={new Date(booking.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.assignedAt && <TimelineRow label="Assigned at" value={new Date(booking.assignedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.providerAcceptedAt && <TimelineRow label="Accepted at" value={new Date(booking.providerAcceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.assetsPickedUpAt && <TimelineRow label="Assets picked up" value={new Date(booking.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.startedAt && <TimelineRow label="Started at" value={new Date(booking.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.completedAt && <TimelineRow label="Completed at" value={new Date(booking.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight />}
         </Section>
@@ -892,6 +906,20 @@ export default function AdminBookingDetail() {
                 <Plus size={16} />
                 {selectedAssetObjs.length > 0 ? `${selectedAssetObjs.length} Selected — Edit` : "Add Assets"}
               </button>
+            </div>
+
+            <div className="border-t border-gray-100" />
+            {/* Expected date */}
+            <div>
+              <p className="text-xs font-bold text-gray-700 mb-2">
+                Expected Date <span className="text-gray-400 font-normal">(optional)</span>
+              </p>
+              <input
+                type="date"
+                value={expectedDate}
+                onChange={(e) => setExpectedDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm text-slate-700 bg-gray-50 outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100"
+              />
             </div>
 
             <div className="border-t border-gray-100" />

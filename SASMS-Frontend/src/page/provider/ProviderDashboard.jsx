@@ -89,17 +89,17 @@ export default function ProviderDashboard() {
     <div className="min-h-screen bg-slate-50">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-8 pb-6 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-8 pb-12 relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10" />
         <div className="absolute bottom-0 left-6 w-20 h-20 rounded-full bg-white/5" />
 
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div>
-              <p className="text-white text-lg font-extrabold">Hello</p>
-            <p className="text-white/90 text-sm font-semibold">{provider?.name}</p>
+            <p className="text-white text-lg font-semibold">Hello, {provider?.name}</p>
+            <p className="text-white/90 text-sm font-semibold">{provider?.description}</p>
             <p className="text-white/70 text-xs">{provider?.email}</p>
-            </div>
+          </div>
           </div>
            <div className="flex items-center gap-2 justify-center">
               <div className="relative">
@@ -115,14 +115,10 @@ export default function ProviderDashboard() {
           </button>
             </div>
         </div>
-
-        <div className="mt-5">
-          <p className="text-white/50 text-xs mt-0.5">{provider?.serviceType?.join(" · ") || "Service Provider"}</p>
-        </div>
       </div>
 
-      <div className="mt-5 px-4 pb-24 space-y-5">
-
+      <div className="flex-1 px-4 pb-20 pt-5 space-y-5 rounded-t-3xl -mt-7 absolute w-full bg-white overflow-y-auto">
+            <p className="text-sm font-bold text-slate-800">Overview</p>
         {/* Stats */}
         <div className="grid grid-cols-4 gap-2">
           {STATS.map(({ label, val, icon: Icon, c, bg }) => (

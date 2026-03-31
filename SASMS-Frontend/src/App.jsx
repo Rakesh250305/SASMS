@@ -18,6 +18,7 @@ import AllServices from "./page/user/AllServices";
 import BookingFlow from "./page/user/BookingFlow";
 import UserBookingDetail from "./page/user/UserBookingdetail";
 import UserProfile from "./page/user/UserProfile";
+import UserServiceDetail from "./page/user/UserServiceDetail";
 import AdminBookingDetail from "./page/admin/AdminBookingDetail";
 import ProviderDashboard from "./page/provider/ProviderDashboard";
 import ProviderProfile from "./page/provider/ProviderProfile";
@@ -29,6 +30,7 @@ import ProviderTaskDetail from "./page/provider/ProviderTaskDetail";
 import ProviderNotifications from "./page/provider/ProviderNotifications";
 import { ProviderSettings } from "./page/provider/ProviderSettings";
 import InstallButton from "./component/InstallButton";
+import UserAddress from "./page/user/UserAddress";
 
 function App() {
 
@@ -59,8 +61,10 @@ function App() {
         <Route path="/user/bookings" element={<UserBooking/>} />
         <Route path="/user/booking/:id" element={<UserBookingDetail/>} />
         <Route path="/user/services" element={<AllServices />} />
+        <Route path="/user/services/:id" element={<UserServiceDetail />} />
         <Route path="/user/settings" element={<UserSettings />} />
         <Route path="/user/profile" element={<UserProfile/>} />
+        <Route path="/user/address" element={<UserAddress/>} />
         <Route path="/user/notifications" element={<UserNotification />} />
 
 

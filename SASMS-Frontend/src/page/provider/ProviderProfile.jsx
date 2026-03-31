@@ -141,10 +141,10 @@ export default function ProviderProfile() {
     provider?.name?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "PR";
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-8 pb-5 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] h-[20vh] px-5 pt-8 pb-5 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10" />
         <div className="absolute bottom-0 left-4 w-14 h-14 rounded-full bg-white/5" />
         <div className="flex items-center justify-between relative">
@@ -186,7 +186,7 @@ export default function ProviderProfile() {
         </div>
       </div>
 
-      <div className="mt-5 px-4 pb-28 space-y-4 max-w-xl mx-auto">
+      <div className="mt-5 px-4 pb-28 space-y-4 max-w-xl mx-auto overflow-y-auto">
 
         {/* Toast */}
         <AnimatePresence>

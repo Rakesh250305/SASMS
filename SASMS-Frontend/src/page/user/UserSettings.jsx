@@ -182,7 +182,7 @@ const handleLogout = () => {
                     if (item.label === "Profile Settings") {
                       navigate('/user/profile')
                     } else if (item.label === "Manage Address") {
-                      navigate('/user/profile')
+                      navigate('/user/address')
                     }
                     else if (item.label === "Change Password") {
                       setShowPasswordModal(true);

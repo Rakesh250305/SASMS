@@ -21,6 +21,7 @@ export default function BookingFlow() {
   const [notes, setNotes] = useState("");
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [bookingConfirmation, setBookingConfirmation] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -106,8 +107,7 @@ fetchAddresses();
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-
-      navigate("/user/history");
+      setBookingConfirmation(true);
 
     } catch (err) {
 
@@ -437,6 +437,26 @@ ${selectedAddressId === addr._id
         )}
 
       </div>
+
+      {bookingConfirmation && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-lg p-6 text-center">
+            <Check size={48} className="text-emerald-600 mx-auto mb-4" />
+            <h2 className="text-xl font-bold mb-2">Booking Confirmed!</h2>
+            <p className="text-gray-600 mb-6">Your service booking has been successfully created.</p>
+            <button
+              onClick={() => {
+                setBookingConfirmation(false);
+                navigate("/user/bookings");
+              }}
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold"
+            >
+              View My Bookings
+            </button>
+          </div>
+        </div>
+      )}
+      
 
     </div>
   );
