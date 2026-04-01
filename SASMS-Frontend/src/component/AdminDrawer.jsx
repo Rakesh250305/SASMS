@@ -13,8 +13,8 @@ import {
   ChevronRight,
   Shield,
 } from "lucide-react";
-import logo from '../assets/main-Logo.png'
 import axios from "axios";
+import { getInitials, resolveImageUrl } from "./avatarUtils";
 
 const navItems = [
   { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin" },
@@ -31,6 +31,8 @@ export default function AdminDrawer({ open, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [data, setData] = useState([]);
+  const drawerImage = resolveImageUrl(apiUrl, data.storePhoto);
+  const drawerInitials = getInitials(data.storeName || data.name, "AD");
    const fetchAdminData = async () => {
       try {
         const res = await axios.get(
@@ -87,8 +89,12 @@ export default function AdminDrawer({ open, onClose }) {
           </button>
 
           {/* Icon */}
-          <div className="w-14 h-14 p-2 rounded-xl bg-white/20 border-2 border-white/30 flex items-center justify-center mb-3">
-            <img  src={logo} alt="" />
+          <div className="w-14 h-14 rounded-xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center mb-3">
+            {drawerImage ? (
+              <img src={drawerImage} alt="Store" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-extrabold text-lg">{drawerInitials}</span>
+            )}
           </div>
 
           <div className="text-white text-sm font-bold">{data.tenantId || "Admin Panel"}</div>

@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   User, Mail, Phone, MapPin, Edit3, Check, X,
-  Loader2, Shield, Building2, Hash, Navigation, AlignLeft, Users
+  Loader2, Shield, Building2, Hash, Navigation, AlignLeft, Users,
+  Camera, ImagePlus, Trash2
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
+import { getInitials, resolveImageUrl } from "../../component/avatarUtils";
 
 /* ────────────────────────────────────────────
    InfoRow — read-only display
@@ -78,12 +80,17 @@ export default function UserProfile() {
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const fileInputRef = useRef(null);
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(""); // "success" | "error" | ""
+  const [profilePhoto, setProfilePhoto] = useState("");
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
   const [form, setForm] = useState({
     name: "", phone: "", address: "", city: "", state: "", pincode: "",
@@ -99,6 +106,7 @@ export default function UserProfile() {
         });
         const data = res.data.data || res.data;
         setUser(data);
+        setProfilePhoto(data.profilePhoto || "");
         setForm({
           name:    data.name    || "",
           phone:   data.phone   || "",
@@ -115,6 +123,14 @@ export default function UserProfile() {
       setLoading(false);
     })();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
 
   const handleChange = e =>
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -146,6 +162,66 @@ export default function UserProfile() {
     setTimeout(() => setSaveMsg(""), 3000);
   };
 
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (photoPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(photoPreview);
+    }
+
+    setPhotoPreview(URL.createObjectURL(file));
+    setShowPhotoMenu(false);
+    uploadPhoto(file);
+    e.target.value = "";
+  };
+
+  const uploadPhoto = async (file) => {
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("profilePhoto", file);
+      const response = await axios.put(`${apiUrl}/user/profile-photo`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const updatedUser = response.data.data;
+      const savedPhoto = response.data.profilePhoto || updatedUser?.profilePhoto || "";
+
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+      setProfilePhoto(savedPhoto);
+      setPhotoPreview((current) => {
+        if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
+        return null;
+      });
+    } catch (error) {
+      console.error("User photo upload failed", error);
+    }
+    setUploadingPhoto(false);
+  };
+
+  const removePhoto = async () => {
+    setShowPhotoMenu(false);
+    try {
+      const response = await axios.delete(`${apiUrl}/user/profile-photo`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(response.data.data || user);
+      setProfilePhoto("");
+      setPhotoPreview((current) => {
+        if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
+        return null;
+      });
+    } catch (error) {
+      console.error("User photo delete failed", error);
+    }
+  };
+
   const handleCancel = () => {
     setForm({
       name:    user.name    || "",
@@ -160,8 +236,7 @@ export default function UserProfile() {
     setEditing(false);
   };
 
-  const initials =
-    user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "U";
+  const initials = getInitials(user?.name, "U");
 
   const joinedDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-IN", {
@@ -169,9 +244,7 @@ export default function UserProfile() {
       })
     : null;
 
-  /* Compose a single address string for the header badge */
-  const locationSummary = [user?.city, user?.state]
-    .filter(Boolean).join(", ");
+  const resolvedPhoto = photoPreview || resolveImageUrl(apiUrl, profilePhoto);
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -189,8 +262,59 @@ export default function UserProfile() {
 
         <div className="flex items-center gap-4 relative">
           {/* Avatar */}
-          <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/30 flex items-center justify-center flex-shrink-0 shadow-lg">
-            <span className="text-white font-extrabold text-xl">{initials}</span>
+          <div className="relative flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center shadow-lg">
+              {resolvedPhoto ? (
+                <img src={resolvedPhoto} alt="User profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-extrabold text-xl">{initials}</span>
+              )}
+            </div>
+
+            {uploadingPhoto && (
+              <div className="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center">
+                <Loader2 size={18} className="text-white animate-spin" />
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowPhotoMenu((current) => !current)}
+              className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-100"
+            >
+              <Camera size={13} className="text-emerald-600" />
+            </button>
+
+            <AnimatePresence>
+              {showPhotoMenu && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.85, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-20 left-0 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-20 w-44"
+                >
+                  <button
+                    onClick={() => {
+                      setShowPhotoMenu(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-gray-50"
+                  >
+                    <ImagePlus size={14} className="text-emerald-600" />
+                    {resolvedPhoto ? "Change Photo" : "Upload Photo"}
+                  </button>
+                  {resolvedPhoto && (
+                    <button
+                      onClick={removePhoto}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 border-t border-gray-50"
+                    >
+                      <Trash2 size={14} />
+                      Remove Photo
+                    </button>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="min-w-0">
@@ -211,6 +335,18 @@ export default function UserProfile() {
       </div>
 
       {/* ── Body ── */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handlePhotoSelect}
+      />
+
+      {showPhotoMenu && (
+        <div className="fixed inset-0 z-10" onClick={() => setShowPhotoMenu(false)} />
+      )}
+
       <div className="absolute -mt-10 pb-28 w-full px-4 space-y-3">
 
         {/* Toast */}

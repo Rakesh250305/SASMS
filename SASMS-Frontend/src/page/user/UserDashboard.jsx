@@ -24,6 +24,7 @@ import StatusBadge from "../../component/StatusBadge";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRef } from "react";
+import { getInitials, resolveImageUrl } from "../../component/avatarUtils";
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const serviceCategories = [
@@ -46,6 +47,8 @@ export default function UserDashboard() {
   const searchRef = useRef(null);
   const [bookingHistory, setBookingHistory] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const userPhoto = resolveImageUrl(apiUrl, data?.profilePhoto);
+  const userInitials = getInitials(data?.name, "NA");
 
   const token = localStorage.getItem("token");
 
@@ -186,11 +189,13 @@ export default function UserDashboard() {
 
             <button
               onClick={() => navigate("/user/profile")}
-              className="w-9 h-9 z-20 rounded-xl bg-white/20 border border-white/40 text-white font-bold text-xs flex items-center justify-center"
+              className="w-9 h-9 z-20 rounded-xl overflow-hidden bg-white/20 border border-white/40 text-white font-bold text-xs flex items-center justify-center"
             >
-              {data?.name
-                ? data.name.split(" ").map(w => w[0]).join("").toUpperCase()
-                : "NA"}
+              {userPhoto ? (
+                <img src={userPhoto} alt="User" className="w-full h-full object-cover" />
+              ) : (
+                userInitials
+              )}
             </button>
 
 
