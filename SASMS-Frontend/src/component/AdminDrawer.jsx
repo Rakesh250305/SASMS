@@ -14,7 +14,7 @@ import {
   Shield,
 } from "lucide-react";
 import axios from "axios";
-import { getInitials, resolveImageUrl } from "./avatarUtils";
+import { getInitials } from "../utils/avatarUtils";
 
 const navItems = [
   { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin" },
@@ -31,8 +31,7 @@ export default function AdminDrawer({ open, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [data, setData] = useState([]);
-  const drawerImage = resolveImageUrl(apiUrl, data.storePhoto);
-  const drawerInitials = getInitials(data.storeName || data.name, "AD");
+  const drawerInitials = getInitials(data.name || data.storeName, "AD");
    const fetchAdminData = async () => {
       try {
         const res = await axios.get(
@@ -73,9 +72,7 @@ export default function AdminDrawer({ open, onClose }) {
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 ${
-          open ? "left-0" : "-left-[300px]"
-        } w-[280px] h-screen bg-white z-[300] transition-all duration-300 ease-in-out flex flex-col shadow-lg`}
+        className={`fixed top-0 ${open ? "left-0" : "-left-[300px]"} w-[280px] h-screen bg-white z-[300] transition-all duration-300 ease-in-out flex flex-col shadow-lg`}
       >
         {/* Header */}
         <div className="bg-gradient-to-br h-45 from-[#1565C0] via-[#1976D2] to-[#42A5F5] p-6 pt-8 pb-6 relative">
@@ -90,8 +87,8 @@ export default function AdminDrawer({ open, onClose }) {
 
           {/* Icon */}
           <div className="w-14 h-14 rounded-xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center mb-3">
-            {drawerImage ? (
-              <img src={drawerImage} alt="Store" className="w-full h-full object-cover" />
+            {data.storePhoto ? (
+              <img src={data.storePhoto} alt="Store" className="w-full h-full object-cover" />
             ) : (
               <span className="text-white font-extrabold text-lg">{drawerInitials}</span>
             )}

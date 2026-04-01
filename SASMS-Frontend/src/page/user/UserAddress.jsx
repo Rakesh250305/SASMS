@@ -340,7 +340,7 @@ export default function UserAddress() {
     setDeleteTarget(null);
   };
 
-  const initials = user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "U";
+  const initials = user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "NA";
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -353,14 +353,19 @@ export default function UserAddress() {
 
       {/* ── Header ── */}
       <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 px-5 pt-10 pb-16 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/10" />
         <div className="absolute bottom-2 left-6 w-20 h-20 rounded-full bg-white/5" />
 
         {/* Avatar + name */}
         <div className="flex items-center gap-4 relative">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/30 flex items-center justify-center flex-shrink-0 shadow-lg">
-            <span className="text-white font-extrabold text-xl">{initials}</span>
-          </div>
+          <div className="relative flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center shadow-lg">
+              {user.profilePhoto ? (
+                <img src={user.profilePhoto} alt={initials} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-extrabold text-xl">{initials}</span>
+              )}
+            </div>
+            </div>
           <div>
             <p className="text-white font-extrabold text-lg leading-tight">{user?.name}</p>
             <p className="text-white/60 text-xs mt-0.5">{user?.email}</p>

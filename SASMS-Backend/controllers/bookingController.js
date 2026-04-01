@@ -139,7 +139,7 @@ export const getUserBookingById = async (req, res) => {
   try {
     const booking = await Booking.findOne({ _id: req.params.id, user: req.user.id })
       .populate("service", "serviceName category estimatedPrice serviceImage description")
-      .populate("provider", "name email phone")
+      .populate("provider", "name email phone profilePhoto")
       .populate("assets", "assetName assetId category cost");
 
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
@@ -284,9 +284,9 @@ export const getAdminBookings = async (req, res) => {
     if (status) filter.status = status;
 
     const bookings = await Booking.find(filter)
-      .populate("user", "name email phone")
+      .populate("user", "name email phone profilePhoto")
       .populate("service", "serviceName serviceImage category estimatedPrice")
-      .populate("provider", "name email phone")
+      .populate("provider", "name email phone profilePhoto")
       .populate("assets", "assetName assetId")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -303,9 +303,9 @@ export const getAdminBookings = async (req, res) => {
 export const getAdminBookingById = async (req, res) => {
   try {
     const booking = await Booking.findOne({ _id: req.params.id, admin: req.user.id })
-      .populate("user", "name email phone")
+      .populate("user", "name email phone profilePhoto")
       .populate("service", "serviceName category estimatedPrice description serviceImage")
-      .populate("provider", "name email phone")
+      .populate("provider", "name email phone profilePhoto")
       .populate("assets", "assetName assetId category status cost");
 
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
@@ -406,7 +406,7 @@ export const getProviderBookings = async (req, res) => {
     if (status) filter.status = status;
 
     const bookings = await Booking.find(filter)
-      .populate("user", "name phone")
+      .populate("user", "name phone profilePhoto")
       .populate("service", "serviceName category description estimatedPrice serviceImage")
       .populate("assets", "assetName assetId category cost")
       .sort({ createdAt: -1 })
@@ -424,7 +424,7 @@ export const getProviderBookings = async (req, res) => {
 export const getProviderBookingById = async (req, res) => {
   try {
     const booking = await Booking.findOne({ _id: req.params.id, provider: req.user.id })
-      .populate("user", "name phone")
+      .populate("user", "name phone profilePhoto")
       .populate("service", "serviceName category estimatedPrice description serviceImage")
       .populate("assets", "assetName assetId category cost");
 

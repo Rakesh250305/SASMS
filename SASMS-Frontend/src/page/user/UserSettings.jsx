@@ -97,69 +97,69 @@ export default function UserSettings() {
   });
 
   const handlePasswordChange = (e) => {
-  setPasswordData({
-    ...passwordData,
-    [e.target.name]: e.target.value
-  });
-};
-
-const handleUpdatePassword = async () => {
-
-  if (passwordData.newPassword !== passwordData.confirmPassword) {
-    toast.error("New and Confirm Password do not match");
-    return;
-  }
-
-  try {
-
-    const token = localStorage.getItem("token");
-
-    await axios.put(
-      `${apiUrl}/user/change-password`,
-      {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    toast.success("Password updated successfully");
-
-    setShowPasswordModal(false);
-
     setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: ""
+      ...passwordData,
+      [e.target.name]: e.target.value
     });
+  };
 
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Failed to change Password");
-  }
-};
+  const handleUpdatePassword = async () => {
 
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  navigate("/login");
-};
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("New and Confirm Password do not match");
+      return;
+    }
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      await axios.put(
+        `${apiUrl}/user/change-password`,
+        {
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      toast.success("Password updated successfully");
+
+      setShowPasswordModal(false);
+
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to change Password");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   return (
     <div className={`flex flex-col min-h-screen pb-16 bg-[#F5F7FA]`}>
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-6">  
-              <div className="flex items-end justify-between">
-                <div>
-                  <h1 className="text-xl font-bold text-white">Settings</h1>
-                  <p className="text-xs text-gray-400">System Settings</p>
-                </div>
-              </div>
-            </div>
-      
+      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-white">Settings</h1>
+            <p className="text-xs text-gray-400">System Settings</p>
+          </div>
+        </div>
+      </div>
+
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -189,8 +189,8 @@ const handleLogout = () => {
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${i !== section.items.length - 1
-                      ? "border-b border-gray-100"
-                      : ""
+                    ? "border-b border-gray-100"
+                    : ""
                     }`}
 
                 >
@@ -239,80 +239,93 @@ const handleLogout = () => {
         </button>
       </div>
 
-{/* Chanage Password */}
-  <AnimatePresence>
+      {/* Chanage Password */}
+      <AnimatePresence>
         {showPasswordModal && (
-  <div className="fixed inset-0 bg-black/40 flex items-end justify-center z-50">
-
-    <motion.div
+         <>
+            <motion.div
+              onClick={() => setShowPasswordModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 z-40"
+            />
+            
+            <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className={`absolute bottom-0 left-0 right-0 bg-white h-[60vh] rounded-t-3xl p-6 z-50 overflow-y-auto`}
+              transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pt-0 pb-6 z-50 overflow-hidden"
             >
 
-      <h2 className="text-lg font-bold mb-4">Change Password</h2>
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
 
-      <div className="space-y-3">
+              <h2 className="text-lg font-bold mb-4">Change Password</h2>
 
-          <InputField
-            type="password"
-            label="Current Psssword"
-            icon={<Eye size={16}/>}
-            name="currentPassword"
-            placeholder="Current Password"
-          value={passwordData.currentPassword}
-          onChange={handlePasswordChange}
-          />
+              <div className="space-y-3">
 
-          <InputField
-            type="password"
-            label="New Psssword"
-            icon={<Eye size={16}/>}
-            name="newPassword"
-            placeholder="New Password"
-          value={passwordData.newPassword}
-          onChange={handlePasswordChange}
-          />
+                <InputField
+                  type="password"
+                  label="Current Psssword"
+                  icon={<Eye size={16} />}
+                  name="currentPassword"
+                  placeholder="Current Password"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordChange}
+                />
 
-          <InputField
-            type="password"
-            label="Confirm Psssword"
-            icon={<Eye size={16}/>}
-            name="confirmPassword"
-            placeholder="Confirm Password"
-          value={passwordData.confirmPassword}
-          onChange={handlePasswordChange}
-          />
+                <InputField
+                  type="password"
+                  label="New Psssword"
+                  icon={<Eye size={16} />}
+                  name="newPassword"
+                  placeholder="New Password"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                />
 
-      </div>
+                <InputField
+                  type="password"
+                  label="Confirm Psssword"
+                  icon={<Eye size={16} />}
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                />
 
-      <div className="flex gap-3 mt-5">
+              </div>
 
-        <button
-          onClick={() => setShowPasswordModal(false)}
-          className="flex-1 py-2 rounded-xl border text-sm font-semibold"
-        >
-          Cancel
-        </button>
+              <div className="flex gap-3 mt-5">
 
-        <button
-          onClick={handleUpdatePassword}
-          className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
-        >
-          Update
-        </button>
+                <button
+                  onClick={() => setShowPasswordModal(false)}
+                  className="flex-1 py-2 rounded-xl border text-sm font-semibold"
+                >
+                  Cancel
+                </button>
 
-      </div>
+                <button
+                  onClick={handleUpdatePassword}
+                  className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
+                >
+                  Update
+                </button>
 
-    </motion.div>
+              </div>
 
-  </div>
-)}
-  </AnimatePresence>
+            </motion.div>
+         </>
+
+        )}
+      </AnimatePresence>
 
 
-  <BottomNav/>
+      <BottomNav />
 
     </div>
   );

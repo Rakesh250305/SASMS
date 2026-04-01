@@ -21,22 +21,22 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 const STATUS_CONFIG = {
-  pending:     { label: "Pending",     bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400"   },
-  assigned:    { label: "Assigned",    bg: "bg-indigo-100",  text: "text-indigo-700",  dot: "bg-indigo-400"  },
-  in_progress: { label: "In Progress", bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-400"    },
-  completed:   { label: "Completed",   bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500"   },
-  cancelled:   { label: "Cancelled",   bg: "bg-red-100",     text: "text-red-600",     dot: "bg-red-400"     },
+  pending: { label: "Pending", bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-400" },
+  assigned: { label: "Assigned", bg: "bg-indigo-100", text: "text-indigo-700", dot: "bg-indigo-400" },
+  in_progress: { label: "In Progress", bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-400" },
+  completed: { label: "Completed", bg: "bg-green-100", text: "text-green-700", dot: "bg-green-500" },
+  cancelled: { label: "Cancelled", bg: "bg-red-100", text: "text-red-600", dot: "bg-red-400" },
 };
 
 const STATUS_FILTERS = ["all", "pending", "assigned", "in_progress", "completed", "cancelled"];
 
 const AVATAR_COLORS = [
-  { bg: "bg-blue-100",   text: "text-blue-700"   },
-  { bg: "bg-green-100",  text: "text-green-700"  },
+  { bg: "bg-blue-100", text: "text-blue-700" },
+  { bg: "bg-green-100", text: "text-green-700" },
   { bg: "bg-purple-100", text: "text-purple-700" },
   { bg: "bg-orange-100", text: "text-orange-600" },
-  { bg: "bg-teal-100",   text: "text-teal-700"   },
-  { bg: "bg-rose-100",   text: "text-rose-700"   },
+  { bg: "bg-teal-100", text: "text-teal-700" },
+  { bg: "bg-rose-100", text: "text-rose-700" },
 ];
 
 const PAGE_SIZE = 8;
@@ -71,17 +71,17 @@ function SkeletonCard() {
 
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-  if (diff < 60)     return "Just now";
-  if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
   return new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
 const filterLabel = (s) =>
   s === "all" ? "All" :
-  s === "in_progress" ? "In Progress" :
-  s.charAt(0).toUpperCase() + s.slice(1);
+    s === "in_progress" ? "In Progress" :
+      s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function AdminServiceRequest() {
   const navigate = useNavigate();
@@ -186,7 +186,7 @@ export default function AdminServiceRequest() {
 
   const TABS = [
     { key: "bookings", label: "Bookings", icon: ClipboardList, count: pendingCount },
-    { key: "users",    label: "Users",    icon: Users,         count: derivedUsers.length },
+    { key: "users", label: "Users", icon: Users, count: derivedUsers.length },
   ];
 
   return (
@@ -205,15 +205,15 @@ export default function AdminServiceRequest() {
             <ArrowLeft size={18} />
           </button>
           <div>
-             <h1 className="text-xl font-bold text-white mb-1">Service Requests</h1>
-        <p className="text-white/60 text-xs">
-          {bookings.length} bookings · {pendingCount} need attention
-        </p>  
+            <h1 className="text-xl font-bold text-white mb-1">Service Requests</h1>
+            <p className="text-white/60 text-xs">
+              {bookings.length} bookings · {pendingCount} need attention
+            </p>
           </div>
 
         </div>
 
-       
+
 
         {/* Search + filter row */}
         <div className="flex items-center gap-2 mt-4">
@@ -240,18 +240,16 @@ export default function AdminServiceRequest() {
           <button
             key={key}
             onClick={() => { setActiveTab(key); setSearch(""); setStatusFilter("all"); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-all border-b-2 ${
-              activeTab === key
+            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-all border-b-2 ${activeTab === key
                 ? "text-[#1976D2] border-[#1976D2] bg-blue-50/50"
                 : "text-gray-400 border-transparent"
-            }`}
+              }`}
           >
             <Icon size={15} />
             {label}
             {count > 0 && (
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                activeTab === key ? "bg-[#1976D2] text-white" : "bg-gray-100 text-gray-500"
-              }`}>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${activeTab === key ? "bg-[#1976D2] text-white" : "bg-gray-100 text-gray-500"
+                }`}>
                 {count}
               </span>
             )}
@@ -276,19 +274,17 @@ export default function AdminServiceRequest() {
                   <button
                     key={s}
                     onClick={() => setStatusFilter(s)}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                      active
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${active
                         ? "bg-[#1976D2] text-white border-[#1976D2] shadow-sm"
                         : "bg-white text-gray-500 border-gray-200"
-                    }`}
+                      }`}
                   >
                     {cfg && !active && (
                       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                     )}
                     {filterLabel(s)}
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                      active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
-                    }`}>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
+                      }`}>
                       {statusCounts[s] ?? 0}
                     </span>
                   </button>
@@ -334,8 +330,8 @@ export default function AdminServiceRequest() {
                 {search
                   ? `No ${statusFilter !== "all" ? filterLabel(statusFilter).toLowerCase() : ""} results for "${search}"`
                   : statusFilter !== "all"
-                  ? `No ${filterLabel(statusFilter).toLowerCase()} bookings`
-                  : "No service bookings yet"}
+                    ? `No ${filterLabel(statusFilter).toLowerCase()} bookings`
+                    : "No service bookings yet"}
               </p>
               {(statusFilter !== "all" || search) && (
                 <button
@@ -360,7 +356,7 @@ export default function AdminServiceRequest() {
                 <div className="flex items-center gap-3 p-4 border-b border-gray-50">
                   {b.service?.serviceImage ? (
                     <img
-                      src={`${apiUrl}${b.service.serviceImage}`}
+                      src={b.service.serviceImage}
                       alt=""
                       className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
                     />
@@ -383,12 +379,22 @@ export default function AdminServiceRequest() {
 
                 {/* Details */}
                 <div className="px-4 py-3 grid grid-cols-2 gap-y-2.5 gap-x-4">
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-blue-700 font-bold text-[9px]">
-                        {b.user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
-                      </span>
+                  <div className="flex items-center gap-2">
+                    
+                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200 bg-blue-100 flex items-center justify-center flex-shrink-0 ">
+                      {b.user.profilePhoto ? (
+                        <img
+                          src={b.user.profilePhoto}
+                          alt="profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-blue-100 text-blue-700 text-xs font-bold ">{b.user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}</span>
+                        </div>
+                      )}
                     </div>
+
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Customer</p>
                       <p className="text-xs text-slate-700 font-medium">{b.user?.name || "—"}</p>
@@ -426,9 +432,8 @@ export default function AdminServiceRequest() {
                 </div>
 
                 {/* Footer */}
-                <div className={`px-4 py-2.5 flex items-center justify-between ${
-                  b.status === "pending" ? "bg-amber-50" : "bg-gray-50"
-                }`}>
+                <div className={`px-4 py-2.5 flex items-center justify-between ${b.status === "pending" ? "bg-amber-50" : "bg-gray-50"
+                  }`}>
                   {b.status === "pending" ? (
                     <span className="text-xs font-semibold text-amber-600">⚡ Needs assignment</span>
                   ) : b.status === "assigned" ? (

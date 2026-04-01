@@ -17,18 +17,14 @@ import {
   getNotifications,
   markNotificationsRead,
 } from "../controllers/bookingController.js";
-import { createUploader } from "../middleware/uploadMiddleware.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
-const providerPhotoUpload = createUploader("uploads/providers");
-
-/* ── Auth ── */
-// router.post("/login", providerLogin);
 
 /* ── Profile ── */
 router.get("/", authenticate, authorizeRoles("provider"), getProviderInfo);
 router.put("/profile", authenticate, authorizeRoles("provider"), updateProviderProfile);
-router.put("/profile-photo", authenticate, authorizeRoles("provider"), providerPhotoUpload.single("profilePhoto"), uploadProviderPhoto);
+router.put("/profile-photo", authenticate, authorizeRoles("provider"), upload.single("profilePhoto"), uploadProviderPhoto);
 router.delete("/profile-photo", authenticate, authorizeRoles("provider"), deleteProviderPhoto);
 router.put("/change-password", authenticate, authorizeRoles("provider"), changeProviderPassword);
 

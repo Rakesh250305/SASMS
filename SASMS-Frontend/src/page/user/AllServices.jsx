@@ -202,8 +202,9 @@ export default function AllServices() {
               {/* Image */}
               {service.serviceImage ? (
                 <img
-                  src={`${apiUrl}${service.serviceImage}`}
+                  src={service.serviceImage}
                   alt={service.serviceName}
+                  onClick={() => navigate(`/user/services/${service._id}`)}
                   className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
                 />
               ) : (

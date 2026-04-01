@@ -32,23 +32,23 @@ import {
 
 /* ── Status config ─────────────────────────────────── */
 const STATUS_CONFIG = {
-  assigned:    { label: "Assigned",    bg: "bg-purple-100",  text: "text-purple-700",  dot: "bg-purple-400"  },
-  accepted:    { label: "Accepted",    bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-400"  },
-  picked_up:   { label: "Picked Up",   bg: "bg-cyan-100",    text: "text-cyan-700",    dot: "bg-cyan-400"    },
-  in_progress: { label: "In Progress", bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-400"    },
-  completed:   { label: "Completed",   bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500"   },
-  cancelled:   { label: "Cancelled",   bg: "bg-red-100",     text: "text-red-600",     dot: "bg-red-400"     },
+  assigned: { label: "Assigned", bg: "bg-purple-100", text: "text-purple-700", dot: "bg-purple-400" },
+  accepted: { label: "Accepted", bg: "bg-violet-100", text: "text-violet-700", dot: "bg-violet-400" },
+  picked_up: { label: "Picked Up", bg: "bg-cyan-100", text: "text-cyan-700", dot: "bg-cyan-400" },
+  in_progress: { label: "In Progress", bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-400" },
+  completed: { label: "Completed", bg: "bg-green-100", text: "text-green-700", dot: "bg-green-500" },
+  cancelled: { label: "Cancelled", bg: "bg-red-100", text: "text-red-600", dot: "bg-red-400" },
 };
 
 const PROVIDER_WORKING_CHARGE = 50;
 
 // Provider-side workflow steps
 const WORKFLOW = [
-  { key: "assigned",     label: "Assigned",       icon: Tag        },
-  { key: "accepted",     label: "Accepted",        icon: CheckCircle2 },
-  { key: "picked_up",   label: "Assets Picked",   icon: Truck      },
-  { key: "in_progress", label: "In Progress",     icon: Wrench     },
-  { key: "completed",   label: "Completed",        icon: CheckCheck },
+  { key: "assigned", label: "Assigned", icon: Tag },
+  { key: "accepted", label: "Accepted", icon: CheckCircle2 },
+  { key: "picked_up", label: "Assets Picked", icon: Truck },
+  { key: "in_progress", label: "In Progress", icon: Wrench },
+  { key: "completed", label: "Completed", icon: CheckCheck },
 ];
 
 const getWorkflowStep = (task) => {
@@ -63,22 +63,22 @@ const getWorkflowStep = (task) => {
 /* ── Category helpers ──────────────────────────────── */
 const getCategoryStyle = (cat) => {
   switch (cat) {
-    case "laptop":     return { background: "#EFF6FF", color: "#1976D2" };
-    case "printer":    return { background: "#F0FDF4", color: "#388E3C" };
+    case "laptop": return { background: "#EFF6FF", color: "#1976D2" };
+    case "printer": return { background: "#F0FDF4", color: "#388E3C" };
     case "television": return { background: "#FFF7ED", color: "#F57C00" };
-    case "acUnit":     return { background: "#FFF7ED", color: "#F57C00" };
-    case "mobile":     return { background: "#F3E8FF", color: "#7B1FA2" };
-    default:           return { background: "#F5F3FF", color: "#7C3AED" };
+    case "acUnit": return { background: "#FFF7ED", color: "#F57C00" };
+    case "mobile": return { background: "#F3E8FF", color: "#7B1FA2" };
+    default: return { background: "#F5F3FF", color: "#7C3AED" };
   }
 };
 const getCategoryIcon = (cat) => {
   switch (cat) {
-    case "laptop":     return Laptop;
-    case "printer":    return Printer;
+    case "laptop": return Laptop;
+    case "printer": return Printer;
     case "television": return Monitor;
-    case "acUnit":     return Wrench;
-    case "mobile":     return Phone;
-    default:           return Settings;
+    case "acUnit": return Wrench;
+    case "mobile": return Phone;
+    default: return Settings;
   }
 };
 
@@ -160,11 +160,10 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
               <button
                 onClick={onConfirm}
                 disabled={loading}
-                className={`flex-1 py-3 rounded-2xl text-white text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2 ${
-                  confirmColor === "purple" ? "bg-gradient-to-br from-[#86198f] to-[#c026d3]"
-                  : confirmColor === "green" ? "bg-green-600"
-                  : "bg-red-500"
-                }`}
+                className={`flex-1 py-3 rounded-2xl text-white text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2 ${confirmColor === "purple" ? "bg-gradient-to-br from-[#86198f] to-[#c026d3]"
+                    : confirmColor === "green" ? "bg-green-600"
+                      : "bg-red-500"
+                  }`}
               >
                 {loading
                   ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -184,11 +183,11 @@ export default function ProviderTaskDetail() {
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const [task, setTask]               = useState(null);
-  const [loading, setLoading]         = useState(true);
+  const [task, setTask] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [modal, setModal]             = useState(null);
-  const [msg, setMsg]                 = useState(null);
+  const [modal, setModal] = useState(null);
+  const [msg, setMsg] = useState(null);
 
   // workflowStep: 0=assigned, 1=accepted, 2=picked_up, 3=in_progress, 4=completed
   const [workflowStep, setWorkflowStep] = useState(0);
@@ -233,17 +232,17 @@ export default function ProviderTaskDetail() {
   };
 
   /* Cost calculations */
-  const serviceCost   = Number(task?.service?.estimatedPrice || 0);
-  const assetsCost    = (task?.assets || []).reduce((s, a) => s + Number(a.cost || 0), 0);
+  const serviceCost = Number(task?.service?.estimatedPrice || 0);
+  const assetsCost = (task?.assets || []).reduce((s, a) => s + Number(a.cost || 0), 0);
   const providerCharge = task ? PROVIDER_WORKING_CHARGE : 0;
-  const totalCost     = serviceCost + assetsCost + providerCharge;
+  const totalCost = serviceCost + assetsCost + providerCharge;
 
   /* Maps URL */
   const mapsUrl = task?.address
     ? `https://maps.google.com/?q=${encodeURIComponent(
-        [task.address.addressLine1, task.address.city, task.address.state, task.address.pincode]
-          .filter(Boolean).join(", ")
-      )}`
+      [task.address.addressLine1, task.address.city, task.address.state, task.address.pincode]
+        .filter(Boolean).join(", ")
+    )}`
     : null;
 
   if (loading) return (
@@ -259,10 +258,10 @@ export default function ProviderTaskDetail() {
     </div>
   );
 
-  const isAssigned   = task.status === "assigned";
+  const isAssigned = task.status === "assigned";
   const isInProgress = task.status === "in_progress";
-  const isCompleted  = task.status === "completed";
-  const isCancelled  = task.status === "cancelled";
+  const isCompleted = task.status === "completed";
+  const isCancelled = task.status === "cancelled";
 
   return (
     <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
@@ -299,11 +298,10 @@ export default function ProviderTaskDetail() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl text-xs font-semibold ${
-                msg.type === "success"
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl text-xs font-semibold ${msg.type === "success"
                   ? "bg-green-50 text-green-700 border border-green-100"
                   : "bg-red-50 text-red-600 border border-red-100"
-              }`}
+                }`}
             >
               {msg.type === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
               {msg.text}
@@ -320,26 +318,23 @@ export default function ProviderTaskDetail() {
                 <div key={key} className="flex-1 flex flex-col items-center relative">
                   {/* Connector line */}
                   {i < WORKFLOW.length - 1 && (
-                    <div className={`absolute top-3 left-1/2 w-full h-0.5 transition-colors ${
-                      i < workflowStep ? "bg-purple-400" : "bg-gray-200"
-                    }`} />
+                    <div className={`absolute top-3 left-1/2 w-full h-0.5 transition-colors ${i < workflowStep ? "bg-purple-400" : "bg-gray-200"
+                      }`} />
                   )}
                   {/* Circle */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 transition-all ${
-                    i < workflowStep
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 transition-all ${i < workflowStep
                       ? "bg-purple-500"
                       : i === workflowStep
-                      ? "bg-[#c026d3] ring-4 ring-purple-100"
-                      : "bg-gray-200"
-                  }`}>
+                        ? "bg-[#c026d3] ring-4 ring-purple-100"
+                        : "bg-gray-200"
+                    }`}>
                     {i < workflowStep
                       ? <CheckCircle2 size={13} className="text-white" />
                       : <Icon size={12} className={i === workflowStep ? "text-white" : "text-gray-400"} />
                     }
                   </div>
-                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight px-0.5 ${
-                    i <= workflowStep ? "text-[#c026d3]" : "text-gray-400"
-                  }`}>
+                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight px-0.5 ${i <= workflowStep ? "text-[#c026d3]" : "text-gray-400"
+                    }`}>
                     {label}
                   </span>
                 </div>
@@ -348,13 +343,12 @@ export default function ProviderTaskDetail() {
 
             {/* Contextual step hint */}
             {!isCompleted && !isCancelled && (
-              <div className={`mt-4 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold ${
-                workflowStep === 0 ? "bg-purple-50 text-purple-700"
-                : workflowStep === 1 ? "bg-amber-50 text-amber-700"
-                : workflowStep === 2 ? "bg-blue-50 text-blue-700"
-                : workflowStep === 3 ? "bg-green-50 text-green-700"
-                : "bg-gray-50 text-gray-500"
-              }`}>
+              <div className={`mt-4 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold ${workflowStep === 0 ? "bg-purple-50 text-purple-700"
+                  : workflowStep === 1 ? "bg-amber-50 text-amber-700"
+                    : workflowStep === 2 ? "bg-blue-50 text-blue-700"
+                      : workflowStep === 3 ? "bg-green-50 text-green-700"
+                        : "bg-gray-50 text-gray-500"
+                }`}>
                 {workflowStep === 0 && <><Tag size={12} /> Accept or reject this task to begin</>}
                 {workflowStep === 1 && <><Truck size={12} /> Collect assets from customer, then confirm pickup</>}
                 {workflowStep === 2 && <><Wrench size={12} /> Assets collected — start work and mark In Progress</>}
@@ -382,7 +376,7 @@ export default function ProviderTaskDetail() {
           <div className="flex items-center gap-3">
             {task.service?.serviceImage ? (
               <img
-                src={`${apiUrl}${task.service.serviceImage}`}
+                src={task.service.serviceImage}
                 alt=""
                 className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
               />
@@ -412,10 +406,11 @@ export default function ProviderTaskDetail() {
         {/* ── Customer ─────────────────────────────── */}
         <Section title="Customer">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-purple-700 font-bold text-sm">
-                {task.user?.name?.split(" ").map(w => w[0]).join("").toUpperCase()}
-              </span>
+            <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center">
+              {task?.user.profilePhoto
+                ? <img src={task.user.profilePhoto} alt="profile" className="w-full h-full object-cover" />
+                : <span className="text-white font-extrabold text-xl">{task.user.name.split(" ").map(w => w[0]).join("").toUpperCase()}</span>
+              }
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-slate-800">{task.user?.name}</p>

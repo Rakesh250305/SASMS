@@ -4,11 +4,11 @@ import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   User, Mail, Phone, MapPin, Edit3, Check, X,
-  Loader2, Shield, Hash, AlignLeft, LogOut,
+  Loader2, Shield, Hash, AlignLeft,
   Building2, Globe, FileText, Store, ChevronLeft,
   Camera, ImagePlus, Trash2,
 } from "lucide-react";
-import { getInitials, resolveImageUrl } from "../../component/avatarUtils";
+import { getInitials } from "../../utils/avatarUtils";
 
 /* ────────────────────────────────────────────
    InfoRow — read-only display
@@ -252,19 +252,11 @@ export default function AdminProfile() {
     setEditing(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   /* ── Helpers ── */
   const initials   = getInitials(admin?.name, "AD");
   const joinedDate = admin?.createdAt
     ? new Date(admin.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
     : null;
-
-  // Resolved photo URL — prefer local preview, fall back to server path
-  const resolvedPhoto = photoPreview || resolveImageUrl(apiUrl, storePhoto);
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -294,9 +286,9 @@ export default function AdminProfile() {
           <div className="relative flex-shrink-0">
             {/* Avatar circle */}
             <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/30 shadow-lg bg-white/20">
-              {resolvedPhoto ? (
+              {admin.storePhoto ? (
                 <img
-                  src={resolvedPhoto}
+                  src={admin.storePhoto}
                   alt="Store"
                   className="w-full h-full object-cover"
                 />
@@ -337,9 +329,9 @@ export default function AdminProfile() {
                     className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-gray-50"
                   >
                     <ImagePlus size={14} className="text-blue-600" />
-                    {resolvedPhoto ? "Change Photo" : "Upload Photo"}
+                    {admin.storePhoto ? "Change Photo" : "Upload Photo"}
                   </button>
-                  {resolvedPhoto && (
+                  {admin.storePhoto && (
                     <button
                       onClick={removePhoto}
                       className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 border-t border-gray-50"

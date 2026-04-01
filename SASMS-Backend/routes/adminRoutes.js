@@ -32,10 +32,9 @@ import {
   markNotificationsRead,
 } from "../controllers/bookingController.js";
 
-import upload, { createUploader } from "../middleware/uploadMiddleware.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
-const adminPhotoUpload = createUploader("uploads/admin");
 
 // auth
 router.post("/signup", adminSignup);
@@ -43,7 +42,7 @@ router.post("/signup", adminSignup);
 /* Profile and Dashboard */
 router.get("/", authenticate, authorizeRoles("admin"), getInfo);
 router.put("/profile", authenticate, authorizeRoles("admin"), updateInfo);
-router.put("/store-photo", authenticate, authorizeRoles("admin"), adminPhotoUpload.single("storePhoto"), uploadStorePhoto);
+router.put("/store-photo", authenticate, authorizeRoles("admin"), upload.single("storePhoto"), uploadStorePhoto);
 router.delete("/store-photo", authenticate, authorizeRoles("admin"), deleteStorePhoto);
 router.get("/stats", authenticate, authorizeRoles("admin"), getStats);
 router.get("/activities", authenticate, authorizeRoles("admin"), getRecentActivities);

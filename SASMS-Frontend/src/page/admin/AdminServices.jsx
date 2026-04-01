@@ -71,6 +71,8 @@ export default function AdminServices() {
   const [activeTab, setActiveTab] = useState(0);
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(null);
+  const [creating, setCreating] = useState(false);
+const [updating, setUpdating] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -135,6 +137,57 @@ export default function AdminServices() {
     }));
   };
 
+
+const validateForm = () => {
+  if (!newService.serviceName.trim()) {
+    toast.error("Service name is required");
+    return false;
+  }
+
+  if (newService.serviceName.length < 3) {
+    toast.error("Service name must be at least 3 characters");
+    return false;
+  }
+
+  if (!newService.description.trim()) {
+    toast.error("Description is required");
+    return false;
+  }
+
+  if (newService.description.length < 10) {
+    toast.error("Description must be at least 10 characters");
+    return false;
+  }
+
+  if (!newService.estimatedPrice) {
+    toast.error("Price is required");
+    return false;
+  }
+
+  if (Number(newService.estimatedPrice) <= 0) {
+    toast.error("Price must be greater than 0");
+    return false;
+  }
+
+  if (!newService.category) {
+    toast.error("Please select a category");
+    return false;
+  }
+
+  if (!newService.availability) {
+    toast.error("Please select availability");
+    return false;
+  }
+
+  // only for create
+  if (!newService.serviceImage && !showEditModal) {
+    toast.error("Please upload service image");
+    return false;
+  }
+
+  return true;
+};
+
   const resetServiceForm = () => {
     setNewService({
       serviceName: "",
@@ -147,26 +200,33 @@ export default function AdminServices() {
     setServiceImagePreview("");
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+const handleImageChange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    setNewService((prev) => ({
-      ...prev,
-      serviceImage: file,
-    }));
+  if (!file.type.startsWith("image/")) {
+    toast.error("Only image files are allowed");
+    return;
+  }
 
-    setServiceImagePreview((prev) => {
-      if (prev?.startsWith("blob:")) {
-        URL.revokeObjectURL(prev);
-      }
-      return URL.createObjectURL(file);
-    });
-  };
+  if (file.size > 2 * 1024 * 1024) {
+    toast.error("Image must be less than 2MB");
+    return;
+  }
+
+  setNewService((prev) => ({
+    ...prev,
+    serviceImage: file,
+  }));
+
+  setServiceImagePreview(URL.createObjectURL(file));
+};
 
   const token = localStorage.getItem("token");
 
   const handleCreateService = async () => {
+      if (!validateForm()) return;
+    if (creating) return;
 
     const formData = new FormData();
 
@@ -178,7 +238,7 @@ export default function AdminServices() {
     formData.append("serviceImage", newService.serviceImage);
 
     try {
-
+  setCreating(true);
       await axios.post(
         `${apiUrl}/admin/service/create`,
         formData,
@@ -201,7 +261,9 @@ export default function AdminServices() {
 
       toast.error("Service creation failed");
 
-    }
+    } finally {
+    setCreating(false);
+  }
 
   };
 
@@ -214,14 +276,16 @@ export default function AdminServices() {
   const handleEdit = (service) => {
     setSelectedService(service);
     setNewService(service);
-    setServiceImagePreview(service.serviceImage ? `${apiUrl}${service.serviceImage}` : "");
+    setServiceImagePreview(service.serviceImage || "");
     setShowEditModal(true);
     setMenuOpen(null);
   };
 
   const handleUpdateService = async () => {
+      if (!validateForm()) return;
+    if (updating) return;
     try {
-
+ setUpdating(true);
       const newFd = new FormData();
 
       newFd.append("serviceName", newService.serviceName);
@@ -267,7 +331,9 @@ export default function AdminServices() {
 
     } catch {
       toast.error("Update failed");
-    }
+    } finally {
+    setUpdating(false);
+  }
   };
 
   const handleDelete = async (id) => {
@@ -365,7 +431,8 @@ export default function AdminServices() {
 
               {/* IMAGE */}
               <img
-                src={`${apiUrl}${service.serviceImage}`}
+                onClick={() => handleView(service)}
+                src={service.serviceImage}
                 className="w-11 h-11 rounded-xl object-cover"
               />
 
@@ -571,12 +638,26 @@ export default function AdminServices() {
               </div>
 
               <button
-                onClick={handleCreateService}
-                className="w-full bg-gradient-to-r from-blue-700 to-blue-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-semibold"
-              >
-                <Check size={18} />
-                Create Service
-              </button>
+  onClick={handleCreateService}
+  disabled={creating}
+  className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition ${
+    creating
+      ? "bg-gray-300 cursor-not-allowed"
+      : "bg-gradient-to-r from-blue-700 to-blue-600 text-white"
+  }`}
+>
+  {creating ? (
+    <>
+      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      Creating...
+    </>
+  ) : (
+    <>
+      <Check size={18} />
+      Create Service
+    </>
+  )}
+</button>
 
             </motion.div>
           </>
@@ -716,13 +797,27 @@ export default function AdminServices() {
                 )}
               </div>
 
-              <button
-                onClick={handleUpdateService}
-                className="w-full bg-gradient-to-r from-blue-700 to-blue-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-semibold"
-              >
-                <Check size={18} />
-                Update
-              </button>
+            <button
+  onClick={handleUpdateService}
+  disabled={updating}
+  className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition ${
+    updating
+      ? "bg-gray-300 cursor-not-allowed"
+      : "bg-gradient-to-r from-blue-700 to-blue-600 text-white"
+  }`}
+>
+  {updating ? (
+    <>
+      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      Updating...
+    </>
+  ) : (
+    <>
+      <Check size={18} />
+      Update
+    </>
+  )}
+</button>
 
             </motion.div>
           </>
@@ -789,9 +884,9 @@ export default function AdminServices() {
               {/* Service Image */}
               <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                 <img
-                src={`${apiUrl}${selectedService.serviceImage}`}
-                className="w-full h-30 rounded-xl object-cover"
-              /></div>
+                  src={selectedService.serviceImage}
+                  className="w-full h-30 rounded-xl object-cover"
+                /></div>
 
               {/* Availability bar */}
               <div className="px-5 py-1 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
@@ -847,59 +942,59 @@ export default function AdminServices() {
       </AnimatePresence>
 
 
-      
-            {/* Delete Confirmation Modal */}
-      
-              <AnimatePresence>
-              {showDeleteModal &&  selectedService &&(
-                <>
-                  <motion.div
+
+      {/* Delete Confirmation Modal */}
+
+      <AnimatePresence>
+        {showDeleteModal && selectedService && (
+          <>
+            <motion.div
+              onClick={() => setShowDeleteModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 z-40"
+            />
+
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+                <h3 className="font-bold text-lg text-slate-800 mb-2">Confirm Deletion</h3>
+                <p className="text-slate-600 mb-4">
+                  Are you sure you want to delete this Service? This action cannot be undone.
+                </p>
+                <div className="flex justify-between gap-3">
+                  <button
                     onClick={() => setShowDeleteModal(false)}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-black/50 z-40"
-                  />
-      
-                  <motion.div
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    transition={{ type: "spring", damping: 25 }}
-                    className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
+                    className="px-4 py-2 w-1/2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
                   >
-                    {/* Drag handle */}
-                    <div className="flex justify-center pt-3 pb-1">
-                      <div className="w-10 h-1 bg-gray-200 rounded-full" />
-                    </div>
-      
-                <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-                  <h3 className="font-bold text-lg text-slate-800 mb-2">Confirm Deletion</h3>
-                  <p className="text-slate-600 mb-4">
-                    Are you sure you want to delete this Service? This action cannot be undone.
-                  </p>
-                  <div className="flex justify-between gap-3">
-                    <button
-                      onClick={() => setShowDeleteModal(false)}
-                      className="px-4 py-2 w-1/2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDelete(selectedService._id);
-                        setShowDeleteModal(false);
-                      }}
-                      className="px-4 py-2 w-1/2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDelete(selectedService._id);
+                      setShowDeleteModal(false);
+                    }}
+                    className="px-4 py-2 w-1/2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
                 </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
     </div>
   );
