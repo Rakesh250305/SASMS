@@ -268,7 +268,7 @@ export default function ProviderTaskDetail() {
     <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
 
       {/* ── Header ──────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-[#86198f] via-[#c026d3] to-[#d946ef] h-[60vh] px-5 pt-6 pb-6 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#86198f] via-[#c026d3] to-[#d946ef] h-[50vh] px-5 pt-6 pb-6 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
         <div className="absolute bottom-0 left-8 w-16 h-16 rounded-full bg-white/5" />
 

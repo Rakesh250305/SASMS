@@ -31,6 +31,7 @@ import ProviderNotifications from "./page/provider/ProviderNotifications";
 import { ProviderSettings } from "./page/provider/ProviderSettings";
 import InstallButton from "./component/InstallButton";
 import UserAddress from "./page/user/UserAddress";
+import AdminProfile from "./page/admin/AdminProfile";
 
 function App() {
 
@@ -51,9 +52,8 @@ function App() {
         <Route path="/admin/service" element={<AdminServices />} />
         <Route path="/admin/notifications" element={<AdminNotifications />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/profile" element={<AdminProfile />} />
       <Route path="/admin/booking/:id" element={<AdminBookingDetail />} />
-
-
 
         {/* User Routes */}
         <Route path="/user" element={<UserDashboard />} />
@@ -66,8 +66,6 @@ function App() {
         <Route path="/user/profile" element={<UserProfile/>} />
         <Route path="/user/address" element={<UserAddress/>} />
         <Route path="/user/notifications" element={<UserNotification />} />
-
-
 
         {/* Provider */}
         <Route path="/provider" element={<ProviderDashboard />} />

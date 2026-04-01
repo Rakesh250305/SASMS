@@ -6,6 +6,7 @@ import Provider from "../models/Provider.js";
 import Service from "../models/Service.js";
 import Activity from "../models/Activity.js";
 import Bookings from "../models/Bookings.js";
+import { buildUploadPath, removeUploadedFile } from "../utils/profilePhoto.js";
 
 export const adminSignup = async (req, res) => {
   try {
@@ -131,6 +132,76 @@ export const updateInfo = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
+      data: account,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const uploadStorePhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Store photo is required",
+      });
+    }
+
+    const account = await Admin.findById(req.user.id);
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    const previousPhoto = account.storePhoto;
+    account.storePhoto = buildUploadPath("uploads/admin", req.file.filename);
+    await account.save();
+
+    await removeUploadedFile(previousPhoto);
+
+    res.status(200).json({
+      success: true,
+      message: "Store photo updated successfully",
+      storePhoto: account.storePhoto,
+      data: account,
+    });
+  } catch (error) {
+    if (req.file?.path) {
+      await removeUploadedFile(req.file.path);
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const deleteStorePhoto = async (req, res) => {
+  try {
+    const account = await Admin.findById(req.user.id);
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    const previousPhoto = account.storePhoto;
+    account.storePhoto = "";
+    await account.save();
+
+    await removeUploadedFile(previousPhoto);
+
+    res.status(200).json({
+      success: true,
+      message: "Store photo deleted successfully",
       data: account,
     });
   } catch (error) {
@@ -412,7 +483,7 @@ export const createProvider = async (req, res) => {
       description,
       email: lowerEmail,
       phone,
-      password,
+      password: req.body.password,
       tenantId: req.user?.tenantId,
       city,
       state,

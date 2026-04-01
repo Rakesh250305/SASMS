@@ -7,6 +7,7 @@ import {
   Package, ChevronRight, ArrowRight, Clock, MapPin,
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
+import { getInitials, resolveImageUrl } from "../../component/avatarUtils";
 
 const STATUS_CONFIG = {
   assigned:    { bg: "bg-purple-100", text: "text-purple-700", dot: "bg-purple-500" },
@@ -76,7 +77,8 @@ export default function ProviderDashboard() {
     })();
   }, []);
 
-  const initials = provider?.name?.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase() || "PR";
+  const initials = getInitials(provider?.name, "PR");
+  const profilePhoto = resolveImageUrl(apiUrl, provider?.profilePhoto);
 
   const STATS = [
     { label: "Assigned",    val: stats.assigned,    icon: ClipboardList, c: "text-purple-600", bg: "bg-purple-50" },
@@ -110,8 +112,12 @@ export default function ProviderDashboard() {
               <div className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full " />
             )}
               </div>
-          <button onClick={() => navigate("/provider/profile")} className="relative bg-white/20 p-2.5 text-white font-extrabold text-sm rounded-xl">
-            {initials}
+          <button onClick={() => navigate("/provider/profile")} className="relative bg-white/20 w-10 h-10 overflow-hidden border border-white/20 text-white font-extrabold text-sm rounded-xl flex items-center justify-center">
+            {profilePhoto ? (
+              <img src={profilePhoto} alt="Provider" className="w-full h-full object-cover" />
+            ) : (
+              initials
+            )}
           </button>
             </div>
         </div>

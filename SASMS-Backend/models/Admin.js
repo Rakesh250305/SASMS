@@ -21,6 +21,7 @@ role: {
   GSTNo : String,
   businessDescription : String,
   website : String,
+  storePhoto: String,
 
   city: String,
   state: String,

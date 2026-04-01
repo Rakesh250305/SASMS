@@ -124,7 +124,7 @@ export default function ProviderNotifications() {
     <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-6 pb-6 h-[30vh] relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] px-5 pt-6 pb-6 h-[10vh] relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
         <div className="flex items-end justify-between">
           <div>

@@ -15,6 +15,7 @@ const providerSchema = new mongoose.Schema({
   },
 
   phone: String,
+  profilePhoto: String,
 
   password: {
     type: String,

@@ -5,7 +5,9 @@ import { userSignup, getInfo,
     getRecentBookings,
     getAllService,
     updateProfile,
-  changePassword
+  changePassword,
+  uploadUserPhoto,
+  deleteUserPhoto
      } from "../controllers/userController.js";
 
 import {
@@ -20,8 +22,10 @@ import {
   getNotifications,
   markNotificationsRead,
 } from "../controllers/bookingController.js";
+import { createUploader } from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
+const userPhotoUpload = createUploader("uploads/users");
 
 // Login || Signup
 router.post('/signup', userSignup);
@@ -30,6 +34,8 @@ router.post('/signup', userSignup);
 router.get("/", authenticate, authorizeRoles("user"), getInfo);
 router.get("/recentBooking", authenticate, authorizeRoles("user"), getRecentBookings);
 router.put("/profile", authenticate, authorizeRoles("user"), updateProfile);
+router.put("/profile-photo", authenticate, authorizeRoles("user"), userPhotoUpload.single("profilePhoto"), uploadUserPhoto);
+router.delete("/profile-photo", authenticate, authorizeRoles("user"), deleteUserPhoto);
 router.put("/change-password", authenticate, authorizeRoles("user"), changePassword);
 
 // Services

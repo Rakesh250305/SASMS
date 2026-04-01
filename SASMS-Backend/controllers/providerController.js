@@ -1,6 +1,7 @@
 import Provider from "../models/Provider.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { buildUploadPath, removeUploadedFile } from "../utils/profilePhoto.js";
 
 // POST /provider/login
 // export const providerLogin = async (req, res) => {
@@ -74,6 +75,60 @@ export const changeProviderPassword = async (req, res) => {
     provider.password = await bcrypt.hash(newPassword, 10);
     await provider.save();
     res.json({ success: true, message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const uploadProviderPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Profile photo is required" });
+    }
+
+    const provider = await Provider.findById(req.user.id);
+    if (!provider) {
+      return res.status(404).json({ success: false, message: "Provider not found" });
+    }
+
+    const previousPhoto = provider.profilePhoto;
+    provider.profilePhoto = buildUploadPath("uploads/providers", req.file.filename);
+    await provider.save();
+
+    await removeUploadedFile(previousPhoto);
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo updated successfully",
+      profilePhoto: provider.profilePhoto,
+      provider: await Provider.findById(req.user.id).select("-password"),
+    });
+  } catch (err) {
+    if (req.file?.path) {
+      await removeUploadedFile(req.file.path);
+    }
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const deleteProviderPhoto = async (req, res) => {
+  try {
+    const provider = await Provider.findById(req.user.id);
+    if (!provider) {
+      return res.status(404).json({ success: false, message: "Provider not found" });
+    }
+
+    const previousPhoto = provider.profilePhoto;
+    provider.profilePhoto = "";
+    await provider.save();
+
+    await removeUploadedFile(previousPhoto);
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo deleted successfully",
+      provider: await Provider.findById(req.user.id).select("-password"),
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

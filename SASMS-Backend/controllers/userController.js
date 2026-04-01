@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import Service from '../models/Service.js';
 import Activity from '../models/Activity.js';
 import Admin from '../models/Admin.js';
+import { buildUploadPath, removeUploadedFile } from "../utils/profilePhoto.js";
 
 // User Signup
 export const userSignup = async (req, res) => {
@@ -186,6 +187,76 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 }
+
+export const uploadUserPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Profile photo is required",
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const previousPhoto = user.profilePhoto;
+    user.profilePhoto = buildUploadPath("uploads/users", req.file.filename);
+    await user.save();
+
+    await removeUploadedFile(previousPhoto);
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo updated successfully",
+      profilePhoto: user.profilePhoto,
+      data: await User.findById(req.user.id).select("-password"),
+    });
+  } catch (error) {
+    if (req.file?.path) {
+      await removeUploadedFile(req.file.path);
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const deleteUserPhoto = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const previousPhoto = user.profilePhoto;
+    user.profilePhoto = "";
+    await user.save();
+
+    await removeUploadedFile(previousPhoto);
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo deleted successfully",
+      data: await User.findById(req.user.id).select("-password"),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 // Get All Services
 export const getAllService = async (req, res) => {

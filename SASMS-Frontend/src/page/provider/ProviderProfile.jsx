@@ -1,72 +1,104 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronRight, User, Mail, Phone,
-  MapPin, Briefcase, LogOut, Shield, Star,
-  Edit3, Check, X, Loader2,
+  User, Mail, Phone, MapPin, Edit3, Check, X,
+  Loader2, Shield, Briefcase, Star, Hash,
+  Navigation, AlignLeft, LogOut, Clock, Building2,
+  Camera, ImagePlus, Trash2,
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
+import { getInitials, resolveImageUrl } from "../../component/avatarUtils";
 
-/* ── read-only info row ── */
+/* ────────────────────────────────────────────
+   InfoRow — read-only display
+──────────────────────────────────────────── */
 function InfoRow({ icon: Icon, label, value }) {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
-      <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon size={13} className="text-purple-600" />
+    <div className="flex items-start gap-3 py-3.5 border-b border-slate-50 last:border-0">
+      <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Icon size={14} className="text-purple-600" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">{label}</p>
-        <p className="text-sm text-slate-700 font-medium mt-0.5 leading-snug">{value}</p>
+        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{label}</p>
+        <p className="text-sm text-slate-700 font-semibold mt-0.5 leading-snug">{value}</p>
       </div>
     </div>
   );
 }
 
-/* ── editable field ── */
-function EditField({ icon: Icon, label, name, value, onChange, type = "text", locked }) {
+/* ────────────────────────────────────────────
+   EditField — editable input or locked
+──────────────────────────────────────────── */
+function EditField({ icon: Icon, label, name, value, onChange, type = "text", locked, placeholder }) {
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
-      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${locked ? "bg-gray-100" : "bg-purple-50"}`}>
-        <Icon size={13} className={locked ? "text-gray-400" : "text-purple-600"} />
+    <div className="flex items-start gap-3 py-3 border-b border-slate-50 last:border-0">
+      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${locked ? "bg-gray-100" : "bg-purple-50"}`}>
+        <Icon size={14} className={locked ? "text-gray-400" : "text-purple-600"} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">{label}</p>
+        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">{label}</p>
         {locked ? (
-          <p className="text-sm text-gray-400 font-medium">{value}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm text-gray-400 font-medium">{value}</p>
+            <Shield size={10} className="text-gray-300" />
+          </div>
         ) : (
           <input
             type={type}
             name={name}
             value={value || ""}
             onChange={onChange}
-            className="w-full text-sm text-slate-800 font-medium bg-purple-50/60 border border-purple-100 rounded-lg px-3 py-1.5 outline-none focus:border-purple-400 focus:bg-white transition-all placeholder-gray-300"
-            placeholder={`Enter ${label.toLowerCase()}`}
+            placeholder={placeholder || `Enter ${label.toLowerCase()}`}
+            className="w-full text-sm text-slate-800 font-medium bg-purple-50/50 border border-purple-100 rounded-xl px-3 py-2 outline-none focus:border-purple-400 focus:bg-white transition-all placeholder-gray-300"
           />
-        )}
-        {locked && (
-          <p className="text-[9px] text-gray-400 mt-0.5 flex items-center gap-1">
-            <Shield size={9} /> Cannot be changed
-          </p>
         )}
       </div>
     </div>
   );
 }
 
+/* ────────────────────────────────────────────
+   Section divider label inside card
+──────────────────────────────────────────── */
+function SectionLabel({ children }) {
+  return (
+    <div className="flex items-center gap-2 pt-3 pb-1">
+      <p className="text-[10px] font-black uppercase tracking-widest text-gray-300 whitespace-nowrap">
+        {children}
+      </p>
+      <div className="flex-1 h-px bg-slate-100" />
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────
+   Main Component
+──────────────────────────────────────────── */
 export default function ProviderProfile() {
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
-  const [provider, setProvider] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState("");
-  const [form, setForm] = useState({});
   const token = localStorage.getItem("token");
+  const fileInputRef = useRef(null);
 
+  const [provider, setProvider] = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [editing, setEditing]   = useState(false);
+  const [saving, setSaving]     = useState(false);
+  const [saveMsg, setSaveMsg]   = useState(""); // "success" | "error" | ""
+  const [profilePhoto, setProfilePhoto] = useState("");
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+
+  const [form, setForm] = useState({
+    description: "", phone: "", city: "", state: "",
+    pincode: "", experience: "", serviceType: "",
+  });
+
+  /* Fetch provider */
   useEffect(() => {
     (async () => {
       try {
@@ -75,14 +107,15 @@ export default function ProviderProfile() {
         });
         const data = r.data.data || r.data.provider || r.data;
         setProvider(data);
+        setProfilePhoto(data.profilePhoto || "");
         setForm({
           description: data.description || "",
-          phone: data.phone || "",
-          city: data.city || "",
-          state: data.state || "",
-          pincode: data.pincode || "",
-          experience: data.experience || "",
-          serviceType: data.serviceType || "",
+          phone:       data.phone       || "",
+          city:        data.city        || "",
+          state:       data.state       || "",
+          pincode:     data.pincode     || "",
+          experience:  data.experience  || "",
+          serviceType: Array.isArray(data.serviceType) ? data.serviceType.join(", ") : data.serviceType || "",
         });
       } catch (e) {
         console.error(e);
@@ -91,102 +124,237 @@ export default function ProviderProfile() {
     })();
   }, []);
 
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  useEffect(() => {
+    return () => {
+      if (photoPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
+  const handleChange = e =>
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSave = async () => {
     setSaving(true);
     setSaveMsg("");
     try {
+      const payload = {
+        ...form,
+        serviceType: form.serviceType
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+      };
       const r = await axios.put(
         `${apiUrl}/provider/profile`,
-        form,
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const updated = r.data.data || r.data.provider || r.data;
       setProvider(updated);
+      setProfilePhoto(updated.profilePhoto || "");
       setEditing(false);
       setSaveMsg("success");
-      setTimeout(() => setSaveMsg(""), 3000);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setSaveMsg("error");
-      setTimeout(() => setSaveMsg(""), 3000);
     }
     setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  };
+
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (photoPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(photoPreview);
+    }
+
+    setPhotoPreview(URL.createObjectURL(file));
+    setShowPhotoMenu(false);
+    uploadPhoto(file);
+    e.target.value = "";
+  };
+
+  const uploadPhoto = async (file) => {
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("profilePhoto", file);
+      const response = await axios.put(`${apiUrl}/provider/profile-photo`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const updatedProvider = response.data.provider || response.data.data;
+      const savedPhoto = response.data.profilePhoto || updatedProvider?.profilePhoto || "";
+
+      if (updatedProvider) {
+        setProvider(updatedProvider);
+      }
+      setProfilePhoto(savedPhoto);
+      setPhotoPreview((current) => {
+        if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
+        return null;
+      });
+    } catch (error) {
+      console.error("Provider photo upload failed", error);
+    }
+    setUploadingPhoto(false);
+  };
+
+  const removePhoto = async () => {
+    setShowPhotoMenu(false);
+    try {
+      const response = await axios.delete(`${apiUrl}/provider/profile-photo`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProvider(response.data.provider || provider);
+      setProfilePhoto("");
+      setPhotoPreview((current) => {
+        if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
+        return null;
+      });
+    } catch (error) {
+      console.error("Provider photo delete failed", error);
+    }
   };
 
   const handleCancel = () => {
-    // reset form to last saved provider data
     setForm({
-      description : provider?.description || "",
-      phone: provider?.phone || "",
-      city: provider?.city || "",
-      state: provider?.state || "",
-      pincode: provider?.pincode || "",
-      experience: provider?.experience || "",
-      serviceType: provider?.serviceType || "",
+      description: provider?.description || "",
+      phone:       provider?.phone       || "",
+      city:        provider?.city        || "",
+      state:       provider?.state       || "",
+      pincode:     provider?.pincode     || "",
+      experience:  provider?.experience  || "",
+      serviceType: Array.isArray(provider?.serviceType) ? provider.serviceType.join(", ") : provider?.serviceType || "",
     });
     setEditing(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    navigate("/login");
-  };
+  const initials = getInitials(provider?.name, "PR");
 
-  const initials =
-    provider?.name?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "PR";
+  const joinedDate = provider?.createdAt
+    ? new Date(provider.createdAt).toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", year: "numeric"
+      })
+    : null;
+
+  const serviceTypes = Array.isArray(provider?.serviceType)
+    ? provider.serviceType.join(", ")
+    : provider?.serviceType || "";
+  const resolvedPhoto = photoPreview || resolveImageUrl(apiUrl, profilePhoto);
+
+  if (loading) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <Loader2 size={28} className="text-purple-500 animate-spin" />
+    </div>
+  );
 
   return (
-    <div className="flex-1 flex flex-col relative h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#F3F6F9]">
 
-      {/* Header */}
-      <div className="bg-gradient-to-br from-[#86198f] to-[#c026d3] h-[20vh] px-5 pt-8 pb-5 relative overflow-hidden">
-        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10" />
-        <div className="absolute bottom-0 left-4 w-14 h-14 rounded-full bg-white/5" />
-        <div className="flex items-center justify-between relative">
-          <div>
-            <h1 className="text-xl font-extrabold text-white">My Profile</h1>
-            <p className="text-white/50 text-xs mt-0.5">Account details</p>
-          </div>
-          {!loading && !editing && (
-            <motion.button
-              whileTap={{ scale: 0.93 }}
-              onClick={() => setEditing(true)}
-              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 px-3.5 py-2 rounded-xl text-white text-xs font-bold transition-all"
-            >
-              <Edit3 size={13} />
-              Edit
-            </motion.button>
-          )}
-          {editing && (
-            <div className="flex items-center gap-2">
-              <motion.button
-                whileTap={{ scale: 0.93 }}
-                onClick={handleCancel}
-                className="flex items-center gap-1.5 bg-white/20 border border-white/30 px-3 py-2 rounded-xl text-white text-xs font-bold"
-              >
-                <X size={13} />
-                Cancel
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.93 }}
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1.5 bg-white px-3.5 py-2 rounded-xl text-[#86198f] text-xs font-bold shadow disabled:opacity-60"
-              >
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-                {saving ? "Saving…" : "Save"}
-              </motion.button>
+      {/* ── Header ── */}
+      <div className="bg-gradient-to-br from-[#86198f] via-[#a21caf] to-[#c026d3] px-5 pt-10 pb-16 relative overflow-hidden">
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/10" />
+        <div className="absolute bottom-2 left-6 w-20 h-20 rounded-full bg-white/5" />
+
+        <div className="flex items-center gap-4 relative">
+          {/* Avatar */}
+          <div className="relative flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center shadow-lg">
+              {resolvedPhoto ? (
+                <img src={resolvedPhoto} alt="Provider profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-extrabold text-xl">{initials}</span>
+              )}
             </div>
-          )}
+
+            {uploadingPhoto && (
+              <div className="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center">
+                <Loader2 size={18} className="text-white animate-spin" />
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowPhotoMenu((current) => !current)}
+              className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-100"
+            >
+              <Camera size={13} className="text-[#a21caf]" />
+            </button>
+
+            <AnimatePresence>
+              {showPhotoMenu && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.85, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-20 left-0 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-20 w-44"
+                >
+                  <button
+                    onClick={() => {
+                      setShowPhotoMenu(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-gray-50"
+                  >
+                    <ImagePlus size={14} className="text-purple-600" />
+                    {resolvedPhoto ? "Change Photo" : "Upload Photo"}
+                  </button>
+                  {resolvedPhoto && (
+                    <button
+                      onClick={removePhoto}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 border-t border-gray-50"
+                    >
+                      <Trash2 size={14} />
+                      Remove Photo
+                    </button>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-white font-extrabold text-lg leading-tight truncate">{provider?.name}</p>
+            <p className="text-white/60 text-xs mt-0.5 truncate">{provider?.email}</p>
+            <div className="flex  items-center gap-2 mt-1.5 flex-wrap">
+              {/* Active badge — top-right absolute like UserProfile */}
+              <span className={`inline-flex absolute right-2 items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                provider?.status === "active"
+                  ? "bg-white/20 text-white"
+                  : "bg-white/10 text-white/60"
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${provider?.status === "active" ? "bg-green-300" : "bg-gray-400"}`} />
+                {provider?.status === "active" ? "Active" : provider?.status || "Inactive"}
+              </span>
+              {joinedDate && (
+                <span className="text-white/40 text-[10px]">Since {joinedDate}</span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="mt-5 px-4 pb-28 space-y-4 max-w-xl mx-auto overflow-y-auto">
+      {/* ── Body ── */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handlePhotoSelect}
+      />
+
+      {showPhotoMenu && (
+        <div className="fixed inset-0 z-10" onClick={() => setShowPhotoMenu(false)} />
+      )}
+
+      <div className="absolute -mt-10 pb-28 w-full px-4 space-y-3">
 
         {/* Toast */}
         <AnimatePresence>
@@ -195,122 +363,148 @@ export default function ProviderProfile() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
-                saveMsg === "success"
+              className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm
+                ${saveMsg === "success"
                   ? "bg-green-50 text-green-700 border border-green-100"
-                  : "bg-red-50 text-red-600 border border-red-100"
-              }`}
+                  : "bg-red-50 text-red-600 border border-red-100"}`}
             >
-              {saveMsg === "success" ? (
-                <><Check size={15} /> Profile updated successfully!</>
-              ) : (
-                <><X size={15} /> Failed to save. Please try again.</>
-              )}
+              {saveMsg === "success"
+                ? <><Check size={14} /> Profile updated successfully!</>
+                : <><X size={14} /> Failed to save. Try again.</>}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Avatar card */}
-        <div className="bg-white relative rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-          {loading ? (
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 animate-pulse flex-shrink-0" />
-          ) : (
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#86198f] to-[#c026d3] flex items-center justify-center flex-shrink-0 shadow-md">
-              <span className="text-white font-extrabold text-xl">{initials}</span>
+        {/* ── Profile Card ── */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+
+          {/* Card header */}
+          <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-50">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">My Profile</p>
+              <p className="text-sm font-bold text-slate-700 mt-0.5">Account & Service Details</p>
             </div>
-          )}
-          <div className="flex-1 min-w-0 ">
-            {loading ? (
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-100 rounded-full w-2/3 animate-pulse" />
-                <div className="h-3 bg-gray-100 rounded-full w-1/2 animate-pulse" />
-              </div>
+
+            {!editing ? (
+              <motion.button
+                whileTap={{ scale: 0.93 }}
+                onClick={() => setEditing(true)}
+                className="flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-100 px-3.5 py-2 rounded-xl text-xs font-bold"
+              >
+                <Edit3 size={12} /> Edit
+              </motion.button>
             ) : (
-              <>
-                <p className="text-base font-extrabold text-slate-800">{provider?.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{provider?.email}</p>
-                  <span className={`absolute top-5 right-5 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                    provider?.status === "active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-500"
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${provider?.status === "active" ? "bg-green-500" : "bg-gray-400"}`} />
-                    {provider?.status || "Active"}
-                  </span>
-                  <span className="text-[10px] text-gray-400">Joined On: {new Date(provider?.createdAt).toLocaleDateString()}</span>
-              </>
+              <div className="flex gap-2">
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={handleCancel}
+                  className="flex items-center gap-1 bg-gray-100 text-gray-500 px-3 py-2 rounded-xl text-xs font-bold"
+                >
+                  <X size={12} /> Cancel
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-1 bg-[#c026d3] text-white px-3.5 py-2 rounded-xl text-xs font-bold disabled:opacity-60"
+                >
+                  {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                  {saving ? "Saving…" : "Save"}
+                </motion.button>
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Info / Edit card */}
-        <AnimatePresence mode="wait">
-          {!loading && provider && (
+          {/* Card body — animated switch */}
+          <AnimatePresence mode="wait">
             <motion.div
               key={editing ? "edit" : "view"}
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18 }}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4"
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="px-5 py-1 pb-4"
             >
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  {editing ? "Edit Info" : "Account Info"}
-                </p>
-                {editing && (
-                  <span className="text-[9px] font-semibold text-purple-500 bg-purple-50 px-2 py-0.5 rounded-full">
-                    Name & Email are locked
-                  </span>
-                )}
-              </div>
-
               {editing ? (
                 <>
-                  <EditField icon={User}      label="Full Name"    name="name"        value={provider.name}        onChange={handleChange} locked />
-                  <EditField icon={Mail}      label="Email"        name="email"       value={provider.email}       onChange={handleChange} locked />
-                  <EditField icon={Briefcase} label="Description"  name="description" value={form.description} onChange={handleChange} />
-                  <EditField icon={Phone}     label="Phone"        name="phone"       value={form.phone}           onChange={handleChange} />
-                  <EditField icon={MapPin}    label="City"         name="city"        value={form.city}            onChange={handleChange} />
-                  <EditField icon={MapPin}    label="State"        name="state"       value={form.state}           onChange={handleChange} />
-                  <EditField icon={MapPin}    label="Pincode"      name="pincode"     value={form.pincode}         onChange={handleChange} />
-                  <EditField icon={Briefcase} label="Experience"   name="experience"  value={form.experience}      onChange={handleChange} />
-                  <EditField icon={Star}      label="Service Type" name="serviceType" value={form.serviceType}     onChange={handleChange} />
+                  {/* Locked fields */}
+                  <SectionLabel>Account Info</SectionLabel>
+                  <EditField icon={User}   label="Full Name" name="name"  value={provider?.name}  locked />
+                  <EditField icon={Mail}   label="Email"     name="email" value={provider?.email} locked />
+
+                  {/* Editable personal */}
+                  <SectionLabel>Contact</SectionLabel>
+                  <EditField
+                    icon={Phone} label="Phone" name="phone"
+                    value={form.phone} onChange={handleChange}
+                    placeholder="Your contact number"
+                  />
+                  <EditField
+                    icon={AlignLeft} label="Description" name="description"
+                    value={form.description} onChange={handleChange}
+                    placeholder="Brief about your service"
+                  />
+
+                  {/* Location */}
+                  <SectionLabel>Location</SectionLabel>
+                  <EditField
+                    icon={Building2} label="City" name="city"
+                    value={form.city} onChange={handleChange}
+                    placeholder="City"
+                  />
+                  <EditField
+                    icon={Navigation} label="State" name="state"
+                    value={form.state} onChange={handleChange}
+                    placeholder="State"
+                  />
+                  <EditField
+                    icon={Hash} label="Pincode" name="pincode"
+                    value={form.pincode} onChange={handleChange}
+                    placeholder="6-digit pincode"
+                  />
+
+                  {/* Professional */}
+                  <SectionLabel>Professional</SectionLabel>
+                  <EditField
+                    icon={Clock} label="Experience (Years)" name="experience"
+                    value={form.experience} onChange={handleChange}
+                    placeholder="e.g. 5"
+                    type="number"
+                  />
+                  <EditField
+                    icon={Star} label="Service Type" name="serviceType"
+                    value={form.serviceType} onChange={handleChange}
+                    placeholder="e.g. AC Repair, Plumbing"
+                  />
                 </>
               ) : (
                 <>
-                  <InfoRow icon={User}      label="Full Name"     value={provider.name} />
-                  <InfoRow icon={Mail}      label="Email"         value={provider.email} />
-                  <InfoRow icon={Briefcase} label="Description"   value={provider.description} />
-                  <InfoRow icon={Phone}     label="Phone"         value={provider.phone} />
-                  <InfoRow icon={MapPin}    label="Location"      value={[provider.city, provider.state, provider.pincode].filter(Boolean).join(", ")} />
-                  <InfoRow icon={Briefcase} label="Experience"    value={provider.experience + " Years"} />
-                  <InfoRow icon={Star}      label="Service Types" value={provider.serviceType?.join(", ")} />
-                  <InfoRow icon={Shield}    label="Tenant ID"     value={provider.tenantId} />
+                  {/* View mode */}
+                  <SectionLabel>Account Info</SectionLabel>
+                  <InfoRow icon={User}      label="Full Name"   value={provider?.name} />
+                  <InfoRow icon={Mail}      label="Email"       value={provider?.email} />
+                  <InfoRow icon={Shield}    label="Tenant ID"   value={provider?.tenantId} />
+
+                  <SectionLabel>Contact</SectionLabel>
+                  <InfoRow icon={Phone}     label="Phone"       value={provider?.phone} />
+                  <InfoRow icon={AlignLeft} label="Description" value={provider?.description} />
+
+                  <SectionLabel>Location</SectionLabel>
+                  <InfoRow
+                    icon={MapPin}
+                    label="Address"
+                    value={[provider?.city, provider?.state, provider?.pincode].filter(Boolean).join(", ")}
+                  />
+
+                  <SectionLabel>Professional</SectionLabel>
+                  <InfoRow icon={Clock}     label="Experience"    value={provider?.experience ? `${provider.experience} Years` : null} />
+                  <InfoRow icon={Star}      label="Service Types" value={serviceTypes} />
+                  <InfoRow icon={Briefcase} label="Role"          value={provider?.role} />
                 </>
               )}
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Actions */}
-        {!editing && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account</p>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 py-3 text-red-500"
-            >
-              <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-                <LogOut size={15} className="text-red-500" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-red-500">Sign Out</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Log out of your account</p>
-              </div>
-            </button>
-          </div>
-        )}
+          </AnimatePresence>
+        </div>
 
       </div>
 
