@@ -406,10 +406,10 @@ export default function ProviderTaskDetail() {
         {/* ── Customer ─────────────────────────────── */}
         <Section title="Customer">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white/20 border-2 border-gray-200 flex items-center justify-center">
               {task?.user.profilePhoto
                 ? <img src={task.user.profilePhoto} alt="profile" className="w-full h-full object-cover" />
-                : <span className="text-white font-extrabold text-xl">{task.user.name.split(" ").map(w => w[0]).join("").toUpperCase()}</span>
+                : <span className="text-indigo-700 bg-infigo-200 font-bold text-xl">{task.user.name.split(" ").map(w => w[0]).join("").toUpperCase()}</span>
               }
             </div>
             <div className="flex-1 min-w-0">
