@@ -9,7 +9,7 @@ import {
   Camera, ImagePlus, Trash2,
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
-import { getInitials, resolveImageUrl } from "../../component/avatarUtils";
+import { getInitials } from "../../utils/avatarUtils";
 
 /* ────────────────────────────────────────────
    InfoRow — read-only display
@@ -84,14 +84,13 @@ export default function ProviderProfile() {
   const fileInputRef = useRef(null);
 
   const [provider, setProvider] = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [editing, setEditing]   = useState(false);
-  const [saving, setSaving]     = useState(false);
-  const [saveMsg, setSaveMsg]   = useState(""); // "success" | "error" | ""
-  const [profilePhoto, setProfilePhoto] = useState("");
-  const [photoPreview, setPhotoPreview] = useState(null);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(""); // "success" | "error" | ""
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const [form, setForm] = useState({
     description: "", phone: "", city: "", state: "",
@@ -102,19 +101,19 @@ export default function ProviderProfile() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await axios.get(`${apiUrl}/provider`, {
+        const res = await axios.get(`${apiUrl}/provider`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = r.data.data || r.data.provider || r.data;
+        const data = res.data.provider;
         setProvider(data);
-        setProfilePhoto(data.profilePhoto || "");
+        setPhotoUrl(data.profilePhoto || "");
         setForm({
           description: data.description || "",
-          phone:       data.phone       || "",
-          city:        data.city        || "",
-          state:       data.state       || "",
-          pincode:     data.pincode     || "",
-          experience:  data.experience  || "",
+          phone: data.phone || "",
+          city: data.city || "",
+          state: data.state || "",
+          pincode: data.pincode || "",
+          experience: data.experience || "",
           serviceType: Array.isArray(data.serviceType) ? data.serviceType.join(", ") : data.serviceType || "",
         });
       } catch (e) {
@@ -124,13 +123,53 @@ export default function ProviderProfile() {
     })();
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (photoPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(photoPreview);
-      }
-    };
-  }, [photoPreview]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (photoPreview?.startsWith("blob:")) {
+  //       URL.revokeObjectURL(photoPreview);
+  //     }
+  //   };
+  // }, [photoPreview]);
+
+  /* Photo upload — backend receives file, uploads to Vercel Blob, returns { url } */
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setShowMenu(false);
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("profilePhoto", file);
+      const res = await axios.put(`${apiUrl}/provider/profile-photo`, fd, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        },
+      });
+
+      // Vercel Blob returns a public `url` field
+      const url = res.data.profilePhoto || res.data.data?.profilePhoto || "";
+      setPhotoUrl(url);
+      setProvider(u => ({ ...u, profilePhoto: url }));
+    } catch (err) {
+      console.error("Upload failed", err);
+    }
+    setUploading(false);
+  };
+
+  const handleRemovePhoto = async () => {
+    setShowMenu(false);
+    try {
+      await axios.delete(`${apiUrl}/provider/profile-photo`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPhotoUrl("");
+      setProvider(u => ({ ...u, profilePhoto: "" }));
+    } catch (err) {
+      console.error("Remove failed", err);
+    }
+  };
 
   const handleChange = e =>
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -153,7 +192,6 @@ export default function ProviderProfile() {
       );
       const updated = r.data.data || r.data.provider || r.data;
       setProvider(updated);
-      setProfilePhoto(updated.profilePhoto || "");
       setEditing(false);
       setSaveMsg("success");
     } catch {
@@ -163,91 +201,30 @@ export default function ProviderProfile() {
     setTimeout(() => setSaveMsg(""), 3000);
   };
 
-  const handlePhotoSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (photoPreview?.startsWith("blob:")) {
-      URL.revokeObjectURL(photoPreview);
-    }
-
-    setPhotoPreview(URL.createObjectURL(file));
-    setShowPhotoMenu(false);
-    uploadPhoto(file);
-    e.target.value = "";
-  };
-
-  const uploadPhoto = async (file) => {
-    setUploadingPhoto(true);
-    try {
-      const formData = new FormData();
-      formData.append("profilePhoto", file);
-      const response = await axios.put(`${apiUrl}/provider/profile-photo`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      const updatedProvider = response.data.provider || response.data.data;
-      const savedPhoto = response.data.profilePhoto || updatedProvider?.profilePhoto || "";
-
-      if (updatedProvider) {
-        setProvider(updatedProvider);
-      }
-      setProfilePhoto(savedPhoto);
-      setPhotoPreview((current) => {
-        if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
-        return null;
-      });
-    } catch (error) {
-      console.error("Provider photo upload failed", error);
-    }
-    setUploadingPhoto(false);
-  };
-
-  const removePhoto = async () => {
-    setShowPhotoMenu(false);
-    try {
-      const response = await axios.delete(`${apiUrl}/provider/profile-photo`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProvider(response.data.provider || provider);
-      setProfilePhoto("");
-      setPhotoPreview((current) => {
-        if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
-        return null;
-      });
-    } catch (error) {
-      console.error("Provider photo delete failed", error);
-    }
-  };
-
   const handleCancel = () => {
     setForm({
       description: provider?.description || "",
-      phone:       provider?.phone       || "",
-      city:        provider?.city        || "",
-      state:       provider?.state       || "",
-      pincode:     provider?.pincode     || "",
-      experience:  provider?.experience  || "",
+      phone: provider?.phone || "",
+      city: provider?.city || "",
+      state: provider?.state || "",
+      pincode: provider?.pincode || "",
+      experience: provider?.experience || "",
       serviceType: Array.isArray(provider?.serviceType) ? provider.serviceType.join(", ") : provider?.serviceType || "",
     });
     setEditing(false);
   };
 
-  const initials = getInitials(provider?.name, "PR");
+  const initials = getInitials(provider?.name, "NA");
 
   const joinedDate = provider?.createdAt
     ? new Date(provider.createdAt).toLocaleDateString("en-IN", {
-        day: "numeric", month: "short", year: "numeric"
-      })
+      day: "numeric", month: "short", year: "numeric"
+    })
     : null;
 
   const serviceTypes = Array.isArray(provider?.serviceType)
     ? provider.serviceType.join(", ")
     : provider?.serviceType || "";
-  const resolvedPhoto = photoPreview || resolveImageUrl(apiUrl, profilePhoto);
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -259,77 +236,80 @@ export default function ProviderProfile() {
     <div className="min-h-screen bg-[#F3F6F9]">
 
       {/* ── Header ── */}
-      <div className="bg-gradient-to-br from-[#86198f] via-[#a21caf] to-[#c026d3] px-5 pt-10 pb-16 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/10" />
+      <div className="bg-gradient-to-br from-[#86198f] via-[#a21caf] to-[#c026d3] px-5 pt-10 pb-16 relative">
         <div className="absolute bottom-2 left-6 w-20 h-20 rounded-full bg-white/5" />
 
         <div className="flex items-center gap-4 relative">
+
           {/* Avatar */}
           <div className="relative flex-shrink-0">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center shadow-lg">
-              {resolvedPhoto ? (
-                <img src={resolvedPhoto} alt="Provider profile" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white font-extrabold text-xl">{initials}</span>
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 flex items-center justify-center">
+              {photoUrl
+                ? <img src={photoUrl} alt="profile" className="w-full h-full object-cover" />
+                : <span className="text-white font-extrabold text-xl">{initials}</span>
+              }
+              {uploading && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <Loader2 size={18} className="text-white animate-spin" />
+                </div>
               )}
             </div>
 
-            {uploadingPhoto && (
-              <div className="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center">
-                <Loader2 size={18} className="text-white animate-spin" />
-              </div>
-            )}
+            {/* Camera button — relative parent is NOT overflow-hidden so menu shows */}
+            <div className="absolute -bottom-1.5 -right-1.5">
+              <button
+                onClick={() => setShowMenu(v => !v)}
+                className="w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-100"
+              >
+                <Camera size={13} className="text-emerald-600" />
+              </button>
 
-            <button
-              onClick={() => setShowPhotoMenu((current) => !current)}
-              className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-100"
-            >
-              <Camera size={13} className="text-[#a21caf]" />
-            </button>
-
-            <AnimatePresence>
-              {showPhotoMenu && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.85, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.85, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-20 left-0 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-20 w-44"
-                >
-                  <button
-                    onClick={() => {
-                      setShowPhotoMenu(false);
-                      fileInputRef.current?.click();
-                    }}
-                    className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-gray-50"
+              
+            </div>
+            {/* Menu — drops down from button, outside any overflow clip */}
+              <AnimatePresence>
+                {showMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                    transition={{ duration: 0.13 }}
+                    className="absolute top-20 left-10 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-44 z-[999]"
                   >
-                    <ImagePlus size={14} className="text-purple-600" />
-                    {resolvedPhoto ? "Change Photo" : "Upload Photo"}
-                  </button>
-                  {resolvedPhoto && (
                     <button
-                      onClick={removePhoto}
-                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 border-t border-gray-50"
+                      onClick={() => {
+                        setShowMenu(false);
+                        fileInputRef.current?.click();
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-gray-50"
                     >
-                      <Trash2 size={14} />
-                      Remove Photo
+                      <ImagePlus size={14} className="text-purple-600" />
+                      {photoUrl ? "Change Photo" : "Upload Photo"}
                     </button>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+
+                    {photoUrl && (
+                      <button
+                        onClick={handleRemovePhoto}
+                        className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 border-t border-gray-100"
+                      >
+                        <Trash2 size={14} />
+                        Remove Photo
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
           </div>
 
           <div className="min-w-0 flex-1">
             <p className="text-white font-extrabold text-lg leading-tight truncate">{provider?.name}</p>
             <p className="text-white/60 text-xs mt-0.5 truncate">{provider?.email}</p>
-            <div className="flex  items-center gap-2 mt-1.5 flex-wrap">
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               {/* Active badge — top-right absolute like UserProfile */}
-              <span className={`inline-flex absolute right-2 items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                provider?.status === "active"
-                  ? "bg-white/20 text-white"
-                  : "bg-white/10 text-white/60"
-              }`}>
+              <span className={`inline-flex absolute right-2 items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${provider?.status === "active"
+                ? "bg-white/20 text-white"
+                : "bg-white/10 text-white/60"
+                }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${provider?.status === "active" ? "bg-green-300" : "bg-gray-400"}`} />
                 {provider?.status === "active" ? "Active" : provider?.status || "Inactive"}
               </span>
@@ -341,18 +321,13 @@ export default function ProviderProfile() {
         </div>
       </div>
 
-      {/* ── Body ── */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handlePhotoSelect}
-      />
-
-      {showPhotoMenu && (
-        <div className="fixed inset-0 z-10" onClick={() => setShowPhotoMenu(false)} />
+      {/* Backdrop to close menu */}
+      {showMenu && (
+        <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
       )}
+
+      {/* Hidden file input */}
+      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
       <div className="absolute -mt-10 pb-28 w-full px-4 space-y-3">
 
@@ -429,8 +404,8 @@ export default function ProviderProfile() {
                 <>
                   {/* Locked fields */}
                   <SectionLabel>Account Info</SectionLabel>
-                  <EditField icon={User}   label="Full Name" name="name"  value={provider?.name}  locked />
-                  <EditField icon={Mail}   label="Email"     name="email" value={provider?.email} locked />
+                  <EditField icon={User} label="Full Name" name="name" value={provider?.name} locked />
+                  <EditField icon={Mail} label="Email" name="email" value={provider?.email} locked />
 
                   {/* Editable personal */}
                   <SectionLabel>Contact</SectionLabel>
@@ -481,12 +456,12 @@ export default function ProviderProfile() {
                 <>
                   {/* View mode */}
                   <SectionLabel>Account Info</SectionLabel>
-                  <InfoRow icon={User}      label="Full Name"   value={provider?.name} />
-                  <InfoRow icon={Mail}      label="Email"       value={provider?.email} />
-                  <InfoRow icon={Shield}    label="Tenant ID"   value={provider?.tenantId} />
+                  <InfoRow icon={User} label="Full Name" value={provider?.name} />
+                  <InfoRow icon={Mail} label="Email" value={provider?.email} />
+                  <InfoRow icon={Shield} label="Tenant ID" value={provider?.tenantId} />
 
                   <SectionLabel>Contact</SectionLabel>
-                  <InfoRow icon={Phone}     label="Phone"       value={provider?.phone} />
+                  <InfoRow icon={Phone} label="Phone" value={provider?.phone} />
                   <InfoRow icon={AlignLeft} label="Description" value={provider?.description} />
 
                   <SectionLabel>Location</SectionLabel>
@@ -497,9 +472,9 @@ export default function ProviderProfile() {
                   />
 
                   <SectionLabel>Professional</SectionLabel>
-                  <InfoRow icon={Clock}     label="Experience"    value={provider?.experience ? `${provider.experience} Years` : null} />
-                  <InfoRow icon={Star}      label="Service Types" value={serviceTypes} />
-                  <InfoRow icon={Briefcase} label="Role"          value={provider?.role} />
+                  <InfoRow icon={Clock} label="Experience" value={provider?.experience ? `${provider.experience} Years` : null} />
+                  <InfoRow icon={Star} label="Service Types" value={serviceTypes} />
+                  <InfoRow icon={Briefcase} label="Role" value={provider?.role} />
                 </>
               )}
             </motion.div>

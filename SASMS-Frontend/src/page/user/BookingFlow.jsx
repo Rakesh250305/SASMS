@@ -213,7 +213,7 @@ fetchAddresses();
 
                   {s.serviceImage && (
                     <img
-                      src={`${apiUrl}${s.serviceImage}`}
+                      src={s.serviceImage}
                       alt={s.serviceName}
                       className="w-12 h-12 rounded-lg object-cover"
                     />

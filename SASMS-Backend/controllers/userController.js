@@ -3,7 +3,8 @@ import bcrypt from "bcrypt";
 import Service from '../models/Service.js';
 import Activity from '../models/Activity.js';
 import Admin from '../models/Admin.js';
-import { buildUploadPath, removeUploadedFile } from "../utils/profilePhoto.js";
+import { put } from "@vercel/blob";
+import { del } from "@vercel/blob";
 
 // User Signup
 export const userSignup = async (req, res) => {
@@ -188,6 +189,7 @@ export const updateProfile = async (req, res) => {
   }
 }
 
+// Uplaod User Profile Photo 
 export const uploadUserPhoto = async (req, res) => {
   try {
     if (!req.file) {
@@ -197,31 +199,35 @@ export const uploadUserPhoto = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
+    const account = await User.findById(req.user.id);
+    if (!account) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-    const previousPhoto = user.profilePhoto;
-    user.profilePhoto = buildUploadPath("uploads/users", req.file.filename);
-    await user.save();
+    // Upload to Vercel Blob
+    const blob = await put(
+      `user/${Date.now()}-${req.file.originalname}`,
+      req.file.buffer,
+      {
+        access: "public",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      }
+    );
 
-    await removeUploadedFile(previousPhoto);
+    // blob.url → public URL
+    account.profilePhoto = blob.url;
+    await account.save();
 
     res.status(200).json({
       success: true,
-      message: "Profile photo updated successfully",
-      profilePhoto: user.profilePhoto,
-      data: await User.findById(req.user.id).select("-password"),
+      message: "Photo uploaded Successfully",
+      profilePhoto: blob.url,
+      data: account,
     });
   } catch (error) {
-    if (req.file?.path) {
-      await removeUploadedFile(req.file.path);
-    }
-
     res.status(500).json({
       success: false,
       message: error.message,
@@ -229,32 +235,23 @@ export const uploadUserPhoto = async (req, res) => {
   }
 };
 
+// Delete user Profile Photo
 export const deleteUserPhoto = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
+    const account = await User.findById(req.user.id);
+
+    if (account?.profilePhoto) {
+      await del(account.profilePhoto, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
       });
     }
 
-    const previousPhoto = user.profilePhoto;
-    user.profilePhoto = "";
-    await user.save();
+    account.profilePhoto = "";
+    await account.save();
 
-    await removeUploadedFile(previousPhoto);
-
-    res.status(200).json({
-      success: true,
-      message: "Profile photo deleted successfully",
-      data: await User.findById(req.user.id).select("-password"),
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.json({ success: true, message: "Photo deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -265,7 +262,7 @@ export const getAllService = async (req, res) => {
     const services = await Service.find({ availability: "available" }).sort({ createdAt: -1 });
     const tenantIds = [...new Set(services.map((service) => service.tenantId).filter(Boolean))];
     const admins = await Admin.find({ tenantId: { $in: tenantIds } }).select(
-      "tenantId storeName storeAddress city state pincode website"
+      "tenantId storePhoto storeName storeAddress city state pincode website"
     );
     const adminByTenantId = new Map(
       admins.map((admin) => [admin.tenantId, admin])
@@ -277,6 +274,7 @@ export const getAllService = async (req, res) => {
         ...service.toObject(),
         store: admin
           ? {
+              storePhoto: admin.storePhoto || "",
               storeName: admin.storeName || "",
               storeAddress: admin.storeAddress || "",
               city: admin.city || "",

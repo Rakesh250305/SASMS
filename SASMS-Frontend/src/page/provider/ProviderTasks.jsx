@@ -127,7 +127,7 @@ export default function ProviderTasks() {
             {/* Top */}
             <div className="flex items-center gap-3 p-4 border-b border-gray-50">
               <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
-                <img src={`${apiUrl}${t.service?.serviceImage}`} className="h-full rounded-xl" />
+                <img src={t.service?.serviceImage} alt={t.service?.serviceName} className="h-full rounded-xl" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-mono text-purple-500 mb-0.5">{t.bookingId}</p>

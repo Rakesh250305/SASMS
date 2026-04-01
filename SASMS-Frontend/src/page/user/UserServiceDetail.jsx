@@ -21,6 +21,7 @@ export default function UserServiceDetail() {
         });
         const foundService = (res.data.data || []).find((item) => item._id === id);
         setService(foundService || null);
+        console.log(foundService)
       } catch (error) {
         console.error(error);
       } finally {
@@ -73,7 +74,7 @@ export default function UserServiceDetail() {
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           {service.serviceImage ? (
             <img
-              src={`${apiUrl}${service.serviceImage}`}
+              src={service.serviceImage}
               alt={service.serviceName}
               className="w-full h-56 object-cover"
             />
@@ -105,6 +106,11 @@ export default function UserServiceDetail() {
               <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Store Details</p>
                 <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
+                  {service.store.storePhoto && 
+                  <div className="w-full h-15 border-2 border-gray-300/20 rounded-2xl">
+                      <img src={service.store.storePhoto} alt={service.store.name} className="w-full h-full object-cover"/>
+                  </div>
+                }
                   <div className="flex items-start gap-2">
                     <Store size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
                     <div>

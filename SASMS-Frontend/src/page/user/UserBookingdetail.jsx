@@ -213,7 +213,7 @@ export default function UserBookingDetail() {
           <div className="flex items-center gap-3">
             {booking.service?.serviceImage ? (
               <img
-                src={`${apiUrl}${booking.service.serviceImage}`}
+                src={booking.service.serviceImage}
                 alt={booking.service.serviceName}
                 className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
               />
@@ -263,10 +263,11 @@ export default function UserBookingDetail() {
         <Section title="Assigned Provider">
           {booking.provider ? (
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-indigo-600 font-bold text-sm">
-                  {booking.provider.name?.split(" ").map(w => w[0]).join("").toUpperCase()}
-                </span>
+               <div className="w-12 h-12 rounded-2xl overflow-hidden bg-indigo-100 flex flex-shrink-0 items-center justify-center">
+              {booking?.provider.profilePhoto
+                ? <img src={booking.provider.profilePhoto} alt="profile" className="w-full h-full object-cover" />
+                : <span className="text-indigo-600 font-bold text-sm">{booking.provider.name?.split(" ").map(w => w[0]).join("").toUpperCase()}</span>
+              }
               </div>
               <div className="flex  justify-between w-full">
                 <div className="flex-1">

@@ -245,9 +245,8 @@ export default function AdminProviders() {
                 }
               }}
               placeholder="Type a skill and press Enter"
-              className={`w-full pl-10 pr-3 py-3 text-sm border rounded-xl bg-gray-50 outline-none focus:border-blue-500 ${
-                errors.serviceType ? "border-red-400" : "border-gray-200"
-              }`}
+              className={`w-full pl-10 pr-3 py-3 text-sm border rounded-xl bg-gray-50 outline-none focus:border-blue-500 ${errors.serviceType ? "border-red-400" : "border-gray-200"
+                }`}
             />
           </div>
           <button
@@ -322,12 +321,20 @@ export default function AdminProviders() {
               transition={{ delay: i * 0.05 }}
               className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100"
             >
-              <div className="flex items-start gap-3">
-                <div
-                  onClick={() => handleView(p)}
-                  className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center font-extrabold text-blue-700 text-sm flex-shrink-0 cursor-pointer"
-                >
-                  {initials(p.name)}
+              <div className="flex items-center gap-3 ">
+                <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-gray-200/70 bg-white/20 cursor-pointer"
+                  onClick={() => handleView(p)}>
+                  {p.profilePhoto ? (
+                    <img
+                      src={p.profilePhoto}
+                      alt="Store"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-blue-100 text-blue-700 text-sm font-bold text-xl">{initials(p.name)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0" onClick={() => handleView(p)}>
@@ -358,15 +365,15 @@ export default function AdminProviders() {
               )}
 
               <button
-                    onClick={() => handleToggleStatus(p)}
-                    className={`text-[10px] mt-1 px-2 py-2 w-full rounded-full font-semibold
+                onClick={() => handleToggleStatus(p)}
+                className={`text-[10px] mt-1 px-2 py-2 w-full rounded-full font-semibold
     ${p.status === "active"
-                        ? "bg-red-100 text-red-500"
-                        : "bg-green-100 text-green-600"
-                      }`}
-                  >
-                    {p.status === "active" ? "Deactivate" : "Activate"}
-                  </button>
+                    ? "bg-red-100 text-red-500"
+                    : "bg-green-100 text-green-600"
+                  }`}
+              >
+                {p.status === "active" ? "Deactivate" : "Activate"}
+              </button>
             </motion.div>
           ))
         )}
@@ -382,96 +389,96 @@ export default function AdminProviders() {
 
       {/* ── Add Modal ── */}
       <AnimatePresence>
-      {showAddModal && (
-        <>
-          <motion.div
-            key="add-backdrop"
-            onClick={() => setShowAddModal(false)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 z-40"
-          />
+        {showAddModal && (
+          <>
+            <motion.div
+              key="add-backdrop"
+              onClick={() => setShowAddModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 z-40"
+            />
 
-          <motion.div
-            key="add-modal"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25 }}
-            className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
-          >
+            <motion.div
+              key="add-modal"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+            >
 
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-gray-200 rounded-full" />
-            </div>
-
-            <div className="flex items-center justify-between pb-3">
-              <div className="flex items-center gap-2">
-                <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
-                <span className="font-bold text-gray-800">Add Provider</span>
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
               </div>
-              <button onClick={() => setShowAddModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
-                <X size={15} />
-              </button>
-            </div>
-            <div className="flex flex-col h-full flex-1 overflow-y-auto pb-6">
-              {providerForm}
-              <button onClick={handleAddProvider} className="w-full mt-4 py-3.5 bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white rounded-xl font-bold flex items-center justify-center gap-2">
-                <Check size={17} /> Add Provider
-              </button>
-            </div>
-          </motion.div>
-        </>
 
-      )}
+              <div className="flex items-center justify-between pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
+                  <span className="font-bold text-gray-800">Add Provider</span>
+                </div>
+                <button onClick={() => setShowAddModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <X size={15} />
+                </button>
+              </div>
+              <div className="flex flex-col h-full flex-1 overflow-y-auto pb-6">
+                {providerForm}
+                <button onClick={handleAddProvider} className="w-full mt-4 py-3.5 bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white rounded-xl font-bold flex items-center justify-center gap-2">
+                  <Check size={17} /> Add Provider
+                </button>
+              </div>
+            </motion.div>
+          </>
+
+        )}
       </AnimatePresence>
 
       {/* ── Edit Modal ── */}
       <AnimatePresence>
-      {showEditModal && (
-        <>
-          <motion.div
-            key="edit-backdrop"
-            onClick={() => setShowEditModal(false)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 z-40"
-          />
+        {showEditModal && (
+          <>
+            <motion.div
+              key="edit-backdrop"
+              onClick={() => setShowEditModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 z-40"
+            />
 
-          <motion.div
-            key="edit-modal"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25 }}
-            className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
-          >
+            <motion.div
+              key="edit-modal"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+            >
 
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-gray-200 rounded-full" />
-            </div>
-            <div className="flex items-center justify-between pb-3 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
-                <span className="font-bold text-gray-800">Edit Provider</span>
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
               </div>
-              <button onClick={() => setShowEditModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
-                <X size={15} />
-              </button>
-            </div>
-            <div className="flex-1 h-full overflow-y-auto pb-6">
-              {providerForm}
-              <button onClick={handleUpdateProvider} className="w-full mt-4 py-3.5 bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white rounded-xl font-bold flex items-center justify-center gap-2">
-                <Check size={17} /> Update Provider
-              </button>
-            </div>
-          </motion.div>
-        </>
-      )}
+              <div className="flex items-center justify-between pb-3 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
+                  <span className="font-bold text-gray-800">Edit Provider</span>
+                </div>
+                <button onClick={() => setShowEditModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <X size={15} />
+                </button>
+              </div>
+              <div className="flex-1 h-full overflow-y-auto pb-6">
+                {providerForm}
+                <button onClick={handleUpdateProvider} className="w-full mt-4 py-3.5 bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white rounded-xl font-bold flex items-center justify-center gap-2">
+                  <Check size={17} /> Update Provider
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
       </AnimatePresence>
 
       {/* ── View Modal ── */}
@@ -500,9 +507,20 @@ export default function AdminProviders() {
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-2 pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center font-extrabold text-blue-700 flex-shrink-0">
-                    {initials(selectedProvider.name)}
-                  </div>
+                                  <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-gray-200/70 bg-white/20 cursor-pointer">
+                  {selectedProvider.profilePhoto ? (
+                    <img
+                      src={selectedProvider.profilePhoto}
+                      alt="Store"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-blue-100 text-blue-700 text-sm font-bold">{initials(selectedProvider.name)}</span>
+                    </div>
+                  )}
+                </div>
+
                   <div>
                     <h2 className="font-extrabold text-base text-slate-800 leading-tight">
                       {selectedProvider.name}
@@ -539,15 +557,15 @@ export default function AdminProviders() {
               </div>
 
               {/* Current Password */}
-               <div className="bg-gray-50 rounded-2xl mx-5 px-4 py-2 my-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Password</p>
-                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <Eye size={13} className="text-blue-500" />
-                    </div>
-                    <span className="text-sm text-slate-700 font-medium">{selectedProvider.password}</span>
+              <div className="bg-gray-50 rounded-2xl mx-5 px-4 py-2 my-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Password</p>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Eye size={13} className="text-blue-500" />
                   </div>
+                  <span className="text-sm text-slate-700 font-medium">{selectedProvider.password}</span>
                 </div>
+              </div>
 
               {/* Info rows */}
               <div className="px-5 pb-2 space-y-2">

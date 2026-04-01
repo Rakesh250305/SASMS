@@ -1,42 +1,7 @@
 import Provider from "../models/Provider.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { buildUploadPath, removeUploadedFile } from "../utils/profilePhoto.js";
-
-// POST /provider/login
-// export const providerLogin = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     const loweremail = email.toLowerCase().trim();
-
-//     const provider = await Provider.findOne({ email:loweremail }).select("+password");
-//     if (!provider) return res.status(401).json({ success: false, message: "Invalid credentials" });
-
-//     const isMatch = await bcrypt.compare(password, provider.password);
-//     if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
-
-//     const token = jwt.sign(
-//       { id: provider._id, role: "provider" },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "7d" }
-//     );
-
-//     res.status(201).json({
-//       success: true,
-//       token,
-//       provider: {
-//         id: provider._id,
-//         name: provider.name,
-//         email: provider.email,
-//         phone: provider.phone,
-//         role: "provider",
-//       },
-//     });
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// };
+import { put } from "@vercel/blob";
+import { del } from "@vercel/blob";
 
 // GET /provider/
 export const getProviderInfo = async (req, res) => {
@@ -80,56 +45,122 @@ export const changeProviderPassword = async (req, res) => {
   }
 };
 
+// Uplaod Provider Profile Photo 
 export const uploadProviderPhoto = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "Profile photo is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Profile photo is required",
+      });
     }
 
-    const provider = await Provider.findById(req.user.id);
-    if (!provider) {
-      return res.status(404).json({ success: false, message: "Provider not found" });
+    const account = await Provider.findById(req.user.id);
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    const previousPhoto = provider.profilePhoto;
-    provider.profilePhoto = buildUploadPath("uploads/providers", req.file.filename);
-    await provider.save();
+    // Upload to Vercel Blob
+    const blob = await put(
+      `provider/${Date.now()}-${req.file.originalname}`,
+      req.file.buffer,
+      {
+        access: "public",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      }
+    );
 
-    await removeUploadedFile(previousPhoto);
+    // blob.url → public URL
+    account.profilePhoto = blob.url;
+    await account.save();
 
     res.status(200).json({
       success: true,
-      message: "Profile photo updated successfully",
-      profilePhoto: provider.profilePhoto,
-      provider: await Provider.findById(req.user.id).select("-password"),
+      message: "Photo uploaded Successfully",
+      profilePhoto: blob.url,
+      data: account,
     });
-  } catch (err) {
-    if (req.file?.path) {
-      await removeUploadedFile(req.file.path);
-    }
-    res.status(500).json({ success: false, message: err.message });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Delete Provider Profile Photo
 export const deleteProviderPhoto = async (req, res) => {
   try {
-    const provider = await Provider.findById(req.user.id);
-    if (!provider) {
-      return res.status(404).json({ success: false, message: "Provider not found" });
+    const account = await Provider.findById(req.user.id);
+
+    if (account?.profilePhoto) {
+      await del(account.profilePhoto, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
     }
 
-    const previousPhoto = provider.profilePhoto;
-    provider.profilePhoto = "";
-    await provider.save();
+    account.profilePhoto = "";
+    await account.save();
 
-    await removeUploadedFile(previousPhoto);
-
-    res.status(200).json({
-      success: true,
-      message: "Profile photo deleted successfully",
-      provider: await Provider.findById(req.user.id).select("-password"),
-    });
+    res.json({ success: true, message: "Photo deleted" });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
+
+// export const uploadProviderPhoto = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ success: false, message: "Profile photo is required" });
+//     }
+
+//     const provider = await Provider.findById(req.user.id);
+//     if (!provider) {
+//       return res.status(404).json({ success: false, message: "Provider not found" });
+//     }
+
+//     const previousPhoto = provider.profilePhoto;
+//     provider.profilePhoto = buildUploadPath("uploads/providers", req.file.filename);
+//     await provider.save();
+
+//     await removeUploadedFile(previousPhoto);
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Profile photo updated successfully",
+//       profilePhoto: provider.profilePhoto,
+//       provider: await Provider.findById(req.user.id).select("-password"),
+//     });
+//   } catch (err) {
+//     if (req.file?.path) {
+//       await removeUploadedFile(req.file.path);
+//     }
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// export const  = async (req, res) => {
+//   try {
+//     const provider = await Provider.findById(req.user.id);
+//     if (!provider) {
+//       return res.status(404).json({ success: false, message: "Provider not found" });
+//     }
+
+//     const previousPhoto = provider.profilePhoto;
+//     provider.profilePhoto = "";
+//     await provider.save();
+
+//     await removeUploadedFile(previousPhoto);
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Profile photo deleted successfully",
+//       provider: await Provider.findById(req.user.id).select("-password"),
+//     });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };

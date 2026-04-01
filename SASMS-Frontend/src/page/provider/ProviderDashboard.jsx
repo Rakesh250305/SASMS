@@ -7,7 +7,7 @@ import {
   Package, ChevronRight, ArrowRight, Clock, MapPin,
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
-import { getInitials, resolveImageUrl } from "../../component/avatarUtils";
+import { getInitials } from "../../utils/avatarUtils";
 
 const STATUS_CONFIG = {
   assigned:    { bg: "bg-purple-100", text: "text-purple-700", dot: "bg-purple-500" },
@@ -78,7 +78,6 @@ export default function ProviderDashboard() {
   }, []);
 
   const initials = getInitials(provider?.name, "PR");
-  const profilePhoto = resolveImageUrl(apiUrl, provider?.profilePhoto);
 
   const STATS = [
     { label: "Assigned",    val: stats.assigned,    icon: ClipboardList, c: "text-purple-600", bg: "bg-purple-50" },
@@ -113,8 +112,8 @@ export default function ProviderDashboard() {
             )}
               </div>
           <button onClick={() => navigate("/provider/profile")} className="relative bg-white/20 w-10 h-10 overflow-hidden border border-white/20 text-white font-extrabold text-sm rounded-xl flex items-center justify-center">
-            {profilePhoto ? (
-              <img src={profilePhoto} alt="Provider" className="w-full h-full object-cover" />
+            {provider?.profilePhoto ? (
+              <img src={provider.profilePhoto} alt="Provider" className="w-full h-full object-cover" />
             ) : (
               initials
             )}
@@ -186,7 +185,7 @@ export default function ProviderDashboard() {
           >
             <div className="flex items-center gap-3 p-4">
               <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
-                <img src={`${apiUrl}${t.service?.serviceImage}`} className="h-full rounded-xl" />
+                <img src={t.service?.serviceImage} className="h-full rounded-xl" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-mono text-purple-500 mb-0.5">{t.bookingId}</p>

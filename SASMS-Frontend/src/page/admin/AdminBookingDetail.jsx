@@ -196,13 +196,23 @@ function ProviderModal({ providers, selected, onConfirm, onClose }) {
                     }`}
                   >
                     {/* Avatar */}
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+            
+                       <div className={`w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0 ${
                       isSelected ? "bg-[#1976D2]" : "bg-indigo-100"
                     }`}>
-                      <span className={`font-bold text-xs ${isSelected ? "text-white" : "text-indigo-700"}`}>
-                        {p.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
-                      </span>
+                      {p.profilePhoto ? (
+                        <img
+                          src={p.profilePhoto}
+                          alt="profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className={`font-bold text-xs ${isSelected ? "text-white" : "text-indigo-700"}`}>{p.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}</span>
+                        </div>
+                      )}
                     </div>
+                      
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
@@ -649,11 +659,20 @@ export default function AdminBookingDetail() {
         {/* Customer */}
         <Section title="Customer">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-blue-700 font-bold text-sm">
-                {booking.user?.name?.split(" ").map(w => w[0]).join("").toUpperCase()}
-              </span>
-            </div>
+          
+            <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-gray-200 bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      {booking.user?.profilePhoto ? (
+                        <img
+                          src={booking.user.profilePhoto}
+                          alt="profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-blue-100 text-blue-700 text-xs font-bold ">{booking.user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}</span>
+                        </div>
+                      )}
+                    </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-slate-800">{booking.user?.name}</p>
               {booking.user?.email && (
@@ -679,7 +698,7 @@ export default function AdminBookingDetail() {
         <Section title="Service">
           <div className="flex items-center gap-3">
             {booking.service?.serviceImage ? (
-              <img src={`${apiUrl}${booking.service.serviceImage}`} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+              <img src={booking.service.serviceImage} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
             ) : (
               <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
                 <Package size={22} className="text-blue-400" />
@@ -836,11 +855,19 @@ export default function AdminBookingDetail() {
               {selectedProviderObj ? (
                 /* Selected provider card */
                 <div className="flex items-center gap-3 p-3 bg-blue-50 border border-[#1976D2] rounded-2xl">
-                  <div className="w-10 h-10 rounded-full bg-[#1976D2] flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-xs">
-                      {selectedProviderObj.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
-                    </span>
-                  </div>
+                     <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-gray-200 bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      {selectedProviderObj?.profilePhoto ? (
+                        <img
+                          src={selectedProviderObj.profilePhoto}
+                          alt="profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-blue-100 text-blue-700 text-xs font-bold ">{selectedProviderObj?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}</span>
+                        </div>
+                      )}
+                    </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-800">{selectedProviderObj.name}</p>
                     <div className="flex items-center gap-3 mt-0.5">
@@ -961,11 +988,19 @@ export default function AdminBookingDetail() {
         {!canAssign && booking.provider && (
           <Section title="Assigned Provider">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-indigo-700 font-bold text-sm">
-                  {booking.provider.name?.split(" ").map(w => w[0]).join("").toUpperCase()}
-                </span>
-              </div>
+              <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-gray-200 bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                      {booking.provider.profilePhoto ? (
+                        <img
+                          src={booking.provider.profilePhoto}
+                          alt="profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-indigo-700 text-xs font-bold ">{booking.provider?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}</span>
+                        </div>
+                      )}
+                    </div>
               <div className="flex-1">
                 <p className="text-sm font-bold text-slate-800">{booking.provider.name}</p>
                 {booking.provider.email && (

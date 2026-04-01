@@ -130,7 +130,7 @@ function BookingCard({ booking, onCancelClick }) {
       <div className="flex items-center gap-3 p-4 border-b border-gray-50">
         {booking.service?.serviceImage ? (
           <img
-            src={`${apiUrl}${booking.service.serviceImage}`}
+            src={booking.service.serviceImage}
             alt={booking.service?.serviceName}
             className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
           />

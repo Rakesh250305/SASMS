@@ -6,7 +6,8 @@ import Provider from "../models/Provider.js";
 import Service from "../models/Service.js";
 import Activity from "../models/Activity.js";
 import Bookings from "../models/Bookings.js";
-import { buildUploadPath, removeUploadedFile } from "../utils/profilePhoto.js";
+import { put } from "@vercel/blob";
+import { del } from "@vercel/blob";
 
 export const adminSignup = async (req, res) => {
   try {
@@ -28,7 +29,7 @@ export const adminSignup = async (req, res) => {
 
     const loweremail = email.toLowerCase().trim();
 
-    const existing = await Admin.findOne({ email:loweremail });
+    const existing = await Admin.findOne({ email: loweremail });
 
     if (existing) {
       return res.status(400).json({
@@ -116,11 +117,10 @@ export const updateInfo = async (req, res) => {
       }
     });
 
-    const account = await Admin.findByIdAndUpdate(
-      req.user.id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select("-password");
+    const account = await Admin.findByIdAndUpdate(req.user.id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
 
     if (!account) {
       return res.status(404).json({
@@ -142,6 +142,7 @@ export const updateInfo = async (req, res) => {
   }
 };
 
+// Uplaod Store Photo
 export const uploadStorePhoto = async (req, res) => {
   try {
     if (!req.file) {
@@ -159,23 +160,27 @@ export const uploadStorePhoto = async (req, res) => {
       });
     }
 
-    const previousPhoto = account.storePhoto;
-    account.storePhoto = buildUploadPath("uploads/admin", req.file.filename);
-    await account.save();
+    // Upload to Vercel Blob
+    const blob = await put(
+      `admin/${Date.now()}-${req.file.originalname}`,
+      req.file.buffer,
+      {
+        access: "public",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      },
+    );
 
-    await removeUploadedFile(previousPhoto);
+    // blob.url → public URL
+    account.storePhoto = blob.url;
+    await account.save();
 
     res.status(200).json({
       success: true,
-      message: "Store photo updated successfully",
-      storePhoto: account.storePhoto,
+      message: "Photo uploaded to Vercel Blob",
+      storePhoto: blob.url,
       data: account,
     });
   } catch (error) {
-    if (req.file?.path) {
-      await removeUploadedFile(req.file.path);
-    }
-
     res.status(500).json({
       success: false,
       message: error.message,
@@ -183,36 +188,26 @@ export const uploadStorePhoto = async (req, res) => {
   }
 };
 
+// Delete Store Photo
 export const deleteStorePhoto = async (req, res) => {
   try {
     const account = await Admin.findById(req.user.id);
-    if (!account) {
-      return res.status(404).json({
-        success: false,
-        message: "Admin not found",
+
+    if (account?.storePhoto) {
+      await del(account.storePhoto, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
       });
     }
 
-    const previousPhoto = account.storePhoto;
     account.storePhoto = "";
     await account.save();
 
-    await removeUploadedFile(previousPhoto);
-
-    res.status(200).json({
-      success: true,
-      message: "Store photo deleted successfully",
-      data: account,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.json({ success: true, message: "Photo deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Get Dashboard Stats
 export const getStats = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
@@ -240,10 +235,16 @@ export const getStats = async (req, res) => {
       Service.countDocuments({ tenantId }),
       Bookings.countDocuments({ admin: adminId }),
 
-      Asset.countDocuments({ createdBy: adminId, createdAt: { $gte: startOfWeek } }),
+      Asset.countDocuments({
+        createdBy: adminId,
+        createdAt: { $gte: startOfWeek },
+      }),
       Provider.countDocuments({ tenantId, createdAt: { $gte: startOfWeek } }),
       Service.countDocuments({ tenantId, createdAt: { $gte: startOfWeek } }),
-      Bookings.countDocuments({ admin: adminId, createdAt: { $gte: startOfWeek } }),
+      Bookings.countDocuments({
+        admin: adminId,
+        createdAt: { $gte: startOfWeek },
+      }),
     ]);
 
     res.status(200).json({
@@ -262,7 +263,6 @@ export const getStats = async (req, res) => {
     });
   }
 };
-
 
 // Get Recent Activities
 export const getRecentActivities = async (req, res) => {
@@ -350,7 +350,7 @@ export const createAsset = async (req, res) => {
       data: asset,
     });
 
-       await Activity.create({
+    await Activity.create({
       actorType: "Admin",
       actorId: req.user.id,
       tenantId: req.user.tenantId,
@@ -359,7 +359,6 @@ export const createAsset = async (req, res) => {
       entityId: asset._id,
       description: `New Asset added: ${assetName}`,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -419,19 +418,19 @@ export const deleteAsset = async (req, res) => {
     const asset = await Asset.findById(id);
     if (!asset) {
       return res.status(404).json({
-        success:false,
-        message:"Asset not found"
+        success: false,
+        message: "Asset not found",
       });
     }
 
     await asset.deleteOne();
 
     res.status(200).json({
-      success:true,
-      message:"Asset deleted successfully"
+      success: true,
+      message: "Asset deleted successfully",
     });
 
-      await Activity.create({
+    await Activity.create({
       actorType: "Admin",
       actorId: req.user.id,
       tenantId: req.user.tenantId,
@@ -440,11 +439,10 @@ export const deleteAsset = async (req, res) => {
       entityId: asset._id,
       description: `Asset Deleted: ${assetName}`,
     });
-
   } catch (error) {
     res.status(500).json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -542,7 +540,6 @@ export const getAdminProviders = async (req, res) => {
 // Update Provider
 export const updateProvider = async (req, res) => {
   try {
-
     const { id } = req.params;
     const updateData = { ...req.body };
 
@@ -552,31 +549,27 @@ export const updateProvider = async (req, res) => {
       updateData.password = hashedPassword;
     }
 
-    const updatedProvider = await Provider.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
+    const updatedProvider = await Provider.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updatedProvider) {
       return res.status(404).json({
-        success:false,
-        message:"Service Provider not found"
+        success: false,
+        message: "Service Provider not found",
       });
     }
 
     res.status(200).json({
-      success:true,
-      data:updatedProvider,
-      message:"Provider updated successfully"
+      success: true,
+      data: updatedProvider,
+      message: "Provider updated successfully",
     });
-
   } catch (error) {
     res.status(500).json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message,
     });
-
   }
 };
 
@@ -596,7 +589,7 @@ export const updateProviderStatus = async (req, res) => {
     const updatedProvider = await Provider.findOneAndUpdate(
       { _id: id, tenantId: req.user.tenantId },
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedProvider) {
@@ -625,9 +618,20 @@ export const createService = async (req, res) => {
     const { serviceName, category, estimatedPrice, availability, description } =
       req.body;
 
-    const serviceImage = req.file
-      ? `/uploads/services/${req.file.filename}`
-      : "";
+    let serviceImage = "";
+
+    if (req.file) {
+      const blob = await put(
+        `services/${Date.now()}-${req.file.originalname}`,
+        req.file.buffer,
+        {
+          access: "public",
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        },
+      );
+
+      serviceImage = blob.url;
+    }
 
     const service = new Service({
       serviceName,
@@ -669,7 +673,9 @@ export const createService = async (req, res) => {
 export const getAdminService = async (req, res) => {
   try {
     const adminTenantId = req.user.tenantId;
-    const services = await Service.find({ tenantId: adminTenantId }).sort({createdAt: -1});
+    const services = await Service.find({ tenantId: adminTenantId }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({
       success: true,
@@ -688,9 +694,16 @@ export const getAdminService = async (req, res) => {
 // Update Service
 export const updateService = async (req, res) => {
   try {
-    console.log(req.body);
-
     const { id } = req.params;
+
+    const service = await Service.findById(id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
 
     const updateData = {
       serviceName: req.body.serviceName,
@@ -702,42 +715,76 @@ export const updateService = async (req, res) => {
 
     // if new image uploaded
     if (req.file) {
-      updateData.serviceImage = `/uploads/services/${req.file.filename}`;
+      // 1. Delete old image
+      if (
+        service.serviceImage &&
+        service.serviceImage.includes("blob.vercel-storage.com")
+      ) {
+        await del(service.serviceImage, {
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        });
+      }
+
+      // 2. Upload new image
+      const blob = await put(
+        `services/${Date.now()}-${req.file.originalname}`,
+        req.file.buffer,
+        {
+          access: "public",
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        },
+      );
+
+      updateData.serviceImage = blob.url;
     }
 
-    const updatedService = await Service.findByIdAndUpdate(
-      id,
-      updateData,
-    );
+    const updatedService = await Service.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updatedService) {
       return res.status(404).json({
-        success:false,
-        message:"Service not found"
+        success: false,
+        message: "Service not found",
       });
     }
 
     res.status(200).json({
-      success:true,
-      data:updatedService,
-      message:"Service updated successfully"
+      success: true,
+      data: updatedService,
+      message: "Service updated successfully",
     });
-
   } catch (error) {
-
     console.error(error);
-
     res.status(500).json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message,
     });
-
   }
 };
 
 // Delete Service
 export const deleteService = async (req, res) => {
   try {
+    const service = await Service.findById(req.params.id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    // DELETE IMAGE FROM BLOB
+    if (
+      service.serviceImage &&
+      service.serviceImage.includes("blob.vercel-storage.com")
+    ) {
+      await del(service.serviceImage, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+    }
+
     await Service.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
@@ -745,7 +792,7 @@ export const deleteService = async (req, res) => {
       message: "Service deleted successfully",
     });
 
-      // Save activity
+    // Save activity
     await Activity.create({
       actorType: "Admin",
       actorId: req.user.id,
@@ -753,9 +800,8 @@ export const deleteService = async (req, res) => {
       action: "service_deleted",
       entityType: "service",
       entityId: service._id,
-      description: `Service Deleted: ${serviceName}`,
+      description: `Service Deleted: ${service.serviceName}`,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
