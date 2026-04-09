@@ -28,6 +28,7 @@ import StatusBadge from "../../component/StatusBadge";
 import InputField from "../../component/InputField";
 import { toast } from "react-toastify";
 import axios from "axios";
+import useDarkMode from "../../utils/useDarkMode";
 
 const getCategoryStyle = (category) => {
   switch (category) {
@@ -72,12 +73,13 @@ export default function AdminServices() {
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(null);
   const [creating, setCreating] = useState(false);
-const [updating, setUpdating] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const [serviceImagePreview, setServiceImagePreview] = useState("");
+  const { darkMode } = useDarkMode();
 
   const filtered = services.filter((s) => {
 
@@ -138,55 +140,55 @@ const [updating, setUpdating] = useState(false);
   };
 
 
-const validateForm = () => {
-  if (!newService.serviceName.trim()) {
-    toast.error("Service name is required");
-    return false;
-  }
+  const validateForm = () => {
+    if (!newService.serviceName.trim()) {
+      toast.error("Service name is required");
+      return false;
+    }
 
-  if (newService.serviceName.length < 3) {
-    toast.error("Service name must be at least 3 characters");
-    return false;
-  }
+    if (newService.serviceName.length < 3) {
+      toast.error("Service name must be at least 3 characters");
+      return false;
+    }
 
-  if (!newService.description.trim()) {
-    toast.error("Description is required");
-    return false;
-  }
+    if (!newService.description.trim()) {
+      toast.error("Description is required");
+      return false;
+    }
 
-  if (newService.description.length < 10) {
-    toast.error("Description must be at least 10 characters");
-    return false;
-  }
+    if (newService.description.length < 10) {
+      toast.error("Description must be at least 10 characters");
+      return false;
+    }
 
-  if (!newService.estimatedPrice) {
-    toast.error("Price is required");
-    return false;
-  }
+    if (!newService.estimatedPrice) {
+      toast.error("Price is required");
+      return false;
+    }
 
-  if (Number(newService.estimatedPrice) <= 0) {
-    toast.error("Price must be greater than 0");
-    return false;
-  }
+    if (Number(newService.estimatedPrice) <= 0) {
+      toast.error("Price must be greater than 0");
+      return false;
+    }
 
-  if (!newService.category) {
-    toast.error("Please select a category");
-    return false;
-  }
+    if (!newService.category) {
+      toast.error("Please select a category");
+      return false;
+    }
 
-  if (!newService.availability) {
-    toast.error("Please select availability");
-    return false;
-  }
+    if (!newService.availability) {
+      toast.error("Please select availability");
+      return false;
+    }
 
-  // only for create
-  if (!newService.serviceImage && !showEditModal) {
-    toast.error("Please upload service image");
-    return false;
-  }
+    // only for create
+    if (!newService.serviceImage && !showEditModal) {
+      toast.error("Please upload service image");
+      return false;
+    }
 
-  return true;
-};
+    return true;
+  };
 
   const resetServiceForm = () => {
     setNewService({
@@ -200,32 +202,32 @@ const validateForm = () => {
     setServiceImagePreview("");
   };
 
-const handleImageChange = (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  if (!file.type.startsWith("image/")) {
-    toast.error("Only image files are allowed");
-    return;
-  }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
+      return;
+    }
 
-  if (file.size > 2 * 1024 * 1024) {
-    toast.error("Image must be less than 2MB");
-    return;
-  }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
 
-  setNewService((prev) => ({
-    ...prev,
-    serviceImage: file,
-  }));
+    setNewService((prev) => ({
+      ...prev,
+      serviceImage: file,
+    }));
 
-  setServiceImagePreview(URL.createObjectURL(file));
-};
+    setServiceImagePreview(URL.createObjectURL(file));
+  };
 
   const token = localStorage.getItem("token");
 
   const handleCreateService = async () => {
-      if (!validateForm()) return;
+    if (!validateForm()) return;
     if (creating) return;
 
     const formData = new FormData();
@@ -238,7 +240,7 @@ const handleImageChange = (e) => {
     formData.append("serviceImage", newService.serviceImage);
 
     try {
-  setCreating(true);
+      setCreating(true);
       await axios.post(
         `${apiUrl}/admin/service/create`,
         formData,
@@ -262,8 +264,8 @@ const handleImageChange = (e) => {
       toast.error("Service creation failed");
 
     } finally {
-    setCreating(false);
-  }
+      setCreating(false);
+    }
 
   };
 
@@ -282,10 +284,10 @@ const handleImageChange = (e) => {
   };
 
   const handleUpdateService = async () => {
-      if (!validateForm()) return;
+    if (!validateForm()) return;
     if (updating) return;
     try {
- setUpdating(true);
+      setUpdating(true);
       const newFd = new FormData();
 
       newFd.append("serviceName", newService.serviceName);
@@ -332,8 +334,8 @@ const handleImageChange = (e) => {
     } catch {
       toast.error("Update failed");
     } finally {
-    setUpdating(false);
-  }
+      setUpdating(false);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -358,7 +360,7 @@ const handleImageChange = (e) => {
   };
 
   return (
-    <div className="flex flex-col flex-1 h-screen bg-gray-100 relative">
+    <div className={`flex flex-col flex-1 h-screen relative ${darkMode ? "bg-gray-900" : "bg-gray-100"}`}>
 
       {/* HEADER */}
       <div className="bg-gradient-to-r sticky from-[#1565C0] to-[#1976D2] p-5">
@@ -382,14 +384,14 @@ const handleImageChange = (e) => {
 
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className={`absolute left-3 top-1/2 -translate-y-1/2 text-gray-400`}
           />
 
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search services..."
-            className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm bg-white outline-none"
+            className={`w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm ${darkMode ? "bg-white/80" : "bg-white"} outline-none`}
           />
 
         </div>
@@ -404,7 +406,7 @@ const handleImageChange = (e) => {
             className={`px-4 py-1.5 rounded-full text-xs whitespace-nowrap
       ${activeTab === i
                 ? "bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white font-bold shadow"
-                : "bg-white text-gray-500 shadow-sm"
+                : `${darkMode ? "bg-white/80" : "bg-white"} text-gray-500 shadow-sm`
               }`}
           >
             {tab}
@@ -426,7 +428,7 @@ const handleImageChange = (e) => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="relative bg-white rounded-2xl m-2 p-4 mb-3 shadow-sm flex items-center gap-3"
+              className={`relative ${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl m-2 p-4 mb-3 shadow-sm flex items-center gap-3`}
             >
 
               {/* IMAGE */}
@@ -439,7 +441,7 @@ const handleImageChange = (e) => {
               {/* INFO */}
               <div className="flex-1 min-w-0">
 
-                <div className="text-sm font-bold text-gray-800 truncate"
+                <div className={`text-sm font-bold ${darkMode ? "text-gray-400" : "text-gray-800"} truncate`}
                   onClick={() => handleView(service)}>
                   {service.serviceName}
                 </div>
@@ -466,7 +468,7 @@ const handleImageChange = (e) => {
 
               {/* MENU */}
               {menuOpen === service._id && (
-                <div className="absolute right-10 mt-8 w-32 bg-white shadow-lg rounded-xl border border-gray-300 text-sm z-50">
+                <div className={`absolute right-10 mt-8 w-32 ${darkMode ? "bg-gray-700 text-gray-400" : "text-slate-800"} shadow-lg rounded-xl border border-gray-300 text-sm z-50`}>
                   <button
                     onClick={() => handleEdit(service)}
                     className="w-full text-left px-3 py-2 hover:bg-gray-100"
@@ -521,24 +523,24 @@ const handleImageChange = (e) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pt-0 p-6 z-50 max-h-[65%] overflow-y-auto"
+              className={`absolute bottom-0 left-0 right-0 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-t-3xl pt-0 p-6 z-50 max-h-[65%] overflow-y-auto`}
             >
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               <div className="flex items-center justify-between mb-5">
 
                 <div className="flex items-center gap-2">
-                  <BookText size={18} className="text-blue-600" />
-                  <h2 className="text-lg font-bold">Add Service</h2>
+                  <BookText size={18} className={`${darkMode ? "text-gray-400" : "text-blue-600"}`} />
+                  <h2 className={`${darkMode ? "text-gray-400" : "text-gray-700"} text-lg font-bold`}>Add Service</h2>
                 </div>
 
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="p-2 bg-gray-100 rounded-lg"
+                  className={`p-2 ${darkMode ? "bg-gray-400" : "bg-gray-100"} rounded-lg`}
                 >
                   <X size={16} />
                 </button>
@@ -574,14 +576,14 @@ const handleImageChange = (e) => {
               />
 
               <div className="mb-3">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">Category</label>
+                <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>Category</label>
                 <div className="relative">
 
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"}`}>
                     <CopyCheck size={16} />
                   </div>
                   <select name="category" value={newService.category} onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                    className={`w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl outline-none ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}`}
                   >
                     <option value="">Select category</option>
                     <option value="hvac">HVAC</option>
@@ -597,14 +599,14 @@ const handleImageChange = (e) => {
 
 
               <div className="mb-3">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">Availability</label>
+                <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>Availability</label>
                 <div className="relative">
 
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"}`}>
                     <Info size={16} />
                   </div>
                   <select name="availability" value={newService.availability} onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                    className={`w-full pl-10 pr-3 py-3 text-sm border border-gray-200 rounded-xl outline-none ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}`}
                   >
                     <option value="">Select Availability</option>
                     <option value="available">Available</option>
@@ -616,7 +618,7 @@ const handleImageChange = (e) => {
 
 
               <div className="mb-4">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>
                   Service Image
                 </label>
 
@@ -624,8 +626,7 @@ const handleImageChange = (e) => {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="w-full border border-gray-200 rounded-xl p-3 text-sm"
-
+                  className={`w-full border border-gray-200 rounded-xl p-3 text-sm ${darkMode ? "bg-slate-800 text-gray-400  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}`}
                 />
 
                 {serviceImagePreview && (
@@ -638,26 +639,25 @@ const handleImageChange = (e) => {
               </div>
 
               <button
-  onClick={handleCreateService}
-  disabled={creating}
-  className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition ${
-    creating
-      ? "bg-gray-300 cursor-not-allowed"
-      : "bg-gradient-to-r from-blue-700 to-blue-600 text-white"
-  }`}
->
-  {creating ? (
-    <>
-      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-      Creating...
-    </>
-  ) : (
-    <>
-      <Check size={18} />
-      Create Service
-    </>
-  )}
-</button>
+                onClick={handleCreateService}
+                disabled={creating}
+                className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition ${creating
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-700 to-blue-600 text-white"
+                  }`}
+              >
+                {creating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Check size={18} />
+                    Create Service
+                  </>
+                )}
+              </button>
 
             </motion.div>
           </>
@@ -681,24 +681,24 @@ const handleImageChange = (e) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl pt-0 p-6 z-50 max-h-[65%] overflow-y-auto"
+              className={`fixed bottom-0 left-0 right-0 ${darkMode ? "bg-gray-800" : "bg-white"}  rounded-t-3xl pt-0 p-6 z-50 max-h-[65%] overflow-y-auto`}
             >
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               <div className="flex items-center justify-between mb-5">
 
                 <div className="flex items-center gap-2">
-                  <BookText size={18} className="text-blue-600" />
-                  <h2 className="text-lg font-bold">Edit Service</h2>
+                  <BookText size={18} className={`${darkMode ? "text-gray-400" : "text-blue-600"}`} />
+                  <h2 className={`${darkMode ? "text-gray-400" : "text-gray-700"} text-lg font-bold`}>Edit Service</h2>
                 </div>
 
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="p-2 bg-gray-100 rounded-lg"
+                  className={`p-2 ${darkMode ? "bg-gray-400" : "bg-gray-100"} rounded-lg`}
                 >
                   <X size={16} />
                 </button>
@@ -734,14 +734,14 @@ const handleImageChange = (e) => {
               />
 
               <div className="mb-3">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">Category</label>
+                <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>Category</label>
                 <div className="relative">
 
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"}`}>
                     <CopyCheck size={16} />
                   </div>
                   <select name="category" value={newService.category} onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                    className={`w-full pl-10 pr-3 py-3 text-sm border border-gray-200 rounded-xl outline-none ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}`}
                   >
                     <option value="">Select category</option>
                     <option value="hvac">HVAC</option>
@@ -757,14 +757,14 @@ const handleImageChange = (e) => {
 
 
               <div className="mb-3">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">Availability</label>
+                <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>Availability</label>
                 <div className="relative">
 
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"}`}>
                     <Info size={16} />
                   </div>
                   <select name="availability" value={newService.availability} onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                    className={`w-full pl-10 pr-3 py-3 text-sm border border-gray-200 rounded-xl outline-none ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}`}
                   >
                     <option value="">Select Availability</option>
                     <option value="available">Available</option>
@@ -776,7 +776,7 @@ const handleImageChange = (e) => {
 
 
               <div className="mb-4">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>
                   Service Image
                 </label>
 
@@ -784,8 +784,7 @@ const handleImageChange = (e) => {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="w-full border border-gray-200 rounded-xl p-3 text-sm"
-
+                  className={`w-full border border-gray-200 rounded-xl p-3 text-sm ${darkMode ? "text-gray-400" : "text-gray-700"}`}
                 />
 
                 {serviceImagePreview && (
@@ -797,27 +796,26 @@ const handleImageChange = (e) => {
                 )}
               </div>
 
-            <button
-  onClick={handleUpdateService}
-  disabled={updating}
-  className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition ${
-    updating
-      ? "bg-gray-300 cursor-not-allowed"
-      : "bg-gradient-to-r from-blue-700 to-blue-600 text-white"
-  }`}
->
-  {updating ? (
-    <>
-      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-      Updating...
-    </>
-  ) : (
-    <>
-      <Check size={18} />
-      Update
-    </>
-  )}
-</button>
+              <button
+                onClick={handleUpdateService}
+                disabled={updating}
+                className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition ${updating
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-700 to-blue-600 text-white"
+                  }`}
+              >
+                {updating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Check size={18} />
+                    Update
+                  </>
+                )}
+              </button>
 
             </motion.div>
           </>
@@ -842,11 +840,11 @@ const handleImageChange = (e) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
+              className={`absolute bottom-0 left-0 right-0 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-t-3xl pb-6 z-50 overflow-hidden`}
             >
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               {/* Header */}
@@ -865,7 +863,7 @@ const handleImageChange = (e) => {
                                 : <Settings size={18} />}
                   </div>
                   <div>
-                    <h2 className="font-extrabold text-base text-slate-800 leading-tight">
+                    <h2 className={`font-extrabold text-base ${darkMode ? "text-slate-400" : "text-slate-800"}  leading-tight`}>
                       {selectedService.serviceName}
                     </h2>
                     <span className="text-[11px] font-semibold text-gray-400 capitalize">
@@ -875,21 +873,21 @@ const handleImageChange = (e) => {
                 </div>
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center"
+                  className={`w-8 h-8 ${darkMode ? "bg-gray-400" : "bg-gray-100"} rounded-xl flex items-center justify-center`}
                 >
                   <X size={15} className="text-gray-500" />
                 </button>
               </div>
 
               {/* Service Image */}
-              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+              <div className={`px-5 py-3 ${darkMode ? "text-gray-700" : "bg-gray-50"} border-y flex items-center justify-between`}>
                 <img
                   src={selectedService.serviceImage}
                   className="w-full h-30 rounded-xl object-cover"
                 /></div>
 
               {/* Availability bar */}
-              <div className="px-5 py-1 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+              <div className={`px-5 py-1 ${darkMode ? "text-gray-700" : "bg-gray-50"} border-y flex items-center justify-between`}>
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
                   Status
                 </span>
@@ -900,7 +898,7 @@ const handleImageChange = (e) => {
               {/* Details grid */}
               <div className="px-5 py-4 grid grid-cols-2 gap-3">
 
-                <div className="bg-green-50 rounded-2xl p-3.5">
+                <div className={`${darkMode ? "bg-gray-600" : "bg-green-50"} rounded-2xl p-3.5`}>
                   <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">
                     Extimated Price
                   </p>
@@ -909,7 +907,7 @@ const handleImageChange = (e) => {
                   </p>
                 </div>
 
-                <div className="bg-blue-50 rounded-2xl p-3.5">
+                <div className={`${darkMode ? "bg-gray-600" : "bg-blue-50"} rounded-2xl p-3.5`}>
                   <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">
                     CreatedAt
                   </p>
@@ -923,11 +921,11 @@ const handleImageChange = (e) => {
               {/* Description */}
               {selectedService.description && (
                 <div className="px-5 pb-2">
-                  <div className="bg-gray-50 rounded-2xl p-3.5">
+                  <div className={`${darkMode ? "bg-gray-600" : "bg-gray-50"} rounded-2xl p-3.5`}>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                       Description
                     </p>
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}  leading-relaxed`}>
                       {selectedService.description}
                     </p>
                   </div>
@@ -961,15 +959,15 @@ const handleImageChange = (e) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
+              className={`absolute bottom-0 left-0 right-0 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-t-3xl pb-6 z-50 overflow-hidden`}
             >
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
-              <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-                <h3 className="font-bold text-lg text-slate-800 mb-2">Confirm Deletion</h3>
+              <div className=" rounded-2xl p-6 max-w-md w-full">
+                <h3 className={`font-bold text-lg ${darkMode ? "text-slate-400" : "text-slate-800"} mb-2`}>Confirm Deletion</h3>
                 <p className="text-slate-600 mb-4">
                   Are you sure you want to delete this Service? This action cannot be undone.
                 </p>

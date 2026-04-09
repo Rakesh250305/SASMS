@@ -9,6 +9,7 @@ import {
   Camera, ImagePlus, Trash2,
 } from "lucide-react";
 import { getInitials } from "../../utils/avatarUtils";
+import useDarkMode from "../../utils/useDarkMode";
 
 /* ────────────────────────────────────────────
    InfoRow — read-only display
@@ -93,6 +94,7 @@ export default function AdminProfile() {
   const [photoPreview, setPhotoPreview]       = useState(null);
   const [uploadingPhoto, setUploadingPhoto]   = useState(false);
   const [showPhotoMenu, setShowPhotoMenu]     = useState(false);
+  const { darkMode } = useDarkMode();
 
   const [form, setForm] = useState({
     name: "", phone: "",
@@ -265,7 +267,7 @@ export default function AdminProfile() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F3F6F9]">
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-[#F3F6F9]"}`}>
 
       {/* ── Header ── */}
       <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-5 pb-16 relative overflow-hidden">

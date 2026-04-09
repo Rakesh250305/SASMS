@@ -8,6 +8,7 @@ import {
   Settings,
   Package,
 } from "lucide-react";
+import useDarkMode from "../utils/useDarkMode";
 
 const userNav = [
   { icon: <LayoutDashboard size={22} />, label: "Home", path: "/user", color: "text-emerald-800", bg: "bg-emerald-800" },
@@ -26,13 +27,14 @@ const providerNav = [
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { darkMode } = useDarkMode();
 
   const role = localStorage.getItem('role');
 
   const items = role === "user" ? userNav : providerNav;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 flex border-t bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.06)] py-1 pb-2">
+    <div className={`fixed bottom-0 left-0 right-0 flex border-t py-1 pb-2 ${darkMode ? "bg-gray-950 border-gray-800 shadow-[0_-4px_20px_rgba(0,0,0,0.35)]" : "bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"}`}>
       {items.map((item) => {
         const isActive = location.pathname === item.path;
 
@@ -41,7 +43,7 @@ export default function BottomNav() {
             key={item.path}
             onClick={() => navigate(item.path)}
             className={`flex-1 flex flex-col items-center gap-1 py-2 text-xs relative transition
-              ${isActive ? `${item.color} font-bold` : "text-gray-400"}
+              ${isActive ? `${item.color} font-bold` : darkMode ? "text-gray-500" : "text-gray-400"}
             `}
           >
             {isActive && (

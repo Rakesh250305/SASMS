@@ -9,9 +9,11 @@ import {
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
 import { getInitials } from "../../utils/avatarUtils";
+import useDarkMode from "../../utils/useDarkMode";
 
 function InfoRow({ icon: Icon, label, value }) {
   if (!value) return null;
+  const darkMode = useDarkMode();
   return (
     <div className="flex items-start gap-3 py-3.5 border-b border-slate-50 last:border-0">
       <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -19,13 +21,14 @@ function InfoRow({ icon: Icon, label, value }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{label}</p>
-        <p className="text-sm text-slate-700 font-semibold mt-0.5">{value}</p>
+        <p className={`text-sm  ${darkMode ? "text-slate-500" : "text-slate-700"} font-semibold mt-0.5`}>{value}</p>
       </div>
     </div>
   );
 }
 
 function EditField({ icon: Icon, label, name, value, onChange, type = "text", locked, placeholder }) {
+  const darkMode = useDarkMode();
   return (
     <div className="flex items-start gap-3 py-3 border-b border-slate-50 last:border-0">
       <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${locked ? "bg-gray-100" : "bg-emerald-50"}`}>
@@ -42,7 +45,7 @@ function EditField({ icon: Icon, label, name, value, onChange, type = "text", lo
           <input
             type={type} name={name} value={value || ""} onChange={onChange}
             placeholder={placeholder || `Enter ${label.toLowerCase()}`}
-            className="w-full text-sm text-slateate-800 font-medium bg-emerald-50/50 border border-emerald-100 rounded-xl px-3 py-2 outline-none focus:border-emerald-400 focus:bg-white transition-all placeholder-gray-300"
+            className="w-full text-sm text-slate-800 font-medium bg-emerald-50/50 border border-emerald-100 rounded-xl px-3 py-2 outline-none focus:border-emerald-400 focus:bg-white transition-all placeholder-gray-300"
           />
         )}
       </div>
@@ -62,6 +65,7 @@ function SectionLabel({ children }) {
 export default function UserProfile() {
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
   const token = localStorage.getItem("token");
   const fileInputRef = useRef(null);
 
@@ -172,13 +176,13 @@ export default function UserProfile() {
     : null;
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div className={`min-h-screen flex items-center justify-center ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
       <Loader2 size={28} className="text-emerald-500 animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#F3F6F9]">
+    <div className={` ${editing  ? "min-h-[162vh]" : "min-h-[112vh]"} ${darkMode ? "bg-gray-900" : "bg-[#F3F6F9]"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 px-5 pt-10 pb-16 relative">
@@ -284,12 +288,12 @@ export default function UserProfile() {
         </AnimatePresence>
 
         {/* Profile Card */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className={`${darkMode ? "bg-gray-800" : "bg-[#F3F6F9] border-gray-100"} rounded-3xl border  shadow-sm overflow-hidden`}>
 
           <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-50">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">My Profile</p>
-              <p className="text-sm font-bold text-slate-700 mt-0.5">Personal & Address Details</p>
+              <p className={`text-sm font-bold ${darkMode ? "text-slate-500" : "text-slate-700"} mt-0.5`}>Personal & Address Details</p>
             </div>
             {!editing ? (
               <motion.button whileTap={{ scale: 0.93 }} onClick={() => setEditing(true)}

@@ -10,9 +10,9 @@ import {
   AlertCircle,
   ServerIcon,
 } from "lucide-react";
-
 import AdminDrawer from "../../component/AdminDrawer";
 import axios from "axios";
+import useDarkMode from "../../utils/useDarkMode";
 
 const STAT_CONFIG = [
   { key: "pending", label: "Pending", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const [bookingStats, setBookingStats] = useState({});
   const [activities, setActivities] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { darkMode } = useDarkMode();
 
   const summaryCards = [
     {
@@ -224,10 +225,10 @@ export default function AdminDashboard() {
 
       {/* Content */}
 
-      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-5 -mt-7 z-[10] bg-gray-100 rounded-t-4xl">
+      <div className={`flex-1 overflow-y-auto px-4 pb-4 pt-5 -mt-7 z-[10] rounded-t-4xl ${darkMode ? "bg-gray-900" : "bg-gray-100"}`}>
 
         {/* Analytics */}
-        <div className="text-sm font-bold text-gray-900 mb-3">
+        <div className={`text-sm font-bold mb-3 ${darkMode ? "text-gray-100" : "text-gray-900"}`}>
           Overview
         </div>
 
@@ -241,20 +242,20 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
               onClick={() => navigate(card.path)}
-              className="bg-white rounded-2xl p-4 shadow-sm text-left relative overflow-hidden"
+              className={`${darkMode ? "bg-gray-800 border border-gray-700" : "bg-white"} rounded-2xl p-4 shadow-sm text-left relative overflow-hidden`}
             >
 
-              <div className={`absolute -bottom-4 -right-4 w-[70px] h-[70px] rounded-full ${card.bg} opacity-70`} />
+              <div className={`absolute -bottom-4 -right-4 w-[70px] h-[70px] rounded-full ${darkMode ? "bg-gray-700" : `${card.bg}`}  opacity-70`} />
 
               <div className={`w-10 h-10 rounded-xl ${card.bg} flex items-center justify-center mb-2 ${card.color}`}>
                 {card.icon}
               </div>
 
-              <div className="text-2xl font-extrabold text-gray-900 leading-none">
+              <div className={`text-2xl font-extrabold leading-none ${darkMode ? "text-white" : "text-gray-900"}`}>
                 {card.value}
               </div>
 
-              <div className={`text-[11px] dark text-gray-500 mt-1 font-medium`}>
+              <div className={`text-[11px] mt-1 font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                 {card.label}
               </div>
 
@@ -274,14 +275,14 @@ export default function AdminDashboard() {
 
         </div>
 
-        <div className="text-sm font-bold text-gray-900 mb-3">
+        <div className={`text-sm font-bold mb-3 ${darkMode ? "text-gray-100" : "text-gray-900"}`}>
           Booking Summary
         </div>
 
         {/* Booking stats */}
         <div className="grid grid-cols-4 my-1 gap-2">
           {STAT_CONFIG.map(({ key, label, icon: Icon, color, bg }) => (
-            <div key={key} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center">
+            <div key={key} className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} rounded-2xl p-3 shadow-sm border text-center`}>
               <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center mx-auto mb-1.5`}>
                 <Icon size={15} className={color} />
               </div>
@@ -293,22 +294,22 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
 
-        <div className="text-sm font-bold text-gray-900 mb-3">
+        <div className={`text-sm font-bold my-3 ${darkMode ? "text-gray-100" : "text-gray-900"}`}>
           Quick Actions
         </div>
 
         <div className="flex gap-2 mb-5">
 
           {[
-            { label: "Add Asset", color: "text-blue-700", bg: "bg-blue-50", path: "/admin/assets" },
+            { label: "Add Asset", color: "text-blue-600", bg: "bg-blue-50", path: "/admin/assets" },
             { label: "Add Service", color: "text-green-600", bg: "bg-green-50", path: "/admin/service" },
-            { label: "Add Provider", color: "text-purple-700", bg: "bg-purple-50", path: "/admin/providers" },
+            { label: "Add Provider", color: "text-purple-600", bg: "bg-purple-50", path: "/admin/providers" },
           ].map((action) => (
 
             <button
               key={action.label}
               onClick={() => navigate(action.path)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border ${action.bg} ${action.color}`}
+              className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border ${action.color} ${darkMode ? "bg-gray-800" :`${action.bg}`} `}
             >
 
               <Plus size={18} />
@@ -326,7 +327,7 @@ export default function AdminDashboard() {
         <div className="flex gap-2 mb-5">
           <button
             onClick={() => navigate("/admin/serviceRequest")}
-            className={`flex-1 flex flex-row items-center justify-center gap-1 py-3 rounded-xl border bg-orange-50 text-orange-600`}
+            className={`flex-1 flex flex-row items-center justify-center gap-1 py-3 rounded-xl border text-orange-500 ${darkMode ? "bg-gray-800" : "bg-orange-50 "} `}
           >
             <span className="text-[11px] font-bold">
               Service Requests
@@ -342,7 +343,7 @@ export default function AdminDashboard() {
             Recent Activity
           </div>
 
-          <button className="flex items-center gap-1 text-xs font-semibold text-blue-700"
+          <button className={`flex items-center gap-1 text-xs font-semibold ${darkMode ? "text-gray-500" : "text-blue-700" } `}
             onClick={() => navigate("/admin/notifications")}>
 
             View All
@@ -353,7 +354,7 @@ export default function AdminDashboard() {
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className={`${darkMode ? "bg-gray-800 border  border-gray-700" : "bg-white"} rounded-2xl shadow-sm overflow-hidden`}>
 
           {activities.slice(0, 5).map((act, i) => {
 
@@ -363,8 +364,7 @@ export default function AdminDashboard() {
 
               <div
                 key={act._id || i}
-                className={`flex gap-3 p-4 ${i !== activities.length - 1 ? "border-b" : ""
-                  }`}
+                className={`flex gap-3 p-4 ${i !== activities.length - 1 ? (darkMode ? "border-b border-gray-700" : "border-b") : ""}`}
               >
 
                 <div
@@ -375,7 +375,7 @@ export default function AdminDashboard() {
 
                 <div className="flex-1">
 
-                  <div className="text-xs text-gray-800 font-medium leading-snug">
+                  <div className={`text-xs font-medium leading-snug ${darkMode ? "text-gray-400" : "text-gray-800"}`}>
                     {act.description}
                   </div>
 
@@ -392,7 +392,7 @@ export default function AdminDashboard() {
 
         </div>
 
-        <div className="text-[8px] text-center font-bold text-gray-400 pt-5">
+        <div className={`text-[8px] text-center font-bold pt-5 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
           Smart Assets & Service Management System
         </div>
       </div>
@@ -452,4 +452,5 @@ const formatTimeAgo = (date) => {
 
   return `${Math.floor(diff / 86400)}d ago`;
 };
+
 

@@ -19,6 +19,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import useDarkMode from "../../utils/useDarkMode";
 
 const STATUS_CONFIG = {
   pending: { label: "Pending", bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-400" },
@@ -39,7 +40,7 @@ const AVATAR_COLORS = [
   { bg: "bg-rose-100", text: "text-rose-700" },
 ];
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 5;
 
 const formatCategory = (value) =>
   value
@@ -92,6 +93,7 @@ export default function AdminServiceRequest() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const { darkMode } = useDarkMode();
 
   const token = localStorage.getItem("token");
 
@@ -190,7 +192,7 @@ export default function AdminServiceRequest() {
   ];
 
   return (
-    <div className="h-screen bg-[#F5F7FA] flex flex-1 flex-col relative">
+    <div className={`h-screen flex flex-1 flex-col relative ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] sticky px-5 pt-6 pb-6 overflow-hidden">
@@ -241,8 +243,8 @@ export default function AdminServiceRequest() {
             key={key}
             onClick={() => { setActiveTab(key); setSearch(""); setStatusFilter("all"); }}
             className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-all border-b-2 ${activeTab === key
-                ? "text-[#1976D2] border-[#1976D2] bg-blue-50/50"
-                : "text-gray-400 border-transparent"
+                ? `${darkMode ? "text-blue-300 border-gray-700 bg-gray-600" : "text-[#1976D2] border-[#1976D2] bg-blue-50/50"} `
+                : `text-gray-400 ${darkMode ? "bg-gray-700" : "bg-white"} border-transparent`
               }`}
           >
             <Icon size={15} />
@@ -276,7 +278,7 @@ export default function AdminServiceRequest() {
                     onClick={() => setStatusFilter(s)}
                     className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${active
                         ? "bg-[#1976D2] text-white border-[#1976D2] shadow-sm"
-                        : "bg-white text-gray-500 border-gray-200"
+                        : `${darkMode ? "bg-white/80" : "bg-white"} text-gray-500 border-gray-200`
                       }`}
                   >
                     {cfg && !active && (
@@ -322,8 +324,8 @@ export default function AdminServiceRequest() {
         ) : activeTab === "bookings" ? (
           filteredBookings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
-                <Inbox size={28} className="text-blue-400" />
+              <div className={`w-16 h-16 rounded-2xl ${darkMode ? "bg-gray-600 text-blue-500" : " text-blue-400 bg-blue-50"} flex items-center justify-center mb-4`}>
+                <Inbox size={28} />
               </div>
               <p className="text-slate-700 font-semibold text-sm mb-1">No bookings found</p>
               <p className="text-gray-400 text-xs mb-4">
@@ -350,7 +352,7 @@ export default function AdminServiceRequest() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.04, 0.3) }}
                 onClick={() => navigate(`/admin/booking/${b._id}`)}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+                className={`${darkMode ? "bg-ray-700" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform`}
               >
                 {/* Top */}
                 <div className="flex items-center gap-3 p-4 border-b border-gray-50">
@@ -367,7 +369,7 @@ export default function AdminServiceRequest() {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-mono text-[#1976D2] mb-0.5">{b.bookingId}</p>
-                    <p className="text-sm font-bold text-slate-800 truncate">
+                    <p className={`text-sm font-bold ${darkMode ? "text-slate-400" : "text-slate-800"} truncate`}>
                       {b.service?.serviceName || "Service"}
                     </p>
                     <p className="text-[10px] font-bold tracking-wide text-gray-400">
@@ -397,7 +399,7 @@ export default function AdminServiceRequest() {
 
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Customer</p>
-                      <p className="text-xs text-slate-700 font-medium">{b.user?.name || "—"}</p>
+                      <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-700"} font-medium`}>{b.user?.name || "—"}</p>
                       <p className="text-[10px] text-gray-400 truncate">{b.user?.email}</p>
                     </div>
                   </div>
@@ -416,7 +418,7 @@ export default function AdminServiceRequest() {
                     <Clock size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Booked</p>
-                      <p className="text-xs text-slate-700 font-medium">{timeAgo(b.createdAt)}</p>
+                      <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-700"} font-medium`}>{timeAgo(b.createdAt)}</p>
                     </div>
                   </div>
 
@@ -424,7 +426,7 @@ export default function AdminServiceRequest() {
                     <Calendar size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Location</p>
-                      <p className="text-xs text-slate-700 font-medium">
+                      <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-700"} font-medium`}>
                         {b.address?.city}, {b.address?.state}
                       </p>
                     </div>
@@ -432,7 +434,7 @@ export default function AdminServiceRequest() {
                 </div>
 
                 {/* Footer */}
-                <div className={`px-4 py-2.5 flex items-center justify-between ${b.status === "pending" ? "bg-amber-50" : "bg-gray-50"
+                <div className={`px-4 py-2.5 flex items-center justify-between ${b.status === "pending" ? `${darkMode ? "bg-gray-800" : "bg-amber-50"}` : `${darkMode ? "bg-gray-600" : "bg-gray-50"}`
                   }`}>
                   {b.status === "pending" ? (
                     <span className="text-xs font-semibold text-amber-600">⚡ Needs assignment</span>
@@ -455,7 +457,7 @@ export default function AdminServiceRequest() {
           /* ── USERS TAB ─────────────────────────────── */
           filteredUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+              <div className={`w-16 h-16 rounded-2xl ${darkMode ? "bg-gray-600" : "bg-blue-50"} flex items-center justify-center mb-4`}>
                 <Users size={28} className="text-blue-400" />
               </div>
               <p className="text-slate-700 font-semibold text-sm mb-1">No users found</p>
@@ -476,7 +478,7 @@ export default function AdminServiceRequest() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.04, 0.3) }}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4"
+                  className={`${darkMode? "bg-gray-800" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 p-4`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 ${clr.bg} ${clr.text}`}>
@@ -484,7 +486,7 @@ export default function AdminServiceRequest() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-800">{user.name}</p>
+                      <p className={`text-sm font-bold ${darkMode ? "text-slate-400" : "text-slate-800"}`}>{user.name}</p>
                       {user.email && (
                         <div className="flex items-center gap-1 mt-0.5">
                           <Mail size={11} className="text-gray-400" />
@@ -520,7 +522,7 @@ export default function AdminServiceRequest() {
                     {userBookings.length > 0 && (
                       <button
                         onClick={() => { setActiveTab("bookings"); setSearch(user.name); setStatusFilter("all"); }}
-                        className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0"
+                        className={`w-8 h-8 rounded-xl ${darkMode ? "bg-gray-700" : "bg-blue-50"} flex items-center justify-center flex-shrink-0`}
                       >
                         <ChevronRight size={14} className="text-[#1976D2]" />
                       </button>
@@ -532,8 +534,8 @@ export default function AdminServiceRequest() {
           )
         )}
         {!loading && totalPages > 1 && (
-          <div className="sticky bottom-0 bg-[#F5F7FA] pt-2 pb-1">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-3 py-3 flex items-center justify-between">
+          <div className="sticky -bottom-5 pt-2 pb-1">
+            <div className={`${darkMode ? "bg-gray-700" : "bg-white"} rounded-2xl border border-gray-100 shadow-sm px-3 py-3 flex items-center justify-between`}>
               <button
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={page === 1}
@@ -543,7 +545,7 @@ export default function AdminServiceRequest() {
               </button>
 
               <div className="text-center">
-                <p className="text-xs font-semibold text-slate-700">Page {page} of {totalPages}</p>
+                <p className={`text-xs font-semibold ${darkMode ? "text-slate-500" : "text-slate-700"}`}>Page {page} of {totalPages}</p>
                 <p className="text-[10px] text-gray-400">
                   {activeTab === "bookings" ? filteredBookings.length : filteredUsers.length} total
                 </p>

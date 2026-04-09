@@ -27,6 +27,7 @@ import StatusBadge from "../../component/StatusBadge";
 import InputField from "../../component/InputField";
 import { toast } from "react-toastify";
 import axios from "axios";
+import useDarkMode from "../../utils/useDarkMode";
 
 export default function AdminProviders() {
   const navigate = useNavigate();
@@ -41,9 +42,10 @@ export default function AdminProviders() {
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [errors, setErrors] = useState({});
   const [skillInput, setSkillInput] = useState("");
+  const { darkMode } = useDarkMode();
 
   const emptyProvider = {
-    name: "", description: "", email: "", phone: "",
+    name: "", description: "", email: "", phone: " ",
     password: "", city: "", state: "", pincode: "",
     experience: "", serviceType: [],
   };
@@ -227,12 +229,12 @@ export default function AdminProviders() {
       <InputField label="Pincode" icon={<Hash size={16} />} name="pincode" placeholder="485221" value={newProvider.pincode} onChange={handleChange} error={errors.pincode} />
       <InputField label="Experience (yrs)" icon={<Star size={16} />} name="experience" placeholder="e.g. 5" value={newProvider.experience} onChange={handleChange} error={errors.experience} />
       <div className="mb-4">
-        <label className="block text-xs font-semibold text-gray-700 mb-2">
+        <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>
           Skills
         </label>
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"} `}>
               <BookAIcon size={16} />
             </div>
             <input
@@ -245,7 +247,7 @@ export default function AdminProviders() {
                 }
               }}
               placeholder="Type a skill and press Enter"
-              className={`w-full pl-10 pr-3 py-3 text-sm border rounded-xl bg-gray-50 outline-none focus:border-blue-500 ${errors.serviceType ? "border-red-400" : "border-gray-200"
+              className={`w-full pl-10 pr-3 py-3 text-sm border rounded-xl outline-none ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"} ${errors.serviceType ? "border-red-400" : "border-gray-200"
                 }`}
             />
           </div>
@@ -278,7 +280,7 @@ export default function AdminProviders() {
   );
 
   return (
-    <div className="flex flex-col flex-1 bg-gray-100 relative h-screen">
+    <div className={`flex flex-col flex-1 relative h-screen ${darkMode ? "bg-gray-900" : "bg-gray-100"}`}>
 
       {/* ── Header ── */}
       <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-4 pb-5 relative overflow-hidden">
@@ -319,7 +321,7 @@ export default function AdminProviders() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100"
+              className={`${darkMode ? "bg-gray-800" : "bg-white border-gray-100"} rounded-2xl p-4 mb-3 shadow-sm border `}
             >
               <div className="flex items-center gap-3 ">
                 <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-gray-200/70 bg-white/20 cursor-pointer"
@@ -332,14 +334,14 @@ export default function AdminProviders() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-blue-100 text-blue-700 text-sm font-bold text-xl">{initials(p.name)}</span>
+                      <span className="text-blue-700 text-sm font-bold text-xl">{initials(p.name)}</span>
                     </div>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0" onClick={() => handleView(p)}>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-slate-800 text-sm">{p.name}</span>
+                    <span className={`font-bold ${darkMode ? "text-gray-400" : "text-slate-800"} text-sm`}>{p.name}</span>
                     <StatusBadge status={p.status} small />
                   </div>
                   <p className="text-xs text-gray-400 truncate mt-0.5">{p.description || "—"}</p>
@@ -406,20 +408,20 @@ export default function AdminProviders() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+              className={`absolute bottom-0 left-0 w-full pb-18 ${darkMode ? "bg-gray-800" : "bg-white"} h-[70vh] rounded-t-3xl pt-0 p-6 z-50`}
             >
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               <div className="flex items-center justify-between pb-3">
                 <div className="flex items-center gap-2">
                   <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
-                  <span className="font-bold text-gray-800">Add Provider</span>
+                  <span className={`${darkMode ? "text-gray-400" : "text-gray-700"} font-bold `}>Add Provider</span>
                 </div>
-                <button onClick={() => setShowAddModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
+                <button onClick={() => setShowAddModal(false)} className={`w-8 h-8 ${darkMode ? "bg-gray-400" : "bg-gray-100"}  rounded-xl flex items-center justify-center`}>
                   <X size={15} />
                 </button>
               </div>
@@ -454,17 +456,17 @@ export default function AdminProviders() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+              className={`absolute bottom-0 left-0 w-full pb-18 ${darkMode ? "bg-gray-800" : "bg-white"} h-[70vh] rounded-t-3xl pt-0 p-6 z-50`}
             >
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
               <div className="flex items-center justify-between pb-3 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="bg-blue-50 p-2 rounded-xl"><UserCog size={17} className="text-blue-600" /></div>
-                  <span className="font-bold text-gray-800">Edit Provider</span>
+                  <span className={` ${darkMode ? "text-gray-400" : "text-gray-700"} font-bold`}>Edit Provider</span>
                 </div>
                 <button onClick={() => setShowEditModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
                   <X size={15} />
@@ -497,11 +499,11 @@ export default function AdminProviders() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 overflow-hidden"
+              className={`absolute bottom-0 left-0 h-[60vh] overflow-y-auto w-full  ${darkMode ? "bg-gray-800" : "bg-white"} rounded-t-3xl z-50 overflow-hidden`}
             >
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               {/* Header */}
@@ -522,33 +524,33 @@ export default function AdminProviders() {
                 </div>
 
                   <div>
-                    <h2 className="font-extrabold text-base text-slate-800 leading-tight">
+                    <h2 className={`font-extrabold text-base ${darkMode ? "text-slate-400" : "text-slate-800"} leading-tight`}>
                       {selectedProvider.name}
                     </h2>
                     <p className="text-[11px] text-gray-400 mt-0.5">{selectedProvider.description || "—"}</p>
                   </div>
                 </div>
-                <button onClick={() => setShowViewModal(false)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center">
+                <button onClick={() => setShowViewModal(false)} className={`w-8 h-8 ${darkMode ? "bg-gray-400" : "bg-gray-100"} rounded-xl flex items-center justify-center`}>
                   <X size={15} className="text-gray-500" />
                 </button>
               </div>
 
               {/* Status bar */}
-              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+              <div className={`px-5 py-3 ${darkMode ? "" : "bg-gray-50"} border-y border-gray-100 flex items-center justify-between`}>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
                 <StatusBadge status={selectedProvider.status} />
               </div>
 
               {/* Stats row */}
               <div className="px-5 py-4 grid grid-cols-2 gap-3">
-                <div className="bg-blue-50 rounded-2xl p-3.5">
+                <div className={`${darkMode ? "bg-gray-600" : "bg-blue-50"} rounded-2xl p-3.5`}>
                   <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Experience</p>
                   <p className="text-xl font-extrabold text-blue-700">
                     {selectedProvider.experience}
                     <span className="text-sm font-semibold ml-1">yrs</span>
                   </p>
                 </div>
-                <div className="bg-purple-50 rounded-2xl p-3.5">
+                <div className={`${darkMode ? "bg-gray-600" : "bg-purple-50"} rounded-2xl p-3.5`}>
                   <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Joined</p>
                   <p className="text-sm font-extrabold text-purple-700">
                     {new Date(selectedProvider.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
@@ -557,41 +559,41 @@ export default function AdminProviders() {
               </div>
 
               {/* Current Password */}
-              <div className="bg-gray-50 rounded-2xl mx-5 px-4 py-2 my-2">
+              <div className={`${darkMode ? "bg-gray-600" : "bg-gray-50"} rounded-2xl mx-5 px-4 py-2 my-2`}>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Password</p>
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                     <Eye size={13} className="text-blue-500" />
                   </div>
-                  <span className="text-sm text-slate-700 font-medium">{selectedProvider.password}</span>
+                  <span className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-700"} font-medium`}>{selectedProvider.password}</span>
                 </div>
               </div>
 
               {/* Info rows */}
               <div className="px-5 pb-2 space-y-2">
 
-                <div className="bg-gray-50 rounded-2xl p-3.5 space-y-2.5">
+                <div className={`${darkMode ? "bg-gray-600 text-slate-400" : "text-slate-700 bg-gray-50"} rounded-2xl p-3.5 space-y-2.5`}>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contact</p>
 
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                       <Mail size={13} className="text-blue-500" />
                     </div>
-                    <span className="text-sm text-slate-700 font-medium">{selectedProvider.email}</span>
+                    <span className="text-sm font-medium">{selectedProvider.email}</span>
                   </div>
 
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
                       <Phone size={13} className="text-green-600" />
                     </div>
-                    <span className="text-sm text-slate-700 font-medium">{selectedProvider.phone || "—"}</span>
+                    <span className="text-sm font-medium">{selectedProvider.phone || "—"}</span>
                   </div>
 
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
                       <MapPin size={13} className="text-orange-500" />
                     </div>
-                    <span className="text-sm text-slate-700 font-medium">
+                    <span className="text-sm font-medium">
                       {[selectedProvider.city, selectedProvider.state, selectedProvider.pincode].filter(Boolean).join(", ")}
                     </span>
                   </div>
@@ -600,13 +602,13 @@ export default function AdminProviders() {
                     <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
                       <Shield size={13} className="text-purple-500" />
                     </div>
-                    <span className="text-sm text-slate-500 font-mono">{selectedProvider.tenantId || "—"}</span>
+                    <span className="text-sm font-mono">{selectedProvider.tenantId || "—"}</span>
                   </div>
                 </div>
 
                 {/* Service types */}
                 {selectedProvider.serviceType?.length > 0 && (
-                  <div className="bg-gray-50 rounded-2xl p-3.5">
+                  <div className={`${darkMode ? "bg-gray-600" : "bg-gray-50"} rounded-2xl p-3.5`}>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Service Types</p>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedProvider.serviceType.map((s) => (

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { getInitials } from "../utils/avatarUtils";
+import useDarkMode from "../utils/useDarkMode";
 
 const navItems = [
   { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin" },
@@ -30,6 +31,7 @@ export default function AdminDrawer({ open, onClose }) {
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const location = useLocation();
+  const { darkMode } = useDarkMode();
   const [data, setData] = useState([]);
   const drawerInitials = getInitials(data.name || data.storeName, "AD");
    const fetchAdminData = async () => {
@@ -72,7 +74,7 @@ export default function AdminDrawer({ open, onClose }) {
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 ${open ? "left-0" : "-left-[300px]"} w-[280px] h-screen bg-white z-[300] transition-all duration-300 ease-in-out flex flex-col shadow-lg`}
+        className={`fixed top-0 ${open ? "left-0" : "-left-[300px]"} w-[280px] h-screen z-[300] transition-all duration-300 ease-in-out flex flex-col shadow-lg ${darkMode ? "bg-gray-900" : "bg-white"}`}
       >
         {/* Header */}
         <div className="bg-gradient-to-br h-45 from-[#1565C0] via-[#1976D2] to-[#42A5F5] p-6 pt-8 pb-6 relative">
@@ -108,7 +110,7 @@ export default function AdminDrawer({ open, onClose }) {
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto py-3">
+        <div className={`flex-1 overflow-y-auto py-3 ${darkMode ? "bg-gray-900" : "bg-white"}` }>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
 
@@ -119,11 +121,11 @@ export default function AdminDrawer({ open, onClose }) {
                 className={`w-full  flex items-center gap-4 px-5 py-3 text-left border-l-4 transition
                 ${
                   isActive
-                    ? "bg-blue-50 border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-700 hover:bg-gray-50"
+                    ? `${darkMode ? "border-blue-500 text-blue-200 bg-blue-950/60" : "border-blue-600 text-blue-600 bg-blue-50"} `
+                    : `border-transparent ${darkMode ? "text-gray-300 hover:bg-gray-800" : "text-gray-700 hover:bg-slate-50"}`
                 }`}
               >
-                <span className={isActive ? "text-blue-600" : "text-gray-500"}>
+                <span className={isActive ? "text-blue-500" : darkMode ? "text-gray-400" : "text-gray-500"}>
                   {item.icon}
                 </span>
 
@@ -135,17 +137,17 @@ export default function AdminDrawer({ open, onClose }) {
                   {item.label}
                 </span>
 
-                {isActive && <ChevronRight size={16} className="text-blue-600" />}
+                {isActive && <ChevronRight size={16} className="text-blue-500" />}
               </button>
             );
           })}
         </div>
 
         {/* Logout */}
-        <div className="border-t py-3">
+        <div className={`${darkMode ?  "bg-gray-950 border-gray-800" : "bg-red-50"} border-t py-3`}>
           <button
             onClick={() => goTo("/login")}
-            className="w-full flex items-center gap-4 px-5 py-3 text-red-600 hover:bg-red-50"
+            className={`w-full flex items-center gap-4 px-5 py-3 ${darkMode ? "text-red-400" : "text-red-600"} cursor-pointer`}
           >
             <LogOut size={20} />
             <span className="text-sm font-medium">Logout</span>
@@ -155,3 +157,4 @@ export default function AdminDrawer({ open, onClose }) {
     </>
   );
 }
+

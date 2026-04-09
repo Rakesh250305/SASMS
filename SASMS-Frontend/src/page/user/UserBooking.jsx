@@ -10,13 +10,13 @@ import {
   Package,
   FileText,
   XCircle,
-  ChevronLeft as Prev,
-  ChevronRight as Next,
+  ChevronRight,
   Inbox,
   AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BottomNav from "../../component/BottomNav";
+import useDarkMode from "../../utils/useDarkMode";
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const STATUS_TABS = ["all", "pending", "assigned", "in_progress", "completed", "cancelled"];
@@ -40,36 +40,35 @@ function StatusBadge({ status }) {
 }
 
 /* ── Cancel Confirmation Modal ─────────────────────────── */
-function CancelModal({ booking, onConfirm, onClose, loading }) {
+function CancelModal({ booking, onConfirm, onClose, loading, darkMode }) {
   const [cancelReason, setCancelReason] = useState("");
   return (
     <AnimatePresence>
       {booking && (
+        
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm px-4 pb-6"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <motion.div
-            initial={{ y: 80, opacity: 0 }}
+            initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ type: "spring", damping: 26, stiffness: 300 }}
-            className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 25 }}
+            className={`absolute bottom-0 w-full rounded-t-3xl overflow-hidden ${darkMode ? "bg-gray-800" : "bg-white"}`}
           >
-            {/* Red accent top bar */}
-            <div className="h-1.5 bg-gradient-to-r from-red-400 to-red-500 w-full" />
-
-            <div className="p-6">
-              {/* Icon */}
-              <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle size={26} className="text-red-500" />
+            {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className={`w-10 h-1 rounded-full ${darkMode ? "bg-gray-600" : "bg-gray-200"}`} />
               </div>
+            <div className="p-6 pt-2">
+              
 
               {/* Title */}
-              <h2 className="text-base font-bold text-slate-800 text-center mb-1">
+              <h2 className={`text-base font-bold text-center mb-1 ${darkMode ? "text-white" : "text-slate-800"}`}>
                 Cancel Booking?
               </h2>
               <p className="text-xs text-gray-400 text-center mb-5 leading-relaxed">
@@ -81,7 +80,7 @@ function CancelModal({ booking, onConfirm, onClose, loading }) {
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
                 placeholder="Enter reason for cancellation..."
-                className="w-full border border-gray-200 rounded-xl p-3 text-sm mb-4 outline-none focus:ring-2 focus:ring-red-200"
+                className={`w-full border rounded-xl p-3 text-sm mb-4 outline-none focus:ring-2 focus:ring-red-200 ${darkMode ? "border-gray-700 bg-gray-800 text-white" : "border-gray-200"}`}
               />
 
               {/* Buttons */}
@@ -89,7 +88,7 @@ function CancelModal({ booking, onConfirm, onClose, loading }) {
                 <button
                   onClick={onClose}
                   disabled={loading}
-                  className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-600 bg-white active:bg-gray-50 transition-colors disabled:opacity-50"
+                  className={`flex-1 py-3 rounded-2xl border text-sm font-semibold transition-colors disabled:opacity-50 ${darkMode ? "border-gray-700 text-gray-300 bg-gray-800" : "border-gray-200 text-gray-600 bg-white active:bg-gray-50"}`}
                 >
                   Keep Booking
                 </button>
@@ -117,17 +116,17 @@ function CancelModal({ booking, onConfirm, onClose, loading }) {
 }
 
 /* ── Booking Card ──────────────────────────────────────── */
-function BookingCard({ booking, onCancelClick }) {
+function BookingCard({ booking, onCancelClick, darkMode }) {
   const navigate = useNavigate();
   const canCancel = booking.status === "pending";
 
   return (
     <div
       onClick={() => navigate(`/user/booking/${booking._id}`)}
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+      className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} rounded-2xl shadow-sm border overflow-hidden cursor-pointer active:scale-[0.99] transition-transform`}
     >
       {/* Top strip */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-50">
+      <div className={`flex items-center gap-3 p-4 border-b ${darkMode ? "border-gray-700" : "border-gray-50"}`}>
         {booking.service?.serviceImage ? (
           <img
             src={booking.service.serviceImage}
@@ -142,7 +141,7 @@ function BookingCard({ booking, onCancelClick }) {
 
         <div className="flex-1 min-w-0">
           <p className="text-xs font-mono text-emerald-600 mb-0.5">{booking.bookingId}</p>
-          <p className="text-sm font-bold text-slate-800 truncate">
+          <p className={`text-sm font-bold truncate ${darkMode ? "text-white" : "text-slate-800"}`}>
             {booking.service?.serviceName || "Service"}
           </p>
           <p className="text-xs text-gray-400 truncate uppercase">{booking.service?.category}</p>
@@ -152,12 +151,12 @@ function BookingCard({ booking, onCancelClick }) {
       </div>
 
       {/* Details grid */}
-      <div className="px-4 py-3 grid grid-cols-2 gap-y-2 gap-x-4">
+      <div className={`px-4 py-3 grid grid-cols-2 gap-y-2 gap-x-4 ${darkMode ? "text-slate-500" : "text-slate-700"} `}>
         <div className="flex items-start gap-2">
           <MapPin size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Address</p>
-            <p className="text-xs text-slate-700 font-medium leading-tight">
+            <p className={`text-xs font-medium leading-tight`}>
               {booking.address?.addressLine1}, {booking.address?.city}
             </p>
             <p className="text-[10px] text-gray-400">
@@ -170,7 +169,7 @@ function BookingCard({ booking, onCancelClick }) {
           <User size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Provider</p>
-            <p className="text-xs text-slate-700 font-medium leading-tight">
+            <p className="text-xs font-medium leading-tight">
               {booking.provider?.name || "Not assigned"}
             </p>
           </div>
@@ -180,7 +179,7 @@ function BookingCard({ booking, onCancelClick }) {
           <Calendar size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Booked On</p>
-            <p className="text-xs text-slate-700 font-medium">
+            <p className="text-xs font-medium">
               {new Date(booking.createdAt).toLocaleDateString("en-IN", {
                 day: "numeric", month: "short", year: "numeric",
               })}
@@ -192,7 +191,7 @@ function BookingCard({ booking, onCancelClick }) {
           <Clock size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Scheduled</p>
-            <p className="text-xs text-slate-700 font-medium">
+            <p className="text-xs font-medium">
               {booking.scheduledDate
                 ? new Date(booking.scheduledDate).toLocaleDateString("en-IN", {
                   day: "numeric", month: "short",
@@ -207,7 +206,7 @@ function BookingCard({ booking, onCancelClick }) {
             <FileText size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Note</p>
-              <p className="text-xs text-slate-600 italic">{booking.providerNote}</p>
+              <p className="text-xs italic">{booking.providerNote}</p>
             </div>
           </div>
         )}
@@ -235,6 +234,7 @@ function BookingCard({ booking, onCancelClick }) {
 /* ── Main Page ─────────────────────────────────────────── */
 export default function UserBookings() {
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
   const [bookings, setBookings] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -302,7 +302,7 @@ export default function UserBookings() {
     t === "in_progress" ? "In Progress" : t.charAt(0).toUpperCase() + t.slice(1);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-14">
@@ -322,14 +322,14 @@ export default function UserBookings() {
 
       {/* Tab Bar */}
       <div className="-mt-6 px-4 mb-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar">
+        <div className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} rounded-2xl shadow-sm border px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar`}>
           {STATUS_TABS.map((t) => (
             <button
               key={t}
               onClick={() => handleTabChange(t)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${activeTab === t
                   ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-gray-500 hover:bg-gray-50"
+                  : darkMode ? "text-gray-400 hover:bg-gray-700" : "text-gray-500 hover:bg-gray-50"
                 }`}
             >
               {tabLabel(t)}
@@ -343,15 +343,15 @@ export default function UserBookings() {
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl h-48 animate-pulse" />
+              <div key={i} className={`rounded-2xl h-48 animate-pulse ${darkMode ? "bg-gray-800" : "bg-white"}`} />
             ))}
           </div>
         ) : bookings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4">
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${darkMode ? "bg-emerald-950/40" : "bg-emerald-50"}`}>
               <Inbox size={28} className="text-emerald-400" />
             </div>
-            <p className="text-slate-700 font-semibold text-sm mb-1">No bookings found</p>
+            <p className={`font-semibold text-sm mb-1 ${darkMode ? "text-gray-100" : "text-slate-700"}`}>No bookings found</p>
             <p className="text-gray-400 text-xs mb-5">
               {activeTab === "all"
                 ? "You haven't made any bookings yet"
@@ -372,6 +372,7 @@ export default function UserBookings() {
                   key={b._id}
                   booking={b}
                   onCancelClick={setCancelTarget}
+                  darkMode={darkMode}
                 />
               ))}
             </div>
@@ -381,9 +382,9 @@ export default function UserBookings() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center disabled:opacity-40"
+                  className={`w-9 h-9 rounded-xl border flex items-center justify-center disabled:opacity-40 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
                 >
-                  <Prev size={16} className="text-gray-600" />
+                  <ChevronLeft size={16} className="text-gray-600" />
                 </button>
                 <span className="text-xs text-gray-500 font-medium">
                   Page {page} of {totalPages}
@@ -391,9 +392,9 @@ export default function UserBookings() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center disabled:opacity-40"
+                  className={`w-9 h-9 rounded-xl border flex items-center justify-center disabled:opacity-40 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
                 >
-                  <Next size={16} className="text-gray-600" />
+                  <ChevronRight size={16} className="text-gray-600" />
                 </button>
               </div>
             )}
@@ -407,6 +408,7 @@ export default function UserBookings() {
         onConfirm={handleConfirmCancel}
         onClose={() => !cancelling && setCancelTarget(null)}
         loading={cancelling}
+        darkMode={darkMode}
       />
 
       <BottomNav role="user" />
