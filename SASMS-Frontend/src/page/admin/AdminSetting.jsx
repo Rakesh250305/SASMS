@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import InputField from "../../component/InputField";
 import axios from "axios";
 import { toast } from "react-toastify";
+import useDarkMode from "../../utils/useDarkMode";
 
 const settingsSections = [
   {
@@ -103,6 +104,7 @@ export function AdminSettings() {
     newPassword: "",
     confirmPassword: "",
   });
+  const { darkMode, toggleDarkMode } = useDarkMode();
 
   const handlePasswordChange = e =>
     setPasswordData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -148,37 +150,37 @@ export function AdminSettings() {
           <button onClick={() => navigate("/admin")} className="bg-white/20 text-white p-2 rounded-lg">
             <ArrowLeft size={18} />
           </button>
-          <div className="flex-1 text-white font-bold text-lg">Settings</div>
+          <div className={`flex-1 ${darkMode ? "text-white" : "text-white"} font-bold text-lg`}>Settings</div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className={`flex-1 ${darkMode ? "bg-gray-800" : "bg-white"} overflow-y-auto px-4 py-4`}>
 
         {settingsSections.map((section) => (
           <div key={section.title} className="mb-5">
-            <div className="text-[11px] font-bold tracking-wider uppercase mb-2 pl-1 text-gray-400">
+            <div className={`text-[11px] font-bold tracking-wider uppercase mb-2 pl-1 ${darkMode ? "text-gray-300" : "text-gray-400"}`}>
               {section.title}
             </div>
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            <div className={`${darkMode ? "bg-gray-700 border border-gray-600" : "bg-white"} rounded-2xl overflow-hidden shadow-sm`}>
               {section.items.map((item, i) => (
                 <div
                   key={item.label}
                   onClick={() => handleItemClick(item)}
-                  className={`flex items-center gap-3 px-4 py-4 cursor-pointer transition-colors hover:bg-slate-50 ${
-                    i !== section.items.length - 1 ? "border-b border-gray-100" : ""
+                  className={`flex items-center gap-3 px-4 py-4 cursor-pointer transition-colors ${darkMode ? "hover:bg-slate-500" : "hover:bg-slate-50"}  ${
+                    i !== section.items.length - 1 ? (darkMode ? "border-b border-gray-600" : "border-b border-gray-100") : ""
                   }`}
                 >
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${item.bg} ${item.color}`}>
                     {item.icon}
                   </div>
                   <div className="flex-1">
-                    <div className="text-[13px] font-semibold text-[#1A1A2E]">{item.label}</div>
-                    <div className="text-[11px] mt-0.5 text-gray-400">{item.desc}</div>
+                    <div className={`text-[13px] font-semibold ${darkMode ? "text-gray-300" : "text-[#1A1A2E]"}`}>{item.label}</div>
+                    <div className={`text-[11px] mt-0.5 ${darkMode ? "text-gray-300" : "text-gray-400"}`}>{item.desc}</div>
                   </div>
                   {item.toggle ? (
-                    <div className="w-11 h-6 rounded-full bg-gray-300 relative">
-                      <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow" />
+                    <div className={`w-11 h-6 rounded-full relative ${darkMode ? "bg-blue-600": "bg-gray-300"}`} onClick={toggleDarkMode}>
+                      <div className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all ${darkMode ? "left-[22px]" : "left-[2px]"}`} />
                     </div>
                   ) : (
                     <ChevronRight size={16} className="text-gray-400" />
@@ -191,7 +193,7 @@ export function AdminSettings() {
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm bg-red-50 text-red-600"
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm ${darkMode ? "bg-gray-700 text-red-400" : "bg-red-50 text-red-600"}  `}
         >
           <LogOut size={18} /> Sign Out
         </button>
@@ -213,21 +215,21 @@ export function AdminSettings() {
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
               onClick={e => e.stopPropagation()}
-              className="w-full bg-white rounded-t-3xl p-6 z-50"
+              className={`w-full rounded-t-3xl p-6 z-50 ${darkMode ? "bg-gray-800 text-white" : "bg-white"}`}
             >
               {/* Handle */}
-              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+              <div className={`w-10 h-1 rounded-full mx-auto mb-5 ${darkMode ? "bg-gray-600" : "bg-gray-200"}`} />
 
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-800">Change Password</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">Update your admin account password</p>
+                  <h2 className={`text-lg font-bold ${darkMode ? "text-white" : "text-slate-800"}`}>Change Password</h2>
+                  <p className={`text-xs mt-0.5 ${darkMode ? "text-gray-300" : "text-gray-400"}`}>Update your admin account password</p>
                 </div>
                 <button
                   onClick={() => setShowPasswordModal(false)}
-                  className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${darkMode ? "bg-gray-700" : "bg-gray-100"}`}
                 >
-                  <ArrowLeft size={15} className="text-gray-500 rotate-[135deg]" />
+                  <ArrowLeft size={15} className={`${darkMode ? "text-gray-300" : "text-gray-500"} rotate-[135deg]`} />
                 </button>
               </div>
 
@@ -235,24 +237,24 @@ export function AdminSettings() {
                 <InputField
                   type="password" label="Current Password" icon={<Eye size={16} />}
                   name="currentPassword" placeholder="Current password"
-                  value={passwordData.currentPassword} onChange={handlePasswordChange}
+                  value={passwordData.currentPassword} onChange={handlePasswordChange} dark={darkMode}
                 />
                 <InputField
                   type="password" label="New Password" icon={<Eye size={16} />}
                   name="newPassword" placeholder="New password"
-                  value={passwordData.newPassword} onChange={handlePasswordChange}
+                  value={passwordData.newPassword} onChange={handlePasswordChange} dark={darkMode}
                 />
                 <InputField
                   type="password" label="Confirm Password" icon={<Eye size={16} />}
                   name="confirmPassword" placeholder="Confirm new password"
-                  value={passwordData.confirmPassword} onChange={handlePasswordChange}
+                  value={passwordData.confirmPassword} onChange={handlePasswordChange} dark={darkMode}
                 />
               </div>
 
               <div className="flex gap-3 mt-5">
                 <button
                   onClick={() => setShowPasswordModal(false)}
-                  className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-bold text-gray-500"
+                  className={`flex-1 py-3 rounded-2xl border text-sm font-bold ${darkMode ? "border-gray-600 text-gray-300" : "border-gray-200 text-gray-500"}`}
                 >
                   Cancel
                 </button>

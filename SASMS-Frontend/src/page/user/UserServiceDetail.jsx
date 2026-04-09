@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Tag, ArrowRight, CircleDollarSign, ClipboardList, Store, MapPin, Pin, Link } from "lucide-react";
+import useDarkMode from "../../utils/useDarkMode";
 
 export default function UserServiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const darkMode = useDarkMode();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("token");
 
@@ -55,7 +57,7 @@ export default function UserServiceDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-slate-50"} `}>
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-8">
         <button
           onClick={() => navigate(-1)}
@@ -71,7 +73,7 @@ export default function UserServiceDetail() {
       </div>
 
       <div className="-mt-4 px-4 pb-5">
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-3xl shadow-sm border border-gray-100 overflow-hidden`}>
           {service.serviceImage ? (
             <img
               src={service.serviceImage}
@@ -102,10 +104,11 @@ export default function UserServiceDetail() {
               </p>
             </div>
 
+            {/* Store Details */}
             {service.store && (
               <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Store Details</p>
-                <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
+                <div className={`${darkMode ? "bg-gray-700 text-slate-400" : "bg-slate-50 text-slate-700"} rounded-2xl p-4 space-y-3`}>
                   {service.store.storePhoto && 
                   <div className="w-full h-15 border-2 border-gray-300/20 rounded-2xl">
                       <img src={service.store.storePhoto} alt={service.store.name} className="w-full h-full object-cover"/>
@@ -114,7 +117,7 @@ export default function UserServiceDetail() {
                   <div className="flex items-start gap-2">
                     <Store size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-semibold text-slate-700">
+                      <p className="text-sm font-semibold">
                         {service.store.storeName || "Store name not available"}
                       </p>
                     </div>
@@ -122,7 +125,7 @@ export default function UserServiceDetail() {
                   <div className="flex items-start gap-2">
                     <MapPin size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm">
                         {[
                           // service.store.storeAddress,
                           service.store.city,
@@ -137,7 +140,7 @@ export default function UserServiceDetail() {
                   <div className="flex items-start gap-2 items-center">
                     <Link size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <a href={service.store.website} target="_blank" rel="noopener noreferrer" className="text-sm cursor-pointer text-slate-600">
+                      <a href={service.store.website} target="_blank" rel="noopener noreferrer" className="text-sm cursor-pointer">
                         {service.store.website}
                       </a>
                     </div>
@@ -146,20 +149,20 @@ export default function UserServiceDetail() {
               </div>
             )}
 
-            <div className="bg-slate-50 rounded-2xl p-4">
+            <div className={`${darkMode ? "bg-gray-700 text-slate-400" : "bg-slate-50 text-slate-700"} rounded-2xl p-4`}>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Quick Summary</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Service Name</span>
-                  <span className="text-sm font-semibold text-slate-700">{service.serviceName}</span>
+                  <span className="text-sm">Service Name</span>
+                  <span className="text-sm font-semibold text-emerald-600">{service.serviceName}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Category</span>
-                  <span className="text-sm font-semibold text-slate-700">{service.category}</span>
+                  <span className="text-sm">Category</span>
+                  <span className="text-sm font-semibold text-emerald-700">{service.category}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Estimated Price</span>
-                  <span className="text-sm font-semibold text-slate-700">₹{service.estimatedPrice}</span>
+                  <span className="text-sm">Estimated Price</span>
+                  <span className="text-sm font-semibold text-emerald-700">₹{service.estimatedPrice}</span>
                 </div>
               </div>
             </div>

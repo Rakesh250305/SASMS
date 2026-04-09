@@ -22,6 +22,7 @@ import InputField from "../../component/InputField";
 import axios from "axios";
 import { toast } from "react-toastify";
 import BottomNav from "../../component/BottomNav";
+import useDarkMode from "../../utils/useDarkMode";
 
 const settingsSections = [
   {
@@ -87,7 +88,7 @@ const settingsSections = [
 export default function UserSettings() {
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleDarkMode } = useDarkMode();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
@@ -148,7 +149,7 @@ export default function UserSettings() {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen pb-16 bg-[#F5F7FA]`}>
+    <div className={`flex flex-col min-h-screen pb-16 ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-6">
@@ -168,18 +169,20 @@ export default function UserSettings() {
           <div key={section.title} className="mb-5">
 
             {/* Section Title */}
-            <div className={`text-[11px] font-bold tracking-wider uppercase mb-2 pl-1 text-gray-400`}>
+            <div className={`text-[11px] font-bold tracking-wider uppercase mb-2 pl-1 ${darkMode ? "text-gray-400" : "text-gray-400"}`}>
               {section.title}
             </div>
 
             {/* Card */}
-            <div className={`bg-white rounded-2xl overflow-hidden shadow-sm`}>
+            <div className={`${darkMode ? "bg-gray-800 border border-gray-700" : "bg-white"} rounded-2xl overflow-hidden shadow-sm`}>
 
               {section.items.map((item, i) => (
                 <div
                   key={item.label}
                   onClick={() => {
-                    if (item.label === "Profile Settings") {
+                    if (item.toggle) {
+                      toggleDarkMode();
+                    } else if (item.label === "Profile Settings") {
                       navigate('/user/profile')
                     } else if (item.label === "Manage Address") {
                       navigate('/user/address')
@@ -189,7 +192,7 @@ export default function UserSettings() {
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${i !== section.items.length - 1
-                    ? "border-b border-gray-100"
+                    ? darkMode ? "border-b border-gray-700" : "border-b border-gray-100"
                     : ""
                     }`}
 
@@ -203,10 +206,10 @@ export default function UserSettings() {
 
                   {/* Text */}
                   <div className="flex-1">
-                    <div className={`text-[13px] font-semibold text-[#1A1A2E]`}>
+                    <div className={`text-[13px] font-semibold ${darkMode ? "text-white" : "text-[#1A1A2E]"}`}>
                       {item.label}
                     </div>
-                    <div className="text-[11px] text-gray-400 mt-0.5">
+                    <div className={`text-[11px] mt-0.5 ${darkMode ? "text-gray-400" : "text-gray-400"}`}>
                       {item.desc}
                     </div>
                   </div>
@@ -214,10 +217,10 @@ export default function UserSettings() {
                   {/* Toggle */}
                   {item.toggle ? (
                     <div
-                      className={`w-11 h-6 rounded-full transition-all bg-gray-300 relative`}
+                      className={`w-11 h-6 rounded-full transition-all relative ${darkMode ? "bg-emerald-600" : "bg-gray-300"}`}
                     >
                       <div
-                        className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all left-[2px]`}
+                        className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all ${darkMode ? "left-[22px]" : "left-[2px]"}`}
                       ></div>
                     </div>
                   ) : (
@@ -232,7 +235,7 @@ export default function UserSettings() {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm bg-red-50 text-red-600`}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm ${darkMode ? "bg-gray-800 text-red-400" : "bg-red-50 text-red-600"}`}
         >
           <LogOut size={18} />
           Sign Out
@@ -248,24 +251,23 @@ export default function UserSettings() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 z-40"
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/10 backdrop-blur-xs"
+
             />
             
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pt-0 pb-6 z-50 overflow-hidden"
+              initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 25 }}
+              className={`absolute bottom-0 left-0 w-full z-[50] rounded-t-3xl p-6 pt-0 pb-6 z-50 overflow-hidden ${darkMode ? "bg-gray-800 text-white" : "bg-white"}`}
             >
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 rounded-full ${darkMode ? "bg-gray-600" : "bg-gray-200"}`} />
               </div>
-
-              <h2 className="text-lg font-bold mb-4">Change Password</h2>
-
+              <h2 className={`text-lg font-bold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Change Password</h2>
               <div className="space-y-3">
 
                 <InputField
@@ -276,6 +278,7 @@ export default function UserSettings() {
                   placeholder="Current Password"
                   value={passwordData.currentPassword}
                   onChange={handlePasswordChange}
+                  dark={darkMode}
                 />
 
                 <InputField
@@ -286,6 +289,7 @@ export default function UserSettings() {
                   placeholder="New Password"
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange}
+                  dark={darkMode}
                 />
 
                 <InputField
@@ -296,15 +300,14 @@ export default function UserSettings() {
                   placeholder="Confirm Password"
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordChange}
+                  dark={darkMode}
                 />
-
               </div>
 
               <div className="flex gap-3 mt-5">
-
                 <button
                   onClick={() => setShowPasswordModal(false)}
-                  className="flex-1 py-2 rounded-xl border text-sm font-semibold"
+                  className={`flex-1 py-2 rounded-xl border text-sm font-semibold ${darkMode ? "border-gray-600 text-gray-200" : "border-gray-300 text-black"}`}
                 >
                   Cancel
                 </button>
@@ -315,15 +318,11 @@ export default function UserSettings() {
                 >
                   Update
                 </button>
-
               </div>
-
             </motion.div>
          </>
-
         )}
       </AnimatePresence>
-
 
       <BottomNav />
 

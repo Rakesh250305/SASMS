@@ -192,13 +192,13 @@ export default function Login() {
             <div className="w-9 h-9 p-1 rounded-lg bg-white/20 flex items-center justify-center">
               <img src={logo} alt="SASMS" className="w-full h-full object-contain" />
             </div>
-            <span className="text-white font-bold text-sm tracking-wide">
-              Smart Asset &amp; Service
+            <span className="text-white dark:text-gray-300 text-wrap font-bold text-sm tracking-wide">
+              Smart Asset &amp; Service Management System
             </span>
           </div>
 
-          <h1 className="text-white text-2xl font-extrabold mb-1">Welcome back</h1>
-          <p className="text-white/75 text-sm">Sign in to your account to continue</p>
+          <h1 className="text-white dark:text-gray-300 text-2xl font-extrabold mb-1">Welcome back</h1>
+          <p className="text-white/75 dark:text-gray-300 text-sm">Sign in to your account to continue</p>
 
         </motion.div>
       </motion.div>
@@ -207,12 +207,12 @@ export default function Login() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`flex-1 rounded-t-[28px] -mt-7 px-6 pt-7 pb-10 shadow-xl bg-white"`}
+        className={`flex-1 rounded-t-[28px] -mt-7 px-6 pb-10 shadow-xl z-10 dark:bg-gray-800 bg-white `}
       >
 
         {/* Role tabs */}
         <div className="my-6">
-          <div className={`bg-gray-100 flex rounded-2xl p-1 gap-1`}>
+          <div className={`bg-gray-100 dark:bg-gray-700 flex rounded-2xl p-1 gap-1`}>
             {["admin", "provider", "user"].map((role) => {
               const rc     = roleConfig[role];
               const active = selectedRole === role;
@@ -221,7 +221,7 @@ export default function Login() {
                   key={role}
                   onClick={() => handleRoleChange(role)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs rounded-xl transition-all duration-200
-                    ${active ? ` bg-white shadow font-bold text-gray-800` : `text-gray-400 font-medium`}`}
+                    ${active ? ` bg-white dark:bg-gray-400 shadow font-bold text-gray-800` : `text-gray-400 font-medium`}`}
                   style={active ? { color: rc.color } : {}}
                 >
                   {rc.icon}
@@ -249,11 +249,11 @@ export default function Login() {
 
         {/* Email */}
         <div className="mb-4">
-          <label className={`block text-xs font-semibold mb-1.5 text-gray-700`}>
+          <label className={`block text-xs font-semibold mb-1.5 dark:text-gray-400 text-gray-700`}>
             Email Address
           </label>
           <div className="relative">
-            <Mail size={15} className={`absolute left-3 top-3.5 text-gray-400`} />
+            <Mail size={15} className={`absolute left-3 top-3.5 dark:text-gray-100 text-gray-400`} />
             <input
               type="email"
               value={email}
@@ -261,18 +261,18 @@ export default function Login() {
               onKeyDown={(e) => e.key === "Enter" && handleLogin(e)}
               placeholder={config.placeholder}
               autoComplete="email"
-              className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 transition-colors border-gray-200 bg-gray-50 focus:bg-white`}
+              className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 transition-colors border-gray-200 dark:bg-gray-600 dark:border-gray-400 dark:text-gray-200 dark:focus:bg-gray-600 bg-gray-50 focus:bg-white`}
             />
           </div>
         </div>
 
         {/* Password */}
         <div className="mb-2">
-          <label className={`block text-xs font-semibold mb-1.5 text-gray-700`}>
+          <label className={`block text-xs font-semibold mb-1.5 dark:text-gray-400 text-gray-700`}>
             Password
           </label>
           <div className="relative">
-            <Lock size={15} className={`absolute left-3 top-3.5 text-gray-400`} />
+            <Lock size={15} className={`absolute left-3 top-3.5 dark:text-gray-100 text-gray-400`} />
             <input
               type={showPass ? "text" : "password"}
               value={password}
@@ -280,12 +280,12 @@ export default function Login() {
               onKeyDown={(e) => e.key === "Enter" && handleLogin(e)}
               placeholder="Enter your password"
               autoComplete="current-password"
-              className={`w-full pl-9 pr-10 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 transition-colors border-gray-200 bg-gray-50 focus:bg-white`}
+              className={`w-full pl-9 pr-10 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 transition-colors border-gray-200 bg-gray-50 focus:bg-white dark:bg-gray-600 dark:border-gray-400 dark:text-gray-200 dark:focus:bg-gray-600`}
             />
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className={`absolute right-3 top-3.5 text-gray-400`}
+              className={`absolute right-3 top-3.5 dark:text-gray-100 text-gray-400`}
             >
               {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
@@ -293,7 +293,8 @@ export default function Login() {
         </div>
 
         {/* Forgot password */}
-        <div className="text-right mb-6">
+        {selectedRole !== "provider" ? (
+           <div className="text-right mb-6">
           <span
             onClick={openForgotPassword}
             className="text-xs font-semibold cursor-pointer hover:underline"
@@ -302,7 +303,10 @@ export default function Login() {
             Forgot Password?
           </span>
         </div>
-
+        ) : (
+          <div className="my-6"/>
+        )}
+      
         {/* Submit button */}
         <button
           type="button"
@@ -339,7 +343,7 @@ export default function Login() {
         {/* Register / Provider note */}
         {selectedRole === "provider" ? (
           <div className={`text-center text-xs leading-relaxed px-4 text-gray-400`}>
-            <UserCog size={16} className={`mx-auto mb-1.5 text-gray-300`} />
+            <UserCog size={16} className={`mx-auto mb-1.5 dark:text-gray-400 text-gray-500`} />
             Providers cannot self-register. Contact your store admin to receive login credentials.
           </div>
         ) : (
@@ -372,7 +376,7 @@ export default function Login() {
               exit={{ y: 40, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full sm:max-w-md rounded-t-[28px] sm:rounded-[28px] px-6 pt-6 pb-7 shadow-xl bg-white`}
+              className={`w-full h-[72vh] overflow-y-auto sm:max-w-md rounded-t-[28px] sm:rounded-[28px] px-6 pt-6 pb-7 shadow-xl dark:bg-gray-800 dark:text-gray-400 text-black bg-white`}
             >
               <div className="flex items-start justify-between gap-4 mb-5">
                 <div>
@@ -391,7 +395,7 @@ export default function Login() {
               </div>
 
               <div className="mb-4">
-                <label className={`block text-xs font-semibold mb-1.5 text-gray-700`}>
+                <label className={`block text-xs font-semibold mb-1.5`}>
                   Account Role
                 </label>
                 <div className={`bg-gray-100 flex rounded-2xl p-1 gap-1`}>
@@ -424,7 +428,7 @@ export default function Login() {
 
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div>
-                  <label className={`block text-xs font-semibold mb-1.5 text-gray-700`}>
+                  <label className={`block text-xs font-semibold mb-1.5 `}>
                     Email Address
                   </label>
                   <div className="relative">
@@ -435,13 +439,13 @@ export default function Login() {
                       value={resetData.email}
                       onChange={handleResetChange}
                       placeholder="Enter your account email"
-                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 bg-gray-50`}
+                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 dark:bg-gray-700 bg-gray-50`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className={`block text-xs font-semibold mb-1.5 text-gray-700`}>
+                  <label className={`block text-xs font-semibold mb-1.5 `}>
                     Registered Phone
                   </label>
                   <div className="relative">
@@ -452,13 +456,13 @@ export default function Login() {
                       value={resetData.phone}
                       onChange={handleResetChange}
                       placeholder="Enter registered phone number"
-                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 bg-gray-50`}
+                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 dark:bg-gray-700 bg-gray-50 `}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className={`block text-xs font-semibold mb-1.5 text-gray-700`}>
+                  <label className={`block text-xs font-semibold mb-1.5`}>
                     New Password
                   </label>
                   <div className="relative">
@@ -469,13 +473,13 @@ export default function Login() {
                       value={resetData.newPassword}
                       onChange={handleResetChange}
                       placeholder="Create a new password"
-                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 bg-gray-50`}
+                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 dark:bg-gray-700 bg-gray-50 `}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className={`block text-xs font-semibold mb-1.5 text-gray-700`}>
+                  <label className={`block text-xs font-semibold mb-1.5`}>
                     Confirm Password
                   </label>
                   <div className="relative">
@@ -486,7 +490,7 @@ export default function Login() {
                       value={resetData.confirmPassword}
                       onChange={handleResetChange}
                       placeholder="Confirm the new password"
-                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 bg-gray-50`}
+                      className={`w-full pl-9 pr-3 py-3 text-sm border rounded-xl outline-none focus:border-blue-400 border-gray-200 dark:bg-gray-700 bg-gray-50 `}
                     />
                   </div>
                 </div>

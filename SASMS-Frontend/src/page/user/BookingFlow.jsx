@@ -2,12 +2,14 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Check } from "lucide-react";
+import useDarkMode from "../../utils/useDarkMode";
 
 const STEPS = ["Service", "Address", "Notes", "Confirm"];
 
 export default function BookingFlow() {
 
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [searchParams] = useSearchParams();
 
@@ -120,7 +122,7 @@ fetchAddresses();
 
   return (
 
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
 
       {/* HEADER */}
 
@@ -185,14 +187,14 @@ fetchAddresses();
 
         {step === 0 && (
 
-          <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className={`rounded-xl shadow-sm p-4 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
 
-            <h2 className="font-semibold mb-3 text-gray-700">
+            <h2 className={`font-semibold mb-3 ${darkMode ? "text-gray-400" : "text-gray-700"}`}>
               Select Service
             </h2>
 
             <input
-              className="w-full border rounded-lg px-3 py-2 text-sm mb-4"
+              className={`w-full ${darkMode ? "border-gray-400 placeholder:text-gray-400" : "border-black"} border rounded-lg px-3 py-2 text-sm mb-4`}
               placeholder="Search services..."
               value={serviceSearch}
               onChange={(e) => setServiceSearch(e.target.value)}
@@ -204,10 +206,10 @@ fetchAddresses();
                 <div
                   key={s._id}
                   onClick={() => setSelectedService(s)}
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer 
                 ${selectedService?._id === s._id
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-gray-100"}
+                      ? `border-emerald-500 ${darkMode ? "bg-emerald-800" : "bg-emerald-50"}`
+                      : `${darkMode ? "bg-gray-700" : "bg-white"} border-gray-100`}
                 `}
                 >
 
@@ -259,9 +261,9 @@ fetchAddresses();
 
         {step === 1 && (
 
-          <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-sm p-4`}>
 
-            <h2 className="font-semibold mb-3 text-gray-700">
+            <h2 className={`font-semibold mb-3 ${darkMode ? "text-gray-400" : "text-gray-700"}`}>
               Select Address
             </h2>
 
@@ -281,8 +283,8 @@ fetchAddresses();
                   }}
                   className={`border rounded-lg p-3 cursor-pointer
 ${selectedAddressId === addr._id
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-gray-200"}
+                      ? `border-emerald-500 ${darkMode ? "bg-emerald-800" : "bg-emerald-50"}`
+                      : `${darkMode ? "bg-gray-700" : "text-white"} border-gray-200`}
 `}
                 >
 
@@ -298,7 +300,7 @@ ${selectedAddressId === addr._id
 
                   </div>
 
-                  <p className="text-sm font-semibold mt-1">
+                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-black"} font-semibold mt-1`}>
                     {addr.fullName}
                   </p>
 
@@ -315,7 +317,7 @@ ${selectedAddressId === addr._id
             {/* ADD NEW ADDRESS */}
 
             <button
-              onClick={() => navigate('/user/profile')}
+              onClick={() => navigate('/user/address')}
               className="mt-4 w-full border border-dashed border-emerald-400 text-emerald-600 py-2 rounded-lg text-sm"
             >
               + Add New Address
@@ -325,7 +327,7 @@ ${selectedAddressId === addr._id
 
               <button
                 onClick={() => setStep(0)}
-                className="flex-1 border rounded-lg py-3"
+                className={`flex-1 border rounded-lg py-3 ${darkMode ? "text-gray-400" : "text-black"}`}
               >
                 Back
               </button>
@@ -348,14 +350,14 @@ ${selectedAddressId === addr._id
 
         {step === 2 && (
 
-          <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-sm p-4`}>
 
-            <h2 className="font-semibold mb-3 text-gray-700">
+            <h2 className={`font-semibold mb-3 ${darkMode ? "text-gray-400" : "text-gray-700"}`}>
               Special Notes
             </h2>
 
             <textarea
-              className="w-full border rounded-lg p-3 text-sm"
+              className={`w-full border ${darkMode ? "text-gray-400" : "text-gray-700"} rounded-lg p-3 text-sm`}
               placeholder="Optional notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -365,7 +367,7 @@ ${selectedAddressId === addr._id
 
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 border rounded-lg py-3"
+                className={`flex-1 border rounded-lg py-3 ${darkMode ? "text-gray-400" : "text-black"}`}
               >
                 Back
               </button>
@@ -388,13 +390,13 @@ ${selectedAddressId === addr._id
 
         {step === 3 && (
 
-          <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-sm p-4`}>
 
-            <h2 className="font-semibold mb-3">
+            <h2 className={`font-semibold mb-3 ${darkMode ? "text-gray-400" : "text-black"} `}>
               Confirm Booking
             </h2>
 
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className={`text-sm ${darkMode ? "text-gray-500" : "text-gray-600"} space-y-2`}>
 
               <p>
                 <b>Service:</b> {selectedService?.serviceName}
@@ -418,7 +420,7 @@ ${selectedAddressId === addr._id
 
               <button
                 onClick={() => setStep(2)}
-                className="flex-1 border rounded-lg py-3"
+                className={`flex-1 border rounded-lg py-3 ${darkMode ? "text-gray-400" : "text-black"}`}
               >
                 Back
               </button>
@@ -440,16 +442,16 @@ ${selectedAddressId === addr._id
 
       {bookingConfirmation && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-lg p-6 text-center">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"}  rounded-3xl shadow-lg p-6 text-center`}>
             <Check size={48} className="text-emerald-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">Booking Confirmed!</h2>
-            <p className="text-gray-600 mb-6">Your service booking has been successfully created.</p>
+            <h2 className={`text-xl font-bold mb-2 ${darkMode ? "text-gray-400" : "text-black"}`}>Booking Confirmed!</h2>
+            <p className={`${darkMode ? "text-gray-500" : "text-gray-600"} mb-6`}>Your service booking has been successfully created.</p>
             <button
               onClick={() => {
                 setBookingConfirmation(false);
                 navigate("/user/bookings");
               }}
-              className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold"
+              className={`bg-emerald-600 ${darkMode ? "text-gray-200" : "text-white"} px-4 py-2 rounded-lg font-semibold`}
             >
               View My Bookings
             </button>

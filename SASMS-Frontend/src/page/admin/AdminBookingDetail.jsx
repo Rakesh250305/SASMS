@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import useDarkMode from "../../utils/useDarkMode";
 import {
   ChevronLeft,
   MapPin,
@@ -71,18 +72,18 @@ function StatusBadge({ status }) {
   );
 }
 
-function Section({ title, children }) {
+function Section({ title, children, darkMode }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+    <div className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} rounded-2xl shadow-sm border p-4`}>
       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">{title}</p>
       {children}
     </div>
   );
 }
 
-function TimelineRow({ label, value, highlight }) {
+function TimelineRow({ label, value, highlight, darkMode }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+    <div className={`flex items-center justify-between py-2 border-b last:border-0 ${darkMode ? "border-gray-700" : "border-gray-50"}`}>
       <span className="text-xs text-gray-400">{label}</span>
       <span className={`text-xs font-semibold ${highlight ? "text-green-600" : "text-slate-700"}`}>{value}</span>
     </div>
@@ -124,6 +125,8 @@ function ProviderModal({ providers, selected, onConfirm, onClose }) {
     );
   }, [activeProviders, query]);
 
+  const darkMode = useDarkMode();
+
   return (
     <AnimatePresence>
       <motion.div
@@ -138,17 +141,17 @@ function ProviderModal({ providers, selected, onConfirm, onClose }) {
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 28, stiffness: 300 }}
-          className="bg-white w-full max-w-lg  rounded-t-3xl overflow-hidden shadow-2xl"
+          className={`${darkMode ? "bg-gray-800" : "bg-white"} w-full max-w-lg  rounded-t-3xl overflow-hidden shadow-2xl`}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
-              <h2 className="text-base font-bold text-slate-800">Select Provider</h2>
+              <h2 className={`text-base font-bold ${darkMode ? "text-slate-400" : "text-slate-800"}`}>Select Provider</h2>
               <p className="text-xs text-gray-400 mt-0.5">{activeProviders.length} active providers available</p>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center"
+              className={`w-8 h-8 rounded-xl ${darkMode ? "bg-gray-400" : "bg-gray-100"} flex items-center justify-center`}
             >
               <X size={15} className="text-gray-500" />
             </button>
@@ -216,7 +219,7 @@ function ProviderModal({ providers, selected, onConfirm, onClose }) {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-800">{p.name}</p>
+                      <p className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-800"}`}>{p.name}</p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         {p.email && (
                           <span className="flex items-center gap-1 text-[10px] text-gray-400">
@@ -291,6 +294,8 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
     );
   };
 
+  const darkMode = useDarkMode();
+
   return (
     <AnimatePresence>
       <motion.div
@@ -305,13 +310,13 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 28, stiffness: 300 }}
-          className="bg-white w-full max-w-lg rounded-t-3xl overflow-hidden shadow-2xl"
+          className={`${darkMode ? "bg-gray-800" : "bg-white"} w-full max-w-lg rounded-t-3xl overflow-hidden shadow-2xl`}
         >
 
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
-              <h2 className="text-base font-bold text-slate-800">Select Assets</h2>
+              <h2 className={`text-base font-bold ${darkMode ? "text-slate-400" : "text-slate-800"}`}>Select Assets</h2>
               <p className="text-xs text-gray-400 mt-0.5">
                 {assets.length} available · {tempSelected.length} selected
               </p>
@@ -327,7 +332,7 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
               )}
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center"
+                className={`w-8 h-8 rounded-xl ${darkMode ? "bg-gray-400" : "bg-gray-100"} flex items-center justify-center`}
               >
                 <X size={15} className="text-gray-500" />
               </button>
@@ -375,9 +380,9 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
                       onClick={() => toggle(a._id)}
                       className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${
                         !isSelectable
-                          ? "border-red-100 bg-red-50/50 opacity-60 cursor-not-allowed"
+                          ? `border-red-200 ${darkMode ? "bg-red-100/90" : "bg-red-50/50"} opacity-60 cursor-not-allowed`
                           : isSelected
-                          ? "border-[#1976D2] bg-blue-50"
+                          ? `${darkMode ? "border-[#1976D2] bg-gray-500" : "border-[#1976D2] bg-blue-50"} `
                           : "border-gray-100 hover:bg-gray-50"
                       }`}
                     >
@@ -391,7 +396,7 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-800 truncate">{a.assetName}</p>
+                        <p className={`text-sm font-bold ${darkMode ? "text-slate-400" : "text-slate-800"} truncate`}>{a.assetName}</p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span className="text-[10px] font-mono text-gray-400">#{a.assetId}</span>
                           {a.category && (
@@ -451,6 +456,7 @@ function AssetModal({ assets, selected, onConfirm, onClose }) {
 
 /* ─────────────────────────── Main Page ─────────────── */
 export default function AdminBookingDetail() {
+  const { darkMode } = useDarkMode();
   const { id } = useParams();
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
@@ -560,13 +566,13 @@ export default function AdminBookingDetail() {
   }, [activeProviders, selectedProvider]);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center">
+    <div className={`min-h-screen flex items-center justify-center ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
       <div className="w-8 h-8 border-4 border-blue-200 border-t-[#1976D2] rounded-full animate-spin" />
     </div>
   );
 
   if (!booking) return (
-    <div className="min-h-screen bg-[#F5F7FA] flex flex-col items-center justify-center gap-3">
+    <div className={`min-h-screen flex flex-col items-center justify-center gap-3 ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
       <p className="text-gray-500 text-sm">Booking not found</p>
       <button onClick={() => navigate(-1)} className="text-[#1976D2] text-sm font-semibold">Go Back</button>
     </div>
@@ -593,7 +599,7 @@ export default function AdminBookingDetail() {
     : serviceCost + assignedAssetsCost + providerCharge;
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-5 pt-6 pb-6 relative overflow-hidden">
@@ -619,7 +625,7 @@ export default function AdminBookingDetail() {
 
         {/* Progress */}
         {!isCancelled ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 p-4`}>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Progress</p>
             <div className="flex items-start">
               {STATUS_FLOW.map((s, i) => (
@@ -628,12 +634,12 @@ export default function AdminBookingDetail() {
                     <div className={`absolute top-3 left-1/2 w-full h-0.5 ${i < currentStep ? "bg-blue-500" : "bg-gray-200"}`} />
                   )}
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 ${
-                    i < currentStep ? "bg-blue-500" : i === currentStep ? "bg-[#1976D2] ring-4 ring-blue-100" : "bg-gray-200"
+                    i < currentStep ? `bg-blue-500` : i === currentStep ? "bg-[#1976D2] ring-4 ring-blue-100" : "bg-gray-200"
                   }`}>
                     {i < currentStep ? <CheckCircle2 size={14} className="text-white" /> :
                      i === currentStep ? <div className="w-2 h-2 rounded-full bg-white" /> : null}
                   </div>
-                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight ${i <= currentStep ? "text-[#1976D2]" : "text-gray-400"}`}>
+                  <span className={`text-[9px] mt-1.5 font-semibold text-center leading-tight ${i <= currentStep ? `${darkMode ? "text-blue-400" : "text-blue-500"}`: "text-gray-400"}`}>
                     {s === "in_progress"
                       ? "In Progress"
                       : s === "picked_up"
@@ -657,7 +663,7 @@ export default function AdminBookingDetail() {
         )}
 
         {/* Customer */}
-        <Section title="Customer">
+        <Section darkMode={darkMode} title="Customer">
           <div className="flex items-center gap-3">
           
             <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-gray-200 bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -674,7 +680,7 @@ export default function AdminBookingDetail() {
                       )}
                     </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-slate-800">{booking.user?.name}</p>
+              <p className={`text-sm font-bold ${darkMode ? "text-slate-400" : "text-slate-800"} `}>{booking.user?.name}</p>
               {booking.user?.email && (
                 <div className="flex items-center gap-1 mt-0.5"><Mail size={11} className="text-gray-400" /><p className="text-xs text-gray-500">{booking.user.email}</p></div>
               )}
@@ -695,7 +701,7 @@ export default function AdminBookingDetail() {
         </Section>
 
         {/* Service */}
-        <Section title="Service">
+        <Section darkMode={darkMode} title="Service">
           <div className="flex items-center gap-3">
             {booking.service?.serviceImage ? (
               <img src={booking.service.serviceImage} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
@@ -706,7 +712,7 @@ export default function AdminBookingDetail() {
             )}
             <div className="flex justify-between w-full">
               <div>
-                <p className="text-sm font-bold text-slate-800">{booking.service?.serviceName}</p>
+                <p className={`text-sm font-bold ${darkMode ? "text-slate-400" : "text-slate-800"} `}>{booking.service?.serviceName}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{formatCategory(booking.service?.category)}</p>
                 {booking.service?.description && <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{booking.service.description}</p>}
               </div>
@@ -718,33 +724,42 @@ export default function AdminBookingDetail() {
         </Section>
 
         {/* Address */}
-        <Section title="Service Address">
-          <div className="flex items-start gap-2">
+        <Section darkMode={darkMode} title="Service Address">
+          <div className="relative flex items-start gap-2">
             <MapPin size={15} className="text-[#1976D2] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-bold text-slate-800">{booking.address?.fullName}</p>
+              <p className={`text-sm font-bold ${darkMode ? "text-slate-400" : "text-slate-800"}`}>{booking.address?.fullName}</p>
               <p className="text-xs text-gray-500 mt-0.5">{booking.address?.phone}</p>
-              <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+              <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                 {booking.address?.addressLine1}{booking.address?.addressLine2 && `, ${booking.address.addressLine2}`}
               </p>
               <p className="text-xs text-gray-400">{booking.address?.city}, {booking.address?.state} — {booking.address?.pincode}</p>
             </div>
+            {booking.address?.phone && (
+              <a
+                href={`tel:${booking.address.phone}`}
+                className="absolute right-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-green-50 text-green-700 text-xs font-bold flex-shrink-0"
+              >
+                <Phone size={12} />
+                Call Customer
+              </a>
+            )}
           </div>
         </Section>
 
         {/* Timeline */}
-        <Section title="Timeline">
-          <TimelineRow label="Booked on" value={new Date(booking.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} />
-          {booking.scheduledDate && <TimelineRow label="Scheduled" value={new Date(booking.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {booking.assignedAt && <TimelineRow label="Assigned at" value={new Date(booking.assignedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {booking.providerAcceptedAt && <TimelineRow label="Accepted at" value={new Date(booking.providerAcceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {booking.assetsPickedUpAt && <TimelineRow label="Assets picked up" value={new Date(booking.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {booking.startedAt && <TimelineRow label="Started at" value={new Date(booking.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {booking.completedAt && <TimelineRow label="Completed at" value={new Date(booking.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight />}
+        <Section darkMode={darkMode} title="Timeline">
+          <TimelineRow darkMode={darkMode} label="Booked on" value={new Date(booking.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} />
+          {booking.scheduledDate && <TimelineRow darkMode={darkMode} label="Scheduled" value={new Date(booking.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.assignedAt && <TimelineRow darkMode={darkMode} label="Assigned at" value={new Date(booking.assignedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.providerAcceptedAt && <TimelineRow darkMode={darkMode} label="Accepted at" value={new Date(booking.providerAcceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.assetsPickedUpAt && <TimelineRow darkMode={darkMode} label="Assets picked up" value={new Date(booking.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.startedAt && <TimelineRow darkMode={darkMode} label="Started at" value={new Date(booking.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {booking.completedAt && <TimelineRow darkMode={darkMode} label="Completed at" value={new Date(booking.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight />}
         </Section>
 
         {booking.providerNote && (
-          <Section title="Customer Note">
+          <Section darkMode={darkMode} title="Customer Note">
             <div className="flex items-start gap-2">
               <FileText size={14} className="text-gray-400 mt-0.5" />
               <p className="text-sm text-gray-600 italic">{booking.providerNote}</p>
@@ -753,7 +768,7 @@ export default function AdminBookingDetail() {
         )}
 
         {!canAssign && booking.assets?.length > 0 && (
-          <Section title="Assets Assigned">
+          <Section darkMode={darkMode} title="Assets Assigned">
             <div className="space-y-2">
               {booking.assets.map((a) => {
                 const catStyle = getCategoryStyle(a.category);
@@ -767,7 +782,7 @@ export default function AdminBookingDetail() {
                       <CatIcon size={15} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-700 font-semibold">{a.assetName}</p>
+                      <p className={`${darkMode ? "text-slate-400" : "text-slate-700"} text-sm font-semibold`}>{a.assetName}</p>
                       <p className="text-[10px] text-gray-400">
                         #{a.assetId}
                         {a.category && <span className="ml-1 capitalize">· {a.category}</span>}
@@ -788,11 +803,11 @@ export default function AdminBookingDetail() {
           </Section>
         )}
 
-        <Section title="Cost Summary">
+        <Section darkMode={darkMode} title="Cost Summary">
           <div className="space-y-2">
             <div className="flex items-center justify-between py-1.5">
               <span className="text-sm text-gray-500">Service Cost</span>
-              <span className="text-sm font-semibold text-slate-800">₹{serviceCost}</span>
+              <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>₹{serviceCost}</span>
             </div>
 
             <div className="flex items-center justify-between py-1.5">
@@ -809,14 +824,14 @@ export default function AdminBookingDetail() {
                   </span>
                 )}
               </span>
-              <span className="text-sm font-semibold text-slate-800">
+              <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>
                 ₹{canAssign ? selectedAssetsCost : assignedAssetsCost}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1.5">
               <span className="text-sm text-gray-500">Provider Working Charge</span>
-              <span className="text-sm font-semibold text-slate-800">₹{providerCharge}</span>
+              <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>₹{providerCharge}</span>
             </div>
 
             <div className="border-t border-gray-100 pt-3 mt-1 flex items-center justify-between">
@@ -828,7 +843,7 @@ export default function AdminBookingDetail() {
 
         {/* ── ASSIGN PANEL ─────────────────────────── */}
         {canAssign && !isInProgress && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4`}>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               {booking.status === "assigned" ? "Re-assign Task" : "Assign Task"}
             </p>
@@ -846,7 +861,7 @@ export default function AdminBookingDetail() {
             {/* Provider selector */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-gray-700">Provider <span className="text-red-400">*</span></p>
+                <p className={`text-xs font-bold ${darkMode ? "text-gray-400" : "text-gray-700"}`}>Provider <span className="text-red-400">*</span></p>
                 {selectedProviderObj && (
                   <button onClick={() => setSelectedProvider("")} className="text-[10px] text-gray-400 font-medium">Remove</button>
                 )}
@@ -854,7 +869,7 @@ export default function AdminBookingDetail() {
 
               {selectedProviderObj ? (
                 /* Selected provider card */
-                <div className="flex items-center gap-3 p-3 bg-blue-50 border border-[#1976D2] rounded-2xl">
+                <div className={`flex items-center gap-3 p-3  border ${darkMode ? "bg-gray-500 border-[#1976D2]" : "bg-blue-50 border-[#1976D2]"} rounded-2xl`}>
                      <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-gray-200 bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                       {selectedProviderObj?.profilePhoto ? (
                         <img
@@ -869,10 +884,10 @@ export default function AdminBookingDetail() {
                       )}
                     </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-800">{selectedProviderObj.name}</p>
+                    <p className={`text-sm font-bold ${darkMode ? "text-slate-300" : "text-slate-800"}`}>{selectedProviderObj.name}</p>
                     <div className="flex items-center gap-3 mt-0.5">
-                      {selectedProviderObj.email && <span className="flex items-center gap-1 text-[10px] text-gray-500"><Mail size={9} />{selectedProviderObj.email}</span>}
-                      {selectedProviderObj.phone && <span className="flex items-center gap-1 text-[10px] text-gray-500 flex-shrink-0"><Phone size={9} />{selectedProviderObj.phone}</span>}
+                      {selectedProviderObj.email && <span className={`flex items-center gap-1 text-[10px] ${darkMode ? "text-gray-300" : "text-gray-500"}`}><Mail size={9} />{selectedProviderObj.email}</span>}
+                      {selectedProviderObj.phone && <span className={`flex items-center gap-1 text-[10px] ${darkMode ? "text-gray-300" : "text-gray-500"} flex-shrink-0`}><Phone size={9} />{selectedProviderObj.phone}</span>}
                     </div>
                   </div>
                   <CheckCircle2 size={18} className="text-[#1976D2] flex-shrink-0" />
@@ -903,7 +918,7 @@ export default function AdminBookingDetail() {
             {/* Asset selector */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-gray-700">
+                <p className={`text-xs font-bold ${darkMode ? "text-gray-400" : "text-gray-700"}`}>
                   Assets <span className="text-gray-400 font-normal">(optional)</span>
                 </p>
                 {selectedAssetObjs.length > 0 && (
@@ -915,7 +930,7 @@ export default function AdminBookingDetail() {
               {selectedAssetObjs.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {selectedAssetObjs.map((a) => (
-                    <span key={a._id} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-[#1976D2] text-xs font-semibold px-2.5 py-1.5 rounded-xl">
+                    <span key={a._id} className={`flex items-center gap-1.5 ${darkMode ? "bg-gray-700" : "bg-blue-50"} border border-blue-200 text-[#1976D2] text-xs font-semibold px-2.5 py-1.5 rounded-xl`}>
                       <Package size={11} />
                       {a.assetName}
                       <button onClick={() => setSelectedAssets(prev => prev.filter(id => id !== a._id))}>
@@ -938,14 +953,14 @@ export default function AdminBookingDetail() {
             <div className="border-t border-gray-100" />
             {/* Expected date */}
             <div>
-              <p className="text-xs font-bold text-gray-700 mb-2">
+              <p className={`text-xs font-bold ${darkMode ? "text-gray-400" : "text-gray-700"} mb-2`}>
                 Expected Date <span className="text-gray-400 font-normal">(optional)</span>
               </p>
               <input
                 type="date"
                 value={expectedDate}
                 onChange={(e) => setExpectedDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm text-slate-700 bg-gray-50 outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100"
+                className={`w-full ${darkMode ? "text-gray-400 bg-gray-800" : "text-slate-700 bg-gray-50"} border border-gray-200 rounded-xl px-3 py-3 text-sm  outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100`}
               />
             </div>
 
@@ -953,7 +968,7 @@ export default function AdminBookingDetail() {
 
             {/* Admin note */}
             <div>
-              <p className="text-xs font-bold text-gray-700 mb-2">
+              <p className={`text-xs font-bold ${darkMode ? "text-gray-400" : "text-gray-700"} mb-2`}>
                 Admin Note <span className="text-gray-400 font-normal">(optional)</span>
               </p>
               <textarea
@@ -961,7 +976,7 @@ export default function AdminBookingDetail() {
                 onChange={(e) => setAdminNote(e.target.value)}
                 placeholder="Instructions or special notes for the provider..."
                 rows={3}
-                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-slate-700 bg-gray-50 outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100 resize-none placeholder-gray-300"
+                className={`w-full ${darkMode ? "text-gray-500 bg-gray-800" : "text-slate-700 bg-gray-50"} border border-gray-200 rounded-xl p-3 text-sm  outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100 resize-none placeholder-gray-300`}
               />
             </div>
 
@@ -986,7 +1001,7 @@ export default function AdminBookingDetail() {
 
         {/* Assigned provider read-only */}
         {!canAssign && booking.provider && (
-          <Section title="Assigned Provider">
+          <Section darkMode={darkMode} title="Assigned Provider">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-gray-200 bg-indigo-100 flex items-center justify-center flex-shrink-0">
                       {booking.provider.profilePhoto ? (
@@ -1043,3 +1058,4 @@ export default function AdminBookingDetail() {
     </div>
   );
 }
+

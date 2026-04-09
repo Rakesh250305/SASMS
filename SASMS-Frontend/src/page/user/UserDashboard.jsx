@@ -25,6 +25,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRef } from "react";
 import { getInitials } from "../../utils/avatarUtils";
+import useDarkMode from "../../utils/useDarkMode";
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const serviceCategories = [
@@ -39,6 +40,7 @@ const serviceCategories = [
 export default function UserDashboard() {
 
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
   const [data, setData] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -155,7 +157,7 @@ export default function UserDashboard() {
 
   return (
 
-    <div className="flex flex-col min-h-screen bg-slate-50 relative">
+    <div className={`flex flex-col min-h-screen relative ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-8 pb-12 relative">
@@ -204,7 +206,7 @@ export default function UserDashboard() {
 
         {/* Search */}
 
-        <div ref={searchRef} className="bg-white relative rounded-xl px-4 py-3 flex items-center gap-2 shadow-md z-50">
+        <div ref={searchRef} className={`${darkMode ? "bg-gray-100" : "bg-white"} relative rounded-xl px-4 py-3 flex items-center gap-2 shadow-md z-50`}>
           <Search size={18} className="text-gray-400" />
 
           <input
@@ -230,7 +232,7 @@ export default function UserDashboard() {
 
           {/* SEARCH DROPDOWN */}
           {isSearching && (
-            <div className="absolute top-13 left-0 w-full bg-white  rounded-xl shadow-lg max-h-64 overflow-y-auto z-[99999]">
+            <div className={`absolute top-13 left-0 w-full ${darkMode ? "bg-gray-800" : "bg-white"}  rounded-xl shadow-lg max-h-64 overflow-y-auto z-[99999]`}>
               {searchResults.length === 0 ? (
                 <div className="p-4 text-sm text-gray-400">
                   No services found for "{searchQuery}"
@@ -251,7 +253,7 @@ export default function UserDashboard() {
 
                     <div className="flex-1"
                     onClick={() => navigate(`/user/services/${s._id}`)}>
-                      <div className="text-sm font-semibold text-gray-800">
+                      <div className={`text-sm font-semibold ${darkMode ? "text-gray-400" : "text-gray-800"}`}>
                         {s.serviceName}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -330,7 +332,7 @@ export default function UserDashboard() {
 
         <div className="flex items-center justify-between mb-3">
 
-          <h3 className="text-sm font-bold text-slate-800">
+          <h3 className={`text-sm font-bold ${darkMode ? "text-slate-300" : "text-slate-800"}`}>
             Services
           </h3>
 
@@ -354,7 +356,7 @@ export default function UserDashboard() {
               key={cat.name}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(`/user/services?category=${encodeURIComponent(cat.name)}`)}
-              className="bg-white rounded-xl py-4 flex flex-col items-center gap-2 shadow-sm relative"
+              className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl py-4 flex flex-col items-center gap-2 shadow-sm relative`}
             >
 
               <div
@@ -364,13 +366,9 @@ export default function UserDashboard() {
                 {cat.icon}
               </div>
 
-              <span className="text-xs font-semibold text-slate-700">
+              <span className={`text-xs font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"}`}>
                 {cat.name}
               </span>
-              
-              {/* <span className="absolute top-1 right-1 w-4 h-4 text-[8px] flex items-center justify-center bg-gray-100 text-gray-500 rounded-full font-bold">
-                {cat.count}
-              </span> */}
 
             </motion.button>
 
@@ -381,7 +379,7 @@ export default function UserDashboard() {
         {/* Booking Section */}
 
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-slate-800">My Bookings</h3>
+          <h3 className={`text-sm font-bold  ${darkMode ? "text-slate-300" : "text-slate-800"} `}>My Bookings</h3>
           <button
             onClick={() => navigate("/user/bookings")}
             className="flex items-center gap-1 text-xs font-semibold text-emerald-600"
@@ -392,7 +390,7 @@ export default function UserDashboard() {
         </div>
 
         {bookingHistory.length === 0 ? (
-          <div className="bg-white rounded-xl p-6 text-center shadow-sm">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl p-6 text-center shadow-sm`}>
             <p className="text-sm text-gray-400">No bookings yet</p>
             <button
               onClick={() => navigate("/user/booking")}
@@ -412,14 +410,14 @@ export default function UserDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07 }}
                 onClick={() => navigate(`/user/booking/${booking._id}`)}
-                className="bg-white rounded-xl p-4 mb-3 shadow-sm cursor-pointer"
+                className={`${darkMode ? "bg-gray-800" : "bg-white" } rounded-xl p-4 mb-3 shadow-sm cursor-pointer`}
               >
                 <div className="flex justify-between mb-2">
                   <div>
-                    <p className="text-xs text-gray-400 font-mono">
+                    <p className="text-xs text-green-400 font-mono">
                       {booking?.bookingId}
                     </p>
-                    <p className="text-sm font-bold text-slate-800">
+                    <p className={`text-sm font-bold ${darkMode ? "text-slate-300" : "text-slate-800"}`}>
                       {booking?.service?.serviceName}
                     </p>
                     <p className="text-xs text-gray-400">

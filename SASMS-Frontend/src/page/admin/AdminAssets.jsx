@@ -33,6 +33,7 @@ import InputField from "../../component/InputField";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useEffect } from "react";
+import useDarkMode from "../../utils/useDarkMode";
 
 const tabs = ["All", "Available", "Out of Stock", "Maintenance"];
 
@@ -49,6 +50,7 @@ export default function AdminAssets() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
+  const { darkMode } = useDarkMode();
 
   const [newAsset, setNewAsset] = useState({
     assetName: "",
@@ -266,7 +268,7 @@ export default function AdminAssets() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#F5F7FA] relative h-screen">
+    <div className={`flex-1 flex flex-col relative h-screen ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
 
       {/* HEADER */}
       <div className="bg-gradient-to-br sticky from-[#1565C0] to-[#1976D2] px-5 pt-4 pb-6">
@@ -329,7 +331,7 @@ export default function AdminAssets() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search assets..."
-            className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm bg-white outline-none"
+            className={`w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm ${darkMode ? "bg-white/90" : "bg-white"}  outline-none`}
           />
         </div>
       </div>
@@ -343,7 +345,7 @@ export default function AdminAssets() {
             className={`px-4 py-1.5 rounded-full text-xs whitespace-nowrap
             ${activeTab === i
                 ? "bg-[#1976D2] text-white font-bold shadow"
-                : "bg-white text-gray-500 shadow-sm"
+                : `${darkMode ? "bg-white/90" : "bg-white"}  text-gray-500 shadow-sm`
               }`}
           >
             {tab}
@@ -367,7 +369,7 @@ export default function AdminAssets() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="relative bg-white rounded-2xl p-4 mb-3 shadow-sm flex items-center gap-3"
+              className={`relative ${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl p-4 mb-3 shadow-sm flex items-center gap-3`}
             >
               {/* ICON */}
               <div
@@ -386,8 +388,8 @@ export default function AdminAssets() {
 
               {/* INFO */}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-gray-800 truncate" 
-                    onClick={() => handleView(asset)}
+                <div className={`text-sm font-bold ${darkMode ? "text-gray-300" : "text-gray-800"} truncate`}
+                  onClick={() => handleView(asset)}
                 >
                   {asset.assetName}
                 </div>
@@ -413,7 +415,7 @@ export default function AdminAssets() {
 
               {/* MenuOpen */}
               {menuOpen === asset._id && (
-                <div className="absolute right-10  mt-8 w-32 bg-white shadow-lg rounded-xl border border-gray-300 text-sm z-50">
+                <div className={`absolute right-10  mt-8 w-32 ${darkMode ? "bg-gray-700 text-gray-400" : "bg-white"} shadow-lg rounded-xl border border-gray-300 text-sm z-50`}>
 
                   <button
                     onClick={() => handleEdit(asset)}
@@ -477,22 +479,22 @@ export default function AdminAssets() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+              className={`absolute bottom-0 left-0 w-full overflow-hidden pb-18 ${darkMode ? "bg-gray-800" : "bg-white"} h-[70vh] rounded-t-3xl pt-0 p-6 z-50`}
             >
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               <div className="flex justify-between items-center mb-5">
-                <div className="font-bold text-lg">
+                <div className={`${darkMode ? "text-gray-400" : "text-gray-700"} font-bold text-lg`}>
                   Add New Asset
                 </div>
 
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="bg-gray-100 p-2 rounded-lg"
+                  className={`${darkMode ? "bg-gray-400" : "bg-gray-100"} p-2 rounded-lg`}
                 >
                   <X size={16} />
                 </button>
@@ -519,14 +521,14 @@ export default function AdminAssets() {
                 />
 
                 <div className="mb-3">
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">Category</label>
+                  <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"}  mb-2`}>Category</label>
                   <div className="relative">
 
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"} `}>
                       <CopyCheck size={16} />
                     </div>
                     <select name="category" value={newAsset.category} onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                      className={`w-full pl-10 pr-3 py-3 text-sm border  border-gray-200 rounded-xl ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}  outline-none `}
                     >
                       <option value="">Select category</option>
                       <option value="hvac">HVAC</option>
@@ -561,14 +563,14 @@ export default function AdminAssets() {
                 />
 
                 <div className="mb-3">
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">Status</label>
+                  <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>Status</label>
                   <div className="relative">
 
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"}`}>
                       <Info size={16} />
                     </div>
                     <select name="status" value={newAsset.status} onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-3 text-sm border text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                      className={`w-full pl-10 pr-3 py-3 text-sm border text-gray-700 border-gray-200 rounded-xl  ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"} outline-none `}
                     >
                       <option value="">Select Status</option>
                       <option value="available">Available</option>
@@ -615,22 +617,22 @@ export default function AdminAssets() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white h-[70vh] rounded-t-3xl pt-0 p-6 z-50"
+              className={`absolute bottom-0 left-0 w-full pb-18 ${darkMode ? "bg-gray-800" : "bg-white"} h-[70vh] rounded-t-3xl pt-0 p-6 z-50`}
             >
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               <div className="flex justify-between items-center mb-5">
-                <div className="font-bold text-lg">
+                <div className={`${darkMode ? "text-gray-400" : "text-gray-700"} font-bold text-lg`}>
                   Edit Asset
                 </div>
 
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="bg-gray-100 p-2 rounded-lg"
+                  className={`${darkMode ? "bg-gray-400" : "bg-gray-100"} p-2 rounded-lg`}
                 >
                   <X size={16} />
                 </button>
@@ -657,14 +659,14 @@ export default function AdminAssets() {
                 />
 
                 <div className="mb-3">
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">Category</label>
+                  <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>Category</label>
                   <div className="relative">
 
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"}`}>
                       <CopyCheck size={16} />
                     </div>
                     <select name="category" value={newAsset.category} onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-3 text-sm border  text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                      className={`w-full pl-10 pr-3 py-3 text-sm border   border-gray-200 rounded-xl  outline-none ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}`}
                     >
                       <option value="">Select category</option>
                       <option value="hvac">HVAC</option>
@@ -699,14 +701,14 @@ export default function AdminAssets() {
                 />
 
                 <div className="mb-3">
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">Status</label>
+                  <label className={`block text-xs font-semibold ${darkMode ? "text-slate-200" : "text-gray-700"} mb-2`}>Status</label>
                   <div className="relative">
 
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? "text-slate-700" : "text-gray-700"}`}>
                       <Info size={16} />
                     </div>
                     <select name="status" value={newAsset.status} onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-3 text-sm border text-gray-700 border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-500"
+                      className={`w-full pl-10 pr-3 py-3 text-sm border  border-gray-200 rounded-xl  outline-none ${darkMode ? "bg-slate-800 text-white  placeholder:text-slate-400 focus:border-gray-500" : "bg-gray-50 focus:border-blue-500"}`}
                     >
                       <option value="">Select Status</option>
                       <option value="available">Available</option>
@@ -753,11 +755,11 @@ export default function AdminAssets() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
+              className={`absolute bottom-0 left-0 right-0 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-t-3xl pb-6 z-50 overflow-hidden`}
             >
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
               {/* Header */}
@@ -776,7 +778,7 @@ export default function AdminAssets() {
                                 : <Settings size={18} />}
                   </div>
                   <div>
-                    <h2 className="font-extrabold text-base text-slate-800 leading-tight">
+                    <h2 className={`font-extrabold text-base ${darkMode ? "text-slate-400" : "text-slate-800"} leading-tight`}>
                       {selectedAsset.assetName}
                     </h2>
                     <span className="text-[11px] font-semibold text-gray-400 capitalize">
@@ -786,14 +788,14 @@ export default function AdminAssets() {
                 </div>
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center"
+                  className={`w-8 h-8 ${darkMode ? "bg-gray-400" : "bg-gray-100"} rounded-xl flex items-center justify-center`}
                 >
                   <X size={15} className="text-gray-500" />
                 </button>
               </div>
 
               {/* Status bar */}
-              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+              <div className={`px-5 py-3 ${darkMode ? "border-gray-400" : "bg-gray-50 border-gray-100"}  border-y flex items-center justify-between`}>
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
                   Status
                 </span>
@@ -803,7 +805,7 @@ export default function AdminAssets() {
               {/* Details grid */}
               <div className="px-5 py-4 grid grid-cols-2 gap-3">
 
-                <div className="bg-blue-50 rounded-2xl p-3.5">
+                <div className={`${darkMode ? "bg-gray-600" : "bg-blue-50"}  rounded-2xl p-3.5`}>
                   <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">
                     Quantity
                   </p>
@@ -813,7 +815,7 @@ export default function AdminAssets() {
                   </p>
                 </div>
 
-                <div className="bg-green-50 rounded-2xl p-3.5">
+                <div className={`${darkMode ? "bg-gray-600" : "bg-green-50"} rounded-2xl p-3.5`}>
                   <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">
                     Cost
                   </p>
@@ -827,11 +829,11 @@ export default function AdminAssets() {
               {/* Description */}
               {selectedAsset.assetDescription && (
                 <div className="px-5 pb-2">
-                  <div className="bg-gray-50 rounded-2xl p-3.5">
+                  <div className={`${darkMode ? "bg-gray-600" : "bg-gray-50"} rounded-2xl p-3.5`}>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                       Description
                     </p>
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className={`text-sm ${darkMode ? "text-gray-400" : "text-slate-600"} leading-relaxed`}>
                       {selectedAsset.assetDescription}
                     </p>
                   </div>
@@ -847,8 +849,8 @@ export default function AdminAssets() {
 
       {/* Delete Confirmation Modal */}
 
-        <AnimatePresence>
-        {showDeleteModal &&  selectedAsset &&(
+      <AnimatePresence>
+        {showDeleteModal && selectedAsset && (
           <>
             <motion.div
               onClick={() => setShowDeleteModal(false)}
@@ -863,36 +865,36 @@ export default function AdminAssets() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pb-6 z-50 overflow-hidden"
+              className={`absolute bottom-0 left-0 right-0 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-t-3xl pb-6 z-50 overflow-hidden`}
             >
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                <div className={`w-10 h-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"} rounded-full`} />
               </div>
 
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h3 className="font-bold text-lg text-slate-800 mb-2">Confirm Deletion</h3>
-            <p className="text-slate-600 mb-4">
-              Are you sure you want to delete this asset? This action cannot be undone.
-            </p>
-            <div className="flex justify-between gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 w-1/2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  handleDelete(selectedAsset._id);
-                  setShowDeleteModal(false);
-                }}
-                className="px-4 py-2 w-1/2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+              <div className=" rounded-2xl p-6 max-w-md w-full">
+                <h3 className={`font-bold text-lg ${darkMode ? "text-gray-400" : "text-slate-800"} mb-2`}>Confirm Deletion</h3>
+                <p className="text-slate-600 mb-4">
+                  Are you sure you want to delete this asset? This action cannot be undone.
+                </p>
+                <div className="flex justify-between gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="px-4 py-2 w-1/2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDelete(selectedAsset._id);
+                      setShowDeleteModal(false);
+                    }}
+                    className="px-4 py-2 w-1/2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </>
         )}

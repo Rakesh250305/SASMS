@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BottomNav from "../../component/BottomNav";
+import useDarkMode from "../../utils/useDarkMode";
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 /* ── Notification type → icon + colors ─────────────────── */
@@ -39,15 +40,15 @@ function timeAgo(dateStr) {
 function NotifCard({ notif, onMarkRead }) {
   const cfg = TYPE_CONFIG[notif.type] || TYPE_CONFIG.default;
   const Icon = cfg.icon;
-
+  const darkMode = useDarkMode();
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className={`flex items-start gap-3 p-4 rounded-2xl border transition-colors cursor-pointer
         ${notif.isRead
-          ? "bg-white border-gray-100"
-          : "bg-emerald-50/60 border-emerald-100"
+          ? `${darkMode ? "bg-gray-300" : "bg-white"} border-gray-100`
+          : `bg-emerald-50/70 border-emerald-100`
         }`}
       onClick={() => !notif.isRead && onMarkRead([notif._id])}
     >
@@ -88,6 +89,7 @@ function SkeletonCard() {
 
 export default function UserNotification() {
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -157,7 +159,7 @@ export default function UserNotification() {
   const groupOrder = ["Today", "Yesterday", "Earlier"];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-6">

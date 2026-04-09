@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronLeft,
   Bell,
   BellOff,
   CheckCheck,
@@ -15,6 +14,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import useDarkMode from "../../utils/useDarkMode";
 
 /* ── Notification type → icon + colors ─────────────────── */
 const TYPE_CONFIG = {
@@ -35,7 +35,7 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-function NotifCard({ notif, onMarkRead }) {
+function NotifCard({ notif, onMarkRead, darkMode }) {
   const cfg = TYPE_CONFIG[notif.type] || TYPE_CONFIG.default;
   const Icon = cfg.icon;
 
@@ -44,8 +44,8 @@ function NotifCard({ notif, onMarkRead }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className={`flex items-start gap-3 p-4 rounded-2xl border transition-colors cursor-pointer ${notif.isRead
-          ? "bg-white border-gray-100"
-          : "bg-blue-50/60 border-blue-100"
+          ? ` ${darkMode ? "bg-gray-700 border-gray-400" : "bg-white border-gray-100"}`
+          : `${darkMode ? "bg-gray-700/60 border-blue-100" : "bg-blue-50/60 border-blue-100"}`
         }`}
       onClick={() => !notif.isRead && onMarkRead([notif._id])}
     >
@@ -57,20 +57,20 @@ function NotifCard({ notif, onMarkRead }) {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className={`text-sm font-bold leading-tight ${notif.isRead ? "text-slate-700" : "text-slate-900"}`}>
+          <p className={`text-sm font-bold leading-tight ${notif.isRead ? `${darkMode ? "text-gray-300" : "text-slate-700" }` : `${darkMode ? "text-gray-200" : "text-slate-700" }`}`}>
             {notif.title}
           </p>
           {!notif.isRead && (
             <span className="w-2 h-2 rounded-full bg-[#1976D2] flex-shrink-0 mt-1" />
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.message}</p>
+        <p className={`text-xs mt-0.5 leading-relaxed ${notif.isRead ? `${darkMode ? "text-gray-300" : "text-gray-500" }` : `${darkMode ? "text-gray-200" : "text-gray-500" }`}`}>{notif.message}</p>
         {notif.booking && (
           <span className="inline-block mt-1.5 text-[10px] font-mono text-[#1976D2] bg-blue-50 px-2 py-0.5 rounded-full">
             #{notif.booking.bookingId}
           </span>
         )}
-        <p className="text-[10px] text-gray-400 mt-1.5 font-medium">{timeAgo(notif.createdAt)}</p>
+        <p className={`text-[10px] ${notif.isRead ? `${darkMode ? "text-gray-300" : "text-slate-700" }` : `${darkMode ? "text-gray-200" : "text-slate-700" }`} mt-1.5 font-medium`}>{timeAgo(notif.createdAt)}</p>
       </div>
     </motion.div>
   );
@@ -95,6 +95,7 @@ export default function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { darkMode } = useDarkMode();
 
   const token = localStorage.getItem("token");
 
@@ -197,7 +198,7 @@ export default function AdminNotifications() {
 </div>
 
       {/* Content */}
-      <div className="flex-1 mt-5 px-4 pb-10 overflow-y-auto">
+      <div className={` ${darkMode ? "bg-gray-800" : "bg-[#F5F7FA]"} flex-1 pt-5 px-4 pb-10 overflow-y-auto`}>
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
@@ -222,7 +223,7 @@ export default function AdminNotifications() {
                   <div className="flex flex-col gap-2">
                     <AnimatePresence>
                       {grouped[group].map((n) => (
-                        <NotifCard key={n._id} notif={n} onMarkRead={handleMarkRead} />
+                        <NotifCard key={n._id} notif={n} onMarkRead={handleMarkRead} darkMode={darkMode} />
                       ))}
                     </AnimatePresence>
                   </div>

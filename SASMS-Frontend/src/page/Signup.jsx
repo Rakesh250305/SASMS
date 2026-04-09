@@ -207,15 +207,15 @@ export default function Signup() {
 
   /* ---------------- UI ---------------- */
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8faff] overflow-y-auto">
+    <div className={`min-h-screen flex flex-col overflow-y-auto dark:bg-slate-950 bg-[#f8faff]`}>
       {loading && <ScreenLoader /> }
 
       {/* HEADER */}
-      <div className="relative bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] px-6 pt-9 pb-14 overflow-hidden">
+      <div className={`relative px-6 pt-9 pb-14 overflow-hidden bg-gradient-to-br from-[#1565C0] via-[#1976D2] to-[#42A5F5] `}>
 
         <button
           onClick={() => (step > 1 ? setStep(step - 1) : navigate("/login"))}
-          className="flex items-center gap-1 text-white bg-white/20 px-3 py-1 rounded-lg text-sm mb-5"
+          className={`flex items-center gap-1 px-3 py-1 rounded-lg text-sm mb-5 border dark:text-slate-100 dark:bg-slate-900/60 dark:border-slate-800 text-white bg-white/20 border-white/10`}
         >
           <ArrowLeft size={16} />
           Back
@@ -237,7 +237,10 @@ export default function Signup() {
             <React.Fragment key={s}>
 
               <div className={`flex items-center justify-center font-bold text-xs rounded-full
-              ${s <= step ? "bg-white text-[#1976D2] w-7 h-7" : "bg-white/30 text-white/70 w-6 h-6"}`}>
+              ${s <= step 
+                  ? "dark:bg-slate-100 dark:text-slate-900 dark:w-7 dark:h-7 bg-white text-[#1976D2] w-7 h-7" 
+                  : "dark:bg-slate-800 dark:text-slate-400 dark:w-6 dark:h-6 bg-white/30 text-white/70 w-6 h-6"
+                  }`}>
 
                 {s < step ? <Check size={14} /> : s}
 
@@ -245,7 +248,10 @@ export default function Signup() {
 
               {s < 4 && (
                 <div className={`h-[2px] w-10 rounded
-                ${s < step ? "bg-white/70" : "bg-white/30"}`} />
+                ${s < step ? 
+                  "dark:bg-slate-300/70 bg-white/70" 
+                  : "dark:bg-slate-700 bg-white/30"
+                }`} />
               )}
 
             </React.Fragment>
@@ -261,7 +267,7 @@ export default function Signup() {
         key={step}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex-1 bg-white rounded-t-[28px] -mt-7 px-6 pt-7 pb-8 shadow-xl"
+        className={`flex-1 rounded-t-[28px] -mt-7 px-6 pt-7 pb-8 shadow-xl dark:bg-slate-900 bg-white `}
       >
 
         {/* STEP 1 ROLE */}
@@ -270,7 +276,7 @@ export default function Signup() {
 
           <div className="my-5">
 
-            <label className="text-base font-bold text-gray-800">
+            <label className={`text-base font-bold dark:text-slate-200 text-gray-800 `}>
               Select Role
             </label>
 
@@ -285,11 +291,11 @@ export default function Signup() {
                   type="button"
                   key={r.value}
                   onClick={() => setForm({ ...form, role: r.value })}
-                  className={`p-3 rounded-xl border text-left relative
-                  ${form.role === r.value ? "border-[2px]" : "border-gray-200 bg-gray-50"}`}
+                  className={`p-3 rounded-xl border text-left relative transition-colors
+                  ${form.role === r.value ? "border-[2px]" : "dark:border-slate-800 dark:bg-slate-950 border-gray-200 bg-gray-50" }`}
                   style={{
                     borderColor: form.role === r.value ? r.color : "",
-                    background: form.role === r.value ? r.bg : ""
+                    background: form.role === r.value ? r.bg : undefined
                   }}
                 >
 
@@ -300,12 +306,14 @@ export default function Signup() {
                     </div>
                   )}
 
-                  <div className="text-sm font-bold"
-                    style={{ color: form.role === r.value ? r.color : "#424242" }}>
+                  <div
+                    className={`text-sm font-bold ${form.role === r.value ? "" : "dark:text-slate-200 text-slate-700 "}`}
+                    style={{ color: form.role === r.value ? r.color : undefined }}
+                  >
                     {r.label}
                   </div>
 
-                  <div className="text-[11px] text-gray-400 mt-1">
+                  <div className={`text-[11px] mt-1 dark:text-slate-500 text-gray-400 `}>
                     {r.desc}
                   </div>
 
@@ -324,7 +332,7 @@ export default function Signup() {
         {step === 2 && (
 
           <>
-            <h2 className="text-base font-bold text-gray-800 my-5">
+            <h2 className={`text-base font-bold my-5 dark:text-slate-100 text-gray-800`}>
               Personal Information
             </h2>
 
@@ -364,7 +372,7 @@ export default function Signup() {
         {step === 3 && (
 
           <>
-            <h2 className="text-base font-bold text-gray-800 my-5">
+            <h2 className={`text-base font-bold my-5 dark:text-slate-100 text-gray-800`}>
 
               {form.role === "admin" && "Organizational Details"}
               {form.role === "user" && "Address Details"}
@@ -505,7 +513,7 @@ export default function Signup() {
 
           <>
 
-            <h2 className="text-base font-bold text-gray-800 my-5">
+            <h2 className={`text-base font-bold my-5 dark:text-slate-100 text-gray-800`}>
               Set Password
             </h2>
 
