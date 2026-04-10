@@ -84,8 +84,8 @@ function Section({ title, children, darkMode }) {
 function TimelineRow({ label, value, highlight, darkMode }) {
   return (
     <div className={`flex items-center justify-between py-2 border-b last:border-0 ${darkMode ? "border-gray-700" : "border-gray-50"}`}>
-      <span className="text-xs text-gray-400">{label}</span>
-      <span className={`text-xs font-semibold ${highlight ? "text-green-600" : "text-slate-700"}`}>{value}</span>
+      <span className={`text-xs text-gray-400`}>{label}</span>
+      <span className={`text-xs font-semibold ${highlight ? "text-green-600" : "text-slate-500"}`}>{value}</span>
     </div>
   );
 }
@@ -1017,7 +1017,7 @@ export default function AdminBookingDetail() {
                       )}
                     </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-slate-800">{booking.provider.name}</p>
+                <p className={`text-sm font-bold ${darkMode ? "text-slate-400" : "text-slate-800"}`}>{booking.provider.name}</p>
                 {booking.provider.email && (
                   <div className="flex items-center gap-1 mt-0.5"><Mail size={11} className="text-gray-400" /><p className="text-xs text-gray-500">{booking.provider.email}</p></div>
                 )}

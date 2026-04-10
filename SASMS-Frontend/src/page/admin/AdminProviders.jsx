@@ -381,9 +381,14 @@ export default function AdminProviders() {
         )}
       </div>
 
-      {/* ── FAB ── */}
+      {/* ── FLOATING BUTTON ── */}
       <button
-        onClick={() => { setNewProvider(emptyProvider); setErrors({}); setSkillInput(""); setShowAddModal(true); }}
+        onClick={() => { 
+          setNewProvider(emptyProvider); 
+          setErrors({}); 
+          setSkillInput(""); 
+          setShowAddModal(true); 
+        }}
         className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-[#1565C0] to-[#1976D2] text-white flex items-center justify-center shadow-lg"
       >
         <Plus size={24} />

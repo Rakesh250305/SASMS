@@ -7,7 +7,7 @@ import useDarkMode from "../../utils/useDarkMode";
 export default function UserServiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const darkMode = useDarkMode();
+  const darkMode = useDarkMode().darkMode;
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("token");
 
@@ -23,7 +23,6 @@ export default function UserServiceDetail() {
         });
         const foundService = (res.data.data || []).find((item) => item._id === id);
         setService(foundService || null);
-        console.log(foundService)
       } catch (error) {
         console.error(error);
       } finally {
@@ -57,7 +56,7 @@ export default function UserServiceDetail() {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-slate-50"} `}>
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-white"} `}>
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-8">
         <button
           onClick={() => navigate(-1)}
@@ -73,7 +72,7 @@ export default function UserServiceDetail() {
       </div>
 
       <div className="-mt-4 px-4 pb-5">
-        <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-3xl shadow-sm border border-gray-100 overflow-hidden`}>
+        <div className={`${darkMode ? "bg-gray-800 border-gray-100" : "bg-slate-100 border-black"} rounded-3xl shadow-sm border  overflow-hidden`}>
           {service.serviceImage ? (
             <img
               src={service.serviceImage}
@@ -98,7 +97,7 @@ export default function UserServiceDetail() {
             </div>
 
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">About Service</p>
+              <p className={`text-xs font-bold ${darkMode ? "text-gray-400" : "text-gray-600"} uppercase tracking-widest mb-2`}>About Service</p>
               <p className="text-sm leading-relaxed text-slate-600">
                 {service.description || "No description available for this service yet."}
               </p>
@@ -107,13 +106,8 @@ export default function UserServiceDetail() {
             {/* Store Details */}
             {service.store && (
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Store Details</p>
+                <p className={`text-xs font-bold ${darkMode ? "text-gray-400" : "text-gray-600"} uppercase tracking-widest mb-2`}>Store Details</p>
                 <div className={`${darkMode ? "bg-gray-700 text-slate-400" : "bg-slate-50 text-slate-700"} rounded-2xl p-4 space-y-3`}>
-                  {service.store.storePhoto && 
-                  <div className="w-full h-15 border-2 border-gray-300/20 rounded-2xl">
-                      <img src={service.store.storePhoto} alt={service.store.name} className="w-full h-full object-cover"/>
-                  </div>
-                }
                   <div className="flex items-start gap-2">
                     <Store size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
                     <div>
@@ -149,8 +143,8 @@ export default function UserServiceDetail() {
               </div>
             )}
 
-            <div className={`${darkMode ? "bg-gray-700 text-slate-400" : "bg-slate-50 text-slate-700"} rounded-2xl p-4`}>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Quick Summary</p>
+            <div className={`${darkMode ? "bg-gray-700 text-slate-400" : "bg-slate-50 text-slate-700"} rounded-2xl pl-0 p-4`}>
+              <p className={`text-xs font-bold ${darkMode ? "text-gray-400" : "text-gray-600"} uppercase tracking-widest mb-3`}>Quick Summary</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Service Name</span>
