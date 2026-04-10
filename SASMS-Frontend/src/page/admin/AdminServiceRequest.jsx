@@ -243,8 +243,8 @@ export default function AdminServiceRequest() {
             key={key}
             onClick={() => { setActiveTab(key); setSearch(""); setStatusFilter("all"); }}
             className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-all border-b-2 ${activeTab === key
-                ? `${darkMode ? "text-blue-300 border-gray-700 bg-gray-600" : "text-[#1976D2] border-[#1976D2] bg-blue-50/50"} `
-                : `text-gray-400 ${darkMode ? "bg-gray-700" : "bg-white"} border-transparent`
+              ? `${darkMode ? "text-blue-300 border-gray-700 bg-gray-600" : "text-[#1976D2] border-[#1976D2] bg-blue-50/50"} `
+              : `text-gray-400 ${darkMode ? "bg-gray-700" : "bg-white"} border-transparent`
               }`}
           >
             <Icon size={15} />
@@ -277,8 +277,8 @@ export default function AdminServiceRequest() {
                     key={s}
                     onClick={() => setStatusFilter(s)}
                     className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${active
-                        ? "bg-[#1976D2] text-white border-[#1976D2] shadow-sm"
-                        : `${darkMode ? "bg-white/80" : "bg-white"} text-gray-500 border-gray-200`
+                      ? "bg-[#1976D2] text-white border-[#1976D2] shadow-sm"
+                      : `${darkMode ? "bg-white/80" : "bg-white"} text-gray-500 border-gray-200`
                       }`}
                   >
                     {cfg && !active && (
@@ -382,25 +382,17 @@ export default function AdminServiceRequest() {
                 {/* Details */}
                 <div className="px-4 py-3 grid grid-cols-2 gap-y-2.5 gap-x-4">
                   <div className="flex items-center gap-2">
-                    
-                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200 bg-blue-100 flex items-center justify-center flex-shrink-0 ">
-                      {b.user.profilePhoto ? (
-                        <img
-                          src={b.user.profilePhoto}
-                          alt="profile"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-blue-100 text-blue-700 text-xs font-bold ">{b.user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}</span>
-                        </div>
-                      )}
-                    </div>
 
-                    <div>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Customer</p>
-                      <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-700"} font-medium`}>{b.user?.name || "—"}</p>
-                      <p className="text-[10px] text-gray-400 truncate">{b.user?.email}</p>
+                    <div className="flex items-start gap-2">
+
+                      <UserCheck size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Customer</p>
+                        <p className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-700"}`}>
+                          <p>{b.user?.name}</p>
+                          <p className="text-[10px] text-gray-600 truncate">{b.user?.email}</p>
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -408,8 +400,9 @@ export default function AdminServiceRequest() {
                     <UserCheck size={13} className="text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Provider</p>
-                      <p className={`text-xs font-medium ${b.provider ? "text-slate-700" : "text-amber-600"}`}>
-                        {b.provider?.name || "Not assigned"}
+                      <p className={`text-xs font-medium ${b.provider ? `${darkMode ? "text-slate-400" : "text-slate-700"}` : "text-amber-600"}`}>
+                        <p>{b.provider?.name || "Not Assigned"}</p>
+                        <p className="text-[10px] text-gray-600 truncate">{b.provider?.email}</p>
                       </p>
                     </div>
                   </div>
@@ -478,7 +471,7 @@ export default function AdminServiceRequest() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.04, 0.3) }}
-                  className={`${darkMode? "bg-gray-800" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 p-4`}
+                  className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 p-4`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 ${clr.bg} ${clr.text}`}>
