@@ -209,14 +209,14 @@ export default function UserSettings() {
                       navigate('/user/profile')
                     } else if (item.label === "Manage Address") {
                       navigate('/user/address')
-                    }
-                    else if (item.label === "Change Password") {
+                    } else if (item.label === "Change Password") {
                       setShowPasswordModal(true);
                     } else if (item.label === "Help & FAQ") {
                       navigate('/helpfaq')
-
                     } else if (item.label === "Terms & Privacy") {
                       navigate('/terms')
+                    } else {
+                      toast.info("New feature coming soon!");
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${i !== section.items.length - 1

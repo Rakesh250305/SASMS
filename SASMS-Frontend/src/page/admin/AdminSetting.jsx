@@ -64,20 +64,6 @@ const settingsSections = [
         color: "text-orange-600",
         bg: "bg-orange-50",
       },
-      {
-        icon: <Shield size={18} />,
-        label: "Access Control",
-        desc: "Manage user permissions",
-        color: "text-blue-700",
-        bg: "bg-blue-50",
-      },
-      {
-        icon: <Users size={18} />,
-        label: "Role Management",
-        desc: "Configure user roles",
-        color: "text-green-700",
-        bg: "bg-green-50",
-      },
     ],
   },
   {
@@ -121,7 +107,6 @@ export function AdminSettings() {
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -163,9 +148,10 @@ export function AdminSettings() {
       setShowPasswordModal(true); 
     } else if (item.label === "Help & FAQ") {
       navigate('/helpfaq')
-
     } else if (item.label === "Terms & Privacy") {
       navigate('/terms')
+    } else {
+      toast.info("New feature coming soon!");
     }
   };
 

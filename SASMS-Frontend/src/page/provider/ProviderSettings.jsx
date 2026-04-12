@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
 import useDarkMode from "../../utils/useDarkMode";
+import { toast } from "react-toastify";
+
 
 const settingsSections = [
   {
@@ -88,13 +90,12 @@ export function ProviderSettings() {
                       toggleDarkMode();
                     } else if (item.label === "Profile Settings") {
                       navigate("/provider/profile");
-                    } else if (item.label === "Notification Settings") {
-                      navigate("/provider/notifications");
-                    }  else if (item.label === "Help & FAQ") {
+                    } else if (item.label === "Help & FAQ") {
                       navigate('/helpfaq')
-
                     } else if (item.label === "Terms & Privacy") {
                       navigate('/terms')
+                    } else {
+                      toast.info("New feature coming soon!");
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${index !== section.items.length - 1 ? darkMode ? "border-b border-slate-800" : "border-b border-gray-100" : ""}`}
