@@ -103,7 +103,7 @@ export default function ProviderDashboard() {
         </div>
       </div>
 
-      <div className={`flex-1 px-4 pb-20 pt-5 space-y-5 rounded-t-3xl -mt-7 absolute w-full overflow-y-auto ${darkMode ? "bg-slate-950" : "bg-white"}`}>
+      <div className={`flex-1 px-4 pb-22 pt-5 space-y-5 rounded-t-3xl -mt-7 absolute w-full overflow-y-auto ${darkMode ? "bg-slate-950" : "bg-white"}`}>
         <p className={`text-sm font-bold ${darkMode ? "text-slate-100" : "text-slate-800"}`}>Overview</p>
 
         <div className="grid grid-cols-4 gap-2">
@@ -134,6 +134,8 @@ export default function ProviderDashboard() {
           </motion.button>
         </div>
 
+
+        {/* Recent Tasks */}
         <div className="flex items-center justify-between">
           <p className={`text-sm font-bold ${darkMode ? "text-slate-100" : "text-slate-800"}`}>Recent Tasks</p>
           <button onClick={() => navigate("/provider/tasks")} className="flex items-center gap-1 text-xs font-semibold text-purple-600">
@@ -179,6 +181,11 @@ export default function ProviderDashboard() {
             </motion.div>
           ))
         )}
+
+<div className={`text-[8px] text-center font-bold pt-5 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+          Smart Assets & Service Management System
+        </div>
+
       </div>
       <BottomNav />
     </div>

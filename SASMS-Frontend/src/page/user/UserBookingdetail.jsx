@@ -20,8 +20,6 @@ import useDarkMode from "../../utils/useDarkMode";
 
 const PROVIDER_WORKING_CHARGE = 50;
 
-const STATUS_FLOW = ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"];
-
 const STATUS_LABEL = {
   pending: "Pending",
   assigned: "Assigned",
@@ -41,6 +39,11 @@ const STATUS_CONFIG = {
   completed: { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
   cancelled: { bg: "bg-red-100", text: "text-red-600", dot: "bg-red-400" },
 };
+
+const getStatusFlow = (hasAssignedAssets) =>
+  hasAssignedAssets
+    ? ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"]
+    : ["pending", "assigned", "accepted", "in_progress", "completed"];
 
 function StatusBadge({ status, darkMode = false }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
@@ -124,8 +127,10 @@ export default function UserBookingDetail() {
 
   // ✅ Safe — booking is guaranteed non-null below this line
   const isCancelled = booking.status === "cancelled";
+  const hasAssignedAssets = Array.isArray(booking.assets) && booking.assets.length > 0;
+  const statusFlow = getStatusFlow(hasAssignedAssets);
   const workflowStatus = booking.status;
-  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(workflowStatus);
+  const currentStep = isCancelled ? -1 : statusFlow.indexOf(workflowStatus);
   const serviceCost = Number(booking.service?.estimatedPrice || 0);
   const assetsCost = (booking.assets || []).reduce(
     (sum, asset) => sum + Number(asset.cost || 0),
@@ -138,7 +143,7 @@ export default function UserBookingDetail() {
     <div className={`min-h-screen ${darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
 
       {/* Header */}
-      <div className={`px-5 pt-6 pb-14 ${darkMode ? "bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950" : "bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900"}`}>
+      <div className={`px-5 pt-6 pb-14  bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900`}>
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-white/80 text-sm mb-4"
@@ -187,11 +192,11 @@ export default function UserBookingDetail() {
             </p>
 
             <div className="flex items-start">
-              {STATUS_FLOW.map((s, i) => (
+              {statusFlow.map((s, i) => (
                 <div key={s} className="flex-1 flex flex-col items-center relative">
 
                   {/* Connector line */}
-                  {i < STATUS_FLOW.length - 1 && (
+                  {i < statusFlow.length - 1 && (
                     <div className={`absolute top-3 left-1/2 w-full h-0.5 ${i < currentStep ? "bg-emerald-500" : darkMode ? "bg-slate-700" : "bg-gray-200"}`} />
                   )}
 
@@ -390,7 +395,7 @@ export default function UserBookingDetail() {
               </div>
             )}
 
-            {booking.assetsPickedUpAt && (
+            {hasAssignedAssets && booking.assetsPickedUpAt && (
               <div className="flex items-center justify-between">
                 <div className={`flex items-center gap-2 ${darkMode ? "text-slate-400" : "text-gray-500"}`}>
                   <Package size={13} />

@@ -29,7 +29,7 @@ const STATUS_CONFIG = {
   cancelled: { label: "Cancelled", bg: "bg-red-100", text: "text-red-600", dot: "bg-red-400" },
 };
 
-const STATUS_FILTERS = ["all", "pending", "assigned", "in_progress", "completed", "cancelled"];
+const STATUS_FILTERS = ["all", "pending", "assigned", "accepted", "in_progress", "completed", "cancelled"];
 
 const AVATAR_COLORS = [
   { bg: "bg-blue-100", text: "text-blue-700" },

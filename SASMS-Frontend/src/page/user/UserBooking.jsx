@@ -302,10 +302,10 @@ export default function UserBookings() {
     t === "in_progress" ? "In Progress" : t.charAt(0).toUpperCase() + t.slice(1);
 
   return (
-    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
+    <div className={`flex flex-1 flex-col relative h-screen ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-14">
+      <div className="sticky bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-14">
         <div className="flex items-end justify-between">
           <div>
             <h1 className="text-xl font-bold text-white">My Bookings</h1>
@@ -321,7 +321,7 @@ export default function UserBookings() {
       </div>
 
       {/* Tab Bar */}
-      <div className="-mt-6 px-4 mb-4">
+      <div className="flex z-10 -mt-6 px-4 mb-4">
         <div className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} rounded-2xl shadow-sm border px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar`}>
           {STATUS_TABS.map((t) => (
             <button
@@ -339,7 +339,7 @@ export default function UserBookings() {
       </div>
 
       {/* Content */}
-      <div className="px-4 pb-24">
+      <div className="flex-1 overflow-y-auto px-4 pb-24">
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map((i) => (

@@ -8,6 +8,8 @@ import {
   LogOut,
   Shield,
   User,
+  HelpCircle,
+  FileText,
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
 import useDarkMode from "../../utils/useDarkMode";
@@ -22,15 +24,30 @@ const settingsSections = [
     ],
   },
   {
-    title: "Security",
-    items: [
-      { icon: <Shield size={18} />, label: "Access Control", desc: "Manage account permissions", color: "text-blue-700", bg: "bg-blue-50" },
-    ],
-  },
-  {
     title: "Appearance",
     items: [
       { icon: <Moon size={18} />, label: "Dark Mode", desc: "Toggle dark theme", color: "text-purple-700", bg: "bg-purple-50", toggle: true },
+    ],
+  },
+  {
+    title: "Support",
+    items: [
+      { 
+       icon: <HelpCircle size={18} />,
+       label: "Help & FAQ",
+       desc: "Get answers to common questions",
+       color: "text-purple-700",
+       bg: "bg-purple-50",
+       toggle: false 
+      },
+      { 
+        icon: <FileText size={18} />, 
+        label: "Terms & Privacy", 
+        desc: "Review policies", 
+        color: "text-gray-700", 
+        bg: "bg-gray-50", 
+        toggle: false 
+      },
     ],
   },
 ];
@@ -73,6 +90,11 @@ export function ProviderSettings() {
                       navigate("/provider/profile");
                     } else if (item.label === "Notification Settings") {
                       navigate("/provider/notifications");
+                    }  else if (item.label === "Help & FAQ") {
+                      navigate('/helpfaq')
+
+                    } else if (item.label === "Terms & Privacy") {
+                      navigate('/terms')
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${index !== section.items.length - 1 ? darkMode ? "border-b border-slate-800" : "border-b border-gray-100" : ""}`}

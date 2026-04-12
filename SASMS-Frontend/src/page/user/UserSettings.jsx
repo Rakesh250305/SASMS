@@ -16,6 +16,8 @@ import {
   User,
   MapPin,
   ChevronLeft,
+  HelpCircle,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import InputField from "../../component/InputField";
@@ -80,6 +82,27 @@ const settingsSections = [
         color: "text-purple-700",
         bg: "bg-purple-50",
         toggle: true,
+      },
+    ],
+  },
+  {
+    title: "Support",
+    items: [
+      {
+        icon: <HelpCircle size={18} />,
+        label: "Help & FAQ",
+        desc: "Get answers to common questions",
+        color: "text-purple-700",
+        bg: "bg-purple-50",
+        toggle: false
+      },
+      {
+        icon: <FileText size={18} />,
+        label: "Terms & Privacy",
+        desc: "Review policies",
+        color: "text-gray-700",
+        bg: "bg-gray-50",
+        toggle: false
       },
     ],
   },
@@ -149,7 +172,7 @@ export default function UserSettings() {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen pb-16 ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
+    <div className={`flex flex-1 flex-col relative h-screen pb-16 ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
 
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-6">
@@ -189,6 +212,11 @@ export default function UserSettings() {
                     }
                     else if (item.label === "Change Password") {
                       setShowPasswordModal(true);
+                    } else if (item.label === "Help & FAQ") {
+                      navigate('/helpfaq')
+
+                    } else if (item.label === "Terms & Privacy") {
+                      navigate('/terms')
                     }
                   }}
                   className={`flex items-center gap-3 px-4 py-4 cursor-pointer ${i !== section.items.length - 1
@@ -245,7 +273,7 @@ export default function UserSettings() {
       {/* Chanage Password */}
       <AnimatePresence>
         {showPasswordModal && (
-         <>
+          <>
             <motion.div
               onClick={() => setShowPasswordModal(false)}
               initial={{ opacity: 0 }}
@@ -254,12 +282,12 @@ export default function UserSettings() {
               className="fixed inset-0 z-50 flex items-end justify-center bg-black/10 backdrop-blur-xs"
 
             />
-            
+
             <motion.div
               initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 25 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
               className={`absolute bottom-0 left-0 w-full z-[50] rounded-t-3xl p-6 pt-0 pb-6 z-50 overflow-hidden ${darkMode ? "bg-gray-800 text-white" : "bg-white"}`}
             >
 
@@ -320,7 +348,7 @@ export default function UserSettings() {
                 </button>
               </div>
             </motion.div>
-         </>
+          </>
         )}
       </AnimatePresence>
 

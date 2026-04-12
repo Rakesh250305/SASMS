@@ -451,6 +451,10 @@ export default function UserDashboard() {
           })
         )}
 
+        <div className={`text-[8px] text-center font-bold pt-5 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+          Smart Assets & Service Management System
+        </div>
+
       </div>
 
       <BottomNav role="user" />

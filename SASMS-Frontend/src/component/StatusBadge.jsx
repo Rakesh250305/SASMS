@@ -37,7 +37,13 @@ const statusConfig = {
     text: "text-yellow-700",
     dot: "bg-yellow-500",
   },
-  "in-progress": {
+  accepted: {
+    label: "Accepted",
+    bg: "bg-green-100",
+    text: "text-green-700",
+    dot: "bg-green-500",
+  },
+  "in_progress": {
     label: "In Progress",
     bg: "bg-blue-100",
     text: "text-blue-700",

@@ -444,10 +444,11 @@ export const updateBookingStatus = async (req, res) => {
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
     const workflowState = booking.status;
+    const hasAssignedAssets = Array.isArray(booking.assets) && booking.assets.length > 0;
 
     const allowedTransitions = {
       assigned: ["accepted", "cancelled"],
-      accepted: ["picked_up", "cancelled"],
+      accepted: hasAssignedAssets ? ["picked_up", "cancelled"] : ["in_progress", "cancelled"],
       picked_up: ["in_progress", "cancelled"],
       in_progress: ["completed"],
     };
@@ -461,6 +462,9 @@ export const updateBookingStatus = async (req, res) => {
       booking.status = "accepted";
       booking.providerAcceptedAt = booking.providerAcceptedAt || new Date();
     } else if (status === "picked_up") {
+      if (!hasAssignedAssets) {
+        return res.status(400).json({ success: false, message: "No assets assigned for this booking" });
+      }
       booking.status = "picked_up";
       booking.assetsPickedUpAt = booking.assetsPickedUpAt || new Date();
     } else if (status === "in_progress") {

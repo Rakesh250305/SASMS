@@ -474,8 +474,6 @@ export const createProvider = async (req, res) => {
       });
     }
 
-    // const hashed = await bcrypt.hash(password, 10);
-
     const provider = new Provider({
       name,
       description,
