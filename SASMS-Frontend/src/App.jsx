@@ -32,6 +32,8 @@ import { ProviderSettings } from "./page/provider/ProviderSettings";
 import InstallButton from "./component/InstallButton";
 import UserAddress from "./page/user/UserAddress";
 import AdminProfile from "./page/admin/AdminProfile";
+import HelpFAQ from "./page/Helpfaq";
+import TermsPrivacy from "./page/Termsprivacy";
 
 function App() {
 
@@ -43,6 +45,8 @@ function App() {
         <Route path="/" element={<SplashScreen />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/helpfaq" element={<HelpFAQ />} />
+        <Route path="/terms" element={<TermsPrivacy />} />
 
         {/*Admin */}
         <Route path="/admin" element={<AdminDashboard />} />

@@ -132,10 +132,10 @@ export default function AllServices() {
   const currentSortLabel = SORT_OPTIONS.find(o => o.key === sortBy)?.label || "Sort";
 
   return (
-    <div className={`min-h-screen flex flex-col ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
+    <div className={`h-screen relative flex flex-1 flex-col ${darkMode ? "bg-gray-900" : "bg-slate-50"}`}>
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-14">
+      <div className="sticky bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 px-5 pt-6 pb-14">
         <h1 className="text-xl font-bold text-white">All Services</h1>
         <p className="text-white/60 text-xs mt-1">
           {loading ? "Loading..." : `${processedServices.length} services available`}
@@ -143,7 +143,7 @@ export default function AllServices() {
       </div>
 
       {/* Search + Filter bar */}
-      <div className="-mt-6 px-4 mb-3">
+      <div className="z-10 -mt-6 px-4 mb-3">
         <div className="flex gap-2">
           {/* Search */}
           <div className={`flex-1 flex items-center gap-2 rounded-2xl px-4 py-3 shadow-sm border ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
@@ -246,7 +246,7 @@ export default function AllServices() {
       </div>
 
       {/* Services list */}
-      <div className="flex-1 px-4 pb-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
         {loading ? (
           <>
             <SkeletonCard darkMode={darkMode} />
@@ -316,10 +316,8 @@ export default function AllServices() {
             </motion.div>
           ))
         )}
-      </div>
 
-      {/* ── Pagination ── */}
-      {!loading && totalPages > 1 && (
+        {!loading && totalPages > 1 && (
         <div className="pb-24 flex items-center justify-center gap-4 mt-6">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -340,6 +338,10 @@ export default function AllServices() {
                 </button>
               </div>
       )}
+      </div>
+
+      {/* ── Pagination ── */}
+      
 
       {/* ── Filter Bottom Sheet ── */}
       <AnimatePresence>

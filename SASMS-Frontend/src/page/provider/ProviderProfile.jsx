@@ -257,7 +257,7 @@ export default function ProviderProfile() {
 
   return (
     <div className={`min-h-screen ${darkMode ? "bg-slate-950" : "bg-[#F3F6F9]"}`}>
-      <div className={`px-5 pt-10 pb-16 relative overflow-hidden bg-gradient-to-br from-[#c026d3] via-[#a21caf] to-[#86198] `}>
+      <div className={`px-5 pt-10 pb-16 relative bg-gradient-to-br from-[#c026d3] via-[#a21caf] to-[#86198] `}>
         <div className="absolute bottom-2 left-6 w-20 h-20 rounded-full bg-white/5" />
 
         <div className="flex items-center gap-4 relative">
@@ -307,7 +307,7 @@ export default function ProviderProfile() {
                   {photoUrl && (
                     <button
                       onClick={handleRemovePhoto}
-                      className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold border-t ${darkMode ? "border-slate-800 text-red-300 hover:bg-slate-800" : "border-gray-100 text-red-500 hover:bg-red-50"}`}
+                      className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold border-t ${darkMode ? "border-slate-800 text-red-400 hover:bg-slate-800" : "border-gray-100 text-red-500 hover:bg-red-50"}`}
                     >
                       <Trash2 size={14} />
                       Remove Photo

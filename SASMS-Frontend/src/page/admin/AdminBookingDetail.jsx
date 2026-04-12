@@ -4,31 +4,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import useDarkMode from "../../utils/useDarkMode";
 import {
-  ChevronLeft,
-  MapPin,
-  Package,
-  UserCheck,
-  Clock,
-  FileText,
-  CheckCircle2,
-  Phone,
-  Mail,
-  Check,
-  AlertCircle,
-  Search,
-  X,
-  Plus,
-  UserPlus,
-  BoxSelect,
-  Laptop,
-  Printer,
-  Monitor,
-  Wrench,
-  Settings,
-} from "lucide-react";
+  ChevronLeft, MapPin, Package, UserCheck, Clock, FileText, CheckCircle2, Phone,
+  Mail, Check, AlertCircle, Search, X, Plus, UserPlus, BoxSelect, Laptop, Printer, Monitor, Wrench, Settings, } from "lucide-react";
 
 /* ─────────────────────────── constants ─────────────── */
-const STATUS_FLOW = ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"];
 const PROVIDER_WORKING_CHARGE = 50;
 
 const STATUS_CONFIG = {
@@ -40,6 +19,11 @@ const STATUS_CONFIG = {
   accepted:    { label: "Accepted",    bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-400"  },
   picked_up:   { label: "Assets Picked", bg: "bg-cyan-100",  text: "text-cyan-700",    dot: "bg-cyan-400"    },
 };
+
+const getStatusFlow = (hasAssignedAssets) =>
+  hasAssignedAssets
+    ? ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"]
+    : ["pending", "assigned", "accepted", "in_progress", "completed"];
 
 const getCategoryStyle = (category) => {
   switch (category) {
@@ -581,8 +565,10 @@ export default function AdminBookingDetail() {
   const canAssign = ["pending", "assigned"].includes(booking.status);
   const isInProgress = booking.status === "in_progress";
   const isCancelled = booking.status === "cancelled";
+  const hasAssignedAssets = Array.isArray(booking.assets) && booking.assets.length > 0;
+  const statusFlow = getStatusFlow(hasAssignedAssets);
   const workflowStatus = booking.status;
-  const currentStep = isCancelled ? -1 : STATUS_FLOW.indexOf(workflowStatus);
+  const currentStep = isCancelled ? -1 : statusFlow.indexOf(workflowStatus);
   const selectedAssetsCost = validSelectedAssetObjs.reduce(
     (sum, asset) => sum + Number(asset.cost || 0),
     0
@@ -628,9 +614,9 @@ export default function AdminBookingDetail() {
           <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 p-4`}>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Progress</p>
             <div className="flex items-start">
-              {STATUS_FLOW.map((s, i) => (
+              {statusFlow.map((s, i) => (
                 <div key={s} className="flex-1 flex flex-col items-center relative">
-                  {i < STATUS_FLOW.length - 1 && (
+                  {i < statusFlow.length - 1 && (
                     <div className={`absolute top-3 left-1/2 w-full h-0.5 ${i < currentStep ? "bg-blue-500" : "bg-gray-200"}`} />
                   )}
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 ${
@@ -753,7 +739,7 @@ export default function AdminBookingDetail() {
           {booking.scheduledDate && <TimelineRow darkMode={darkMode} label="Scheduled" value={new Date(booking.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.assignedAt && <TimelineRow darkMode={darkMode} label="Assigned at" value={new Date(booking.assignedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.providerAcceptedAt && <TimelineRow darkMode={darkMode} label="Accepted at" value={new Date(booking.providerAcceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
-          {booking.assetsPickedUpAt && <TimelineRow darkMode={darkMode} label="Assets picked up" value={new Date(booking.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
+          {hasAssignedAssets && booking.assetsPickedUpAt && <TimelineRow darkMode={darkMode} label="Assets picked up" value={new Date(booking.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.startedAt && <TimelineRow darkMode={darkMode} label="Started at" value={new Date(booking.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} />}
           {booking.completedAt && <TimelineRow darkMode={darkMode} label="Completed at" value={new Date(booking.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight />}
         </Section>
@@ -976,7 +962,7 @@ export default function AdminBookingDetail() {
                 onChange={(e) => setAdminNote(e.target.value)}
                 placeholder="Instructions or special notes for the provider..."
                 rows={3}
-                className={`w-full ${darkMode ? "text-gray-500 bg-gray-800" : "text-slate-700 bg-gray-50"} border border-gray-200 rounded-xl p-3 text-sm  outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100 resize-none placeholder-gray-300`}
+                className={`w-full ${darkMode ? "text-gray-400 bg-gray-800 placeholder:text-gray-500" : "text-slate-700 bg-gray-50"} border border-gray-200 rounded-xl p-3 text-sm  outline-none focus:border-[#1976D2] focus:ring-2 focus:ring-blue-100 resize-none placeholder-gray-300`}
               />
             </div>
 

@@ -348,7 +348,7 @@ export default function AdminAssets() {
                 : `${darkMode ? "bg-white/90" : "bg-white"}  text-gray-500 shadow-sm`
               }`}
           >
-            {tab}
+            {tab} 
           </button>
         ))}
       </div>

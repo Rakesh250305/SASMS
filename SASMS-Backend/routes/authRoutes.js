@@ -56,12 +56,14 @@ router.post("/login", async (req, res) => {
     }
 
     // Password check
-    const match = await bcrypt.compare(password, account.password);
-    if (!match) {
+    if (!foundIn === "provider"){
+      const match = await bcrypt.compare(password, account.password);
+      if (!match) {
       return res.status(400).json({
         success: false,
         message: "Email or password is incorrect.",
       });
+    }
     }
 
     // JWT Token

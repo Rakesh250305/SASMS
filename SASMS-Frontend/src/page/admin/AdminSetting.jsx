@@ -4,6 +4,8 @@ import {
   Bell, Moon, Lock, Globe, ChevronRight,
   LogOut, Shield, Database, Users, Eye,
   ArrowLeft, User,
+  FileText,
+  HelpCircle,
 } from "lucide-react";
 import AdminDrawer from "../../component/AdminDrawer";
 import { motion, AnimatePresence } from "framer-motion";
@@ -91,6 +93,27 @@ const settingsSections = [
       },
     ],
   },
+  {
+    title: "Support",
+    items: [
+      {
+        icon: <HelpCircle size={18} />,
+        label: "Help & FAQ",
+        desc: "Get answers to common questions",
+        color: "text-purple-700",
+        bg: "bg-purple-50",
+        toggle: false
+      },
+      {
+        icon: <FileText size={18} />,
+        label: "Terms & Privacy",
+        desc: "Review policies",
+        color: "text-gray-700",
+        bg: "bg-gray-50",
+        toggle: false
+      },
+    ],
+  },
 ];
 
 export function AdminSettings() {
@@ -136,7 +159,14 @@ export function AdminSettings() {
 
   const handleItemClick = (item) => {
     if (item.route) { navigate(item.route); return; }
-    if (item.label === "Change Password") { setShowPasswordModal(true); }
+    if (item.label === "Change Password") {
+      setShowPasswordModal(true); 
+    } else if (item.label === "Help & FAQ") {
+      navigate('/helpfaq')
+
+    } else if (item.label === "Terms & Privacy") {
+      navigate('/terms')
+    }
   };
 
   return (
@@ -167,9 +197,8 @@ export function AdminSettings() {
                 <div
                   key={item.label}
                   onClick={() => handleItemClick(item)}
-                  className={`flex items-center gap-3 px-4 py-4 cursor-pointer transition-colors ${darkMode ? "hover:bg-slate-500" : "hover:bg-slate-50"}  ${
-                    i !== section.items.length - 1 ? (darkMode ? "border-b border-gray-600" : "border-b border-gray-100") : ""
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-4 cursor-pointer transition-colors ${darkMode ? "hover:bg-slate-500" : "hover:bg-slate-50"}  ${i !== section.items.length - 1 ? (darkMode ? "border-b border-gray-600" : "border-b border-gray-100") : ""
+                    }`}
                 >
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${item.bg} ${item.color}`}>
                     {item.icon}
@@ -179,7 +208,7 @@ export function AdminSettings() {
                     <div className={`text-[11px] mt-0.5 ${darkMode ? "text-gray-300" : "text-gray-400"}`}>{item.desc}</div>
                   </div>
                   {item.toggle ? (
-                    <div className={`w-11 h-6 rounded-full relative ${darkMode ? "bg-blue-600": "bg-gray-300"}`} onClick={toggleDarkMode}>
+                    <div className={`w-11 h-6 rounded-full relative ${darkMode ? "bg-blue-600" : "bg-gray-300"}`} onClick={toggleDarkMode}>
                       <div className={`absolute top-[2px] w-5 h-5 bg-white rounded-full shadow transition-all ${darkMode ? "left-[22px]" : "left-[2px]"}`} />
                     </div>
                   ) : (

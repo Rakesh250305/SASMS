@@ -44,13 +44,15 @@ const WORKFLOW = [
   { key: "completed", label: "Completed", icon: CheckCheck },
 ];
 
-const getWorkflowStep = (task) => {
+const getWorkflow = (hasAssignedAssets) =>
+  hasAssignedAssets
+    ? WORKFLOW
+    : WORKFLOW.filter((step) => step.key !== "picked_up");
+
+const getWorkflowStep = (task, hasAssignedAssets) => {
   if (!task) return 0;
-  if (task.status === "completed") return 4;
-  if (task.status === "in_progress") return 3;
-  if (task.status === "picked_up") return 2;
-  if (task.status === "accepted") return 1;
-  return 0;
+  const workflow = getWorkflow(hasAssignedAssets);
+  return Math.max(workflow.findIndex((step) => step.key === task.status), 0);
 };
 
 const getCategoryStyle = (category, darkMode) => {
@@ -163,8 +165,9 @@ export default function ProviderTaskDetail() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const booking = res.data.booking || res.data.data;
+      const hasAssignedAssets = Array.isArray(booking?.assets) && booking.assets.length > 0;
       setTask(booking);
-      setWorkflowStep(getWorkflowStep(booking));
+      setWorkflowStep(getWorkflowStep(booking, hasAssignedAssets));
     } catch (error) {
       console.error(error);
     } finally {
@@ -181,8 +184,10 @@ export default function ProviderTaskDetail() {
     try {
       const res = await axios.put(`${apiUrl}/provider/booking/${id}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
       const updated = res.data.booking || res.data.data;
+      const nextTask = updated || { ...task, status: newStatus };
+      const hasAssignedAssets = Array.isArray(nextTask?.assets) && nextTask.assets.length > 0;
       setTask(updated || { ...task, status: newStatus });
-      setWorkflowStep(getWorkflowStep(updated || { ...task, status: newStatus }));
+      setWorkflowStep(getWorkflowStep(nextTask, hasAssignedAssets));
       setMsg({ type: "success", text: `Status updated to ${newStatus.replace("_", " ")}` });
     } catch (error) {
       setMsg({ type: "error", text: error.response?.data?.message || "Update failed" });
@@ -218,6 +223,8 @@ export default function ProviderTaskDetail() {
 
   const isCompleted = task.status === "completed";
   const isCancelled = task.status === "cancelled";
+  const hasAssignedAssets = Array.isArray(task.assets) && task.assets.length > 0;
+  const workflow = getWorkflow(hasAssignedAssets);
 
   return (
     <div className={`flex-1 flex flex-col relative h-screen ${darkMode ? "bg-slate-950" : "bg-slate-50"}`}>
@@ -253,9 +260,9 @@ export default function ProviderTaskDetail() {
           <div className={`rounded-2xl border p-4 ${darkMode ? "bg-slate-900 border-slate-800 shadow-[0_18px_40px_rgba(2,6,23,0.28)]" : "bg-white border-gray-100 shadow-sm"}`}>
             <p className={`text-[10px] font-bold uppercase tracking-widest mb-4 ${darkMode ? "text-slate-500" : "text-gray-400"}`}>Workflow Progress</p>
             <div className="flex items-start">
-              {WORKFLOW.map(({ key, label, icon: Icon }, index) => (
+              {workflow.map(({ key, label, icon: Icon }, index) => (
                 <div key={key} className="flex-1 flex flex-col items-center relative">
-                  {index < WORKFLOW.length - 1 && <div className={`absolute top-3 left-1/2 w-full h-0.5 ${index < workflowStep ? "bg-purple-400" : darkMode ? "bg-slate-700" : "bg-gray-200"}`} />}
+                  {index < workflow.length - 1 && <div className={`absolute top-3 left-1/2 w-full h-0.5 ${index < workflowStep ? "bg-purple-400" : darkMode ? "bg-slate-700" : "bg-gray-200"}`} />}
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 ${index < workflowStep ? "bg-purple-500" : index === workflowStep ? darkMode ? "bg-[#c026d3] ring-4 ring-fuchsia-950" : "bg-[#c026d3] ring-4 ring-purple-100" : darkMode ? "bg-slate-700" : "bg-gray-200"}`}>
                     {index < workflowStep ? <CheckCircle2 size={13} className="text-white" /> : <Icon size={12} className={index === workflowStep ? "text-white" : darkMode ? "text-slate-500" : "text-gray-400"} />}
                   </div>
@@ -372,7 +379,7 @@ export default function ProviderTaskDetail() {
           <TimelineRow label="Assigned on" value={new Date(task.assignedAt || task.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} darkMode={darkMode} />
           {task.scheduledDate && <TimelineRow label="Scheduled" value={new Date(task.scheduledDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} darkMode={darkMode} />}
           {task.providerAcceptedAt && <TimelineRow label="Accepted on" value={new Date(task.providerAcceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} darkMode={darkMode} />}
-          {task.assetsPickedUpAt && <TimelineRow label="Assets Picked on" value={new Date(task.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} darkMode={darkMode} />}
+          {hasAssignedAssets && task.assetsPickedUpAt && <TimelineRow label="Assets Picked on" value={new Date(task.assetsPickedUpAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} darkMode={darkMode} />}
           {task.startedAt && <TimelineRow label="Started on" value={new Date(task.startedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} darkMode={darkMode} />}
           {task.completedAt && <TimelineRow label="Completed" value={new Date(task.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight darkMode={darkMode} />}
         </Section>
@@ -390,9 +397,9 @@ export default function ProviderTaskDetail() {
                 <button onClick={() => setModal("accept")} className="flex-[2] py-3.5 rounded-2xl bg-gradient-to-br from-[#86198f] to-[#c026d3] text-white text-sm font-bold flex items-center justify-center gap-2"><CheckCircle2 size={16} /> Accept Task</button>
               </div>
             )}
-            {workflowStep === 1 && <button onClick={() => setModal("picked")} className="w-full py-3.5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white text-sm font-bold flex items-center justify-center gap-2"><Truck size={16} /> Confirm Assets Picked Up</button>}
-            {workflowStep === 2 && <button onClick={() => setModal("progress")} className="w-full py-3.5 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white text-sm font-bold flex items-center justify-center gap-2"><Wrench size={16} /> Start Work (Mark In Progress)</button>}
-            {workflowStep === 3 && <button onClick={() => setModal("complete")} className="w-full py-3.5 rounded-2xl bg-green-600 text-white text-sm font-bold flex items-center justify-center gap-2"><CheckCheck size={16} /> Mark as Completed</button>}
+            {workflowStep === 1 && hasAssignedAssets && <button onClick={() => setModal("picked")} className="w-full py-3.5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white text-sm font-bold flex items-center justify-center gap-2"><Truck size={16} /> Confirm Assets Picked Up</button>}
+            {workflowStep === (hasAssignedAssets ? 2 : 1) && <button onClick={() => setModal("progress")} className="w-full py-3.5 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white text-sm font-bold flex items-center justify-center gap-2"><Wrench size={16} /> Start Work (Mark In Progress)</button>}
+            {workflowStep === (hasAssignedAssets ? 3 : 2) && <button onClick={() => setModal("complete")} className="w-full py-3.5 rounded-2xl bg-green-600 text-white text-sm font-bold flex items-center justify-center gap-2"><CheckCheck size={16} /> Mark as Completed</button>}
           </div>
         </div>
       )}
