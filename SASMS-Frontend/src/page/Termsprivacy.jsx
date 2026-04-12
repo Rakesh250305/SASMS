@@ -92,7 +92,7 @@ const PRIVACY_SECTIONS = [
 
 function Section({ section, isOpen, onToggle }) {
   const Icon = section.icon;
-  const darkMode = useDarkMode();
+  const darkMode = useDarkMode().darkMode;
   return (
     <div className="border-b border-slate-50 last:border-0">
       <button
