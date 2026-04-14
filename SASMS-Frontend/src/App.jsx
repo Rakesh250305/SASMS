@@ -83,17 +83,17 @@ function App() {
       {/* GLOBAL TOAST */}
       <ToastContainer
         position="top-center"
-        autoClose={2500}
+        autoClose={2800}
         newestOnTop
         closeOnClick
         closeButton={false}
         pauseOnHover
         draggable
         toastClassName={() =>
-          "w-[90vw] flex items-center px-5 py-4 mt-2 rounded-xl shadow-md border border-gray-200 bg-white text-gray-800 text-sm "
+          "w-[92vw] max-w-md flex items-center px-4 py-3 mt-3 rounded-2xl shadow-[0_22px_50px_rgba(15,23,42,0.16)] border border-slate-200/80 bg-white/95 backdrop-blur text-slate-800 text-sm"
         }
-        bodyClassName={() => "flex items-center gap-2"}
-        progressClassName={"bg-blue-500"}
+        bodyClassName={() => "flex items-center gap-3 font-medium"}
+        progressClassName={"bg-gradient-to-r from-sky-500 via-indigo-500 to-fuchsia-500"}
       />
     </BrowserRouter>
   );

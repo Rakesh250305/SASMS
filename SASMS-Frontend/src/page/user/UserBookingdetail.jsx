@@ -45,6 +45,26 @@ const getStatusFlow = (hasAssignedAssets) =>
     ? ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"]
     : ["pending", "assigned", "accepted", "in_progress", "completed"];
 
+const getFinalizedCostSummary = (booking) => {
+  const serviceCost = Number(booking?.costSummary?.serviceCost ?? booking?.service?.estimatedPrice ?? 0);
+  const usedAssetsCost = Number(booking?.costSummary?.usedAssetsCost ?? 0);
+  const additionalAssetsCost = Number(booking?.costSummary?.additionalAssetsCost ?? 0);
+  const providerCharge = Number(
+    booking?.costSummary?.providerCharge ?? (booking?.provider ? PROVIDER_WORKING_CHARGE : 0)
+  );
+
+  return {
+    serviceCost,
+    usedAssetsCost,
+    additionalAssetsCost,
+    providerCharge,
+    totalCost: Number(
+      booking?.costSummary?.totalCost ??
+        serviceCost + usedAssetsCost + additionalAssetsCost + providerCharge
+    ),
+  };
+};
+
 function StatusBadge({ status, darkMode = false }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
   return (
@@ -127,17 +147,15 @@ export default function UserBookingDetail() {
 
   // ✅ Safe — booking is guaranteed non-null below this line
   const isCancelled = booking.status === "cancelled";
+  const isCompleted = booking.status === "completed";
   const hasAssignedAssets = Array.isArray(booking.assets) && booking.assets.length > 0;
   const statusFlow = getStatusFlow(hasAssignedAssets);
   const workflowStatus = booking.status;
   const currentStep = isCancelled ? -1 : statusFlow.indexOf(workflowStatus);
-  const serviceCost = Number(booking.service?.estimatedPrice || 0);
-  const assetsCost = (booking.assets || []).reduce(
-    (sum, asset) => sum + Number(asset.cost || 0),
-    0
-  );
-  const providerCharge = booking.provider ? PROVIDER_WORKING_CHARGE : 0;
-  const totalCost = serviceCost + assetsCost + providerCharge;
+  const finalizedCostSummary = getFinalizedCostSummary(booking);
+  const showAssetCharges = isCompleted && Boolean(booking.costSummary);
+  const usedAssignedAssets = booking.usedAssignedAssets || [];
+  const additionalAssetsUsed = booking.additionalAssetsUsed || [];
 
   return (
     <div className={`min-h-screen ${darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
@@ -456,7 +474,6 @@ export default function UserBookingDetail() {
                   </div>
                   <div className="text-right">
                     <p className={`text-xs font-mono ${darkMode ? "text-slate-500" : "text-gray-400"}`}>{a.assetId}</p>
-                    <p className="text-xs font-semibold text-emerald-600">Rs.{Number(a.cost || 0)}</p>
                   </div>
                 </div>
               ))}
@@ -464,48 +481,76 @@ export default function UserBookingDetail() {
           </Section>
         )}
 
-        <Section title="Cost Breakdown" darkMode={darkMode}>
+        <Section title="Cost Summary" darkMode={darkMode}>
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <span className={`text-sm ${darkMode ? "text-slate-400" : "text-gray-500"}`}>Service Cost</span>
-              <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Rs.{serviceCost}</span>
+              <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Rs.{finalizedCostSummary.serviceCost}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className={`text-sm ${darkMode ? "text-slate-400" : "text-gray-500"}`}>
-                Assets Cost
-                {booking.assets?.length > 0 && (
-                  <span className={`ml-1 text-xs ${darkMode ? "text-slate-500" : "text-gray-400"}`}>({booking.assets.length} assigned)</span>
-                )}
-              </span>
-              <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Rs.{assetsCost}</span>
-            </div>
+            {showAssetCharges && usedAssignedAssets.length > 0 && (
+              <div className="flex items-center justify-between">
+                <span className={`text-sm ${darkMode ? "text-slate-400" : "text-gray-500"}`}>
+                  Used Assigned Assets
+                  <span className={`ml-1 text-xs ${darkMode ? "text-slate-500" : "text-gray-400"}`}>({usedAssignedAssets.length} used)</span>
+                </span>
+                <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Rs.{finalizedCostSummary.usedAssetsCost}</span>
+              </div>
+            )}
+            {showAssetCharges && additionalAssetsUsed.length > 0 && (
+              <div className="flex items-center justify-between">
+                <span className={`text-sm ${darkMode ? "text-slate-400" : "text-gray-500"}`}>
+                  Additional Assets
+                  <span className={`ml-1 text-xs ${darkMode ? "text-slate-500" : "text-gray-400"}`}>({additionalAssetsUsed.length} added)</span>
+                </span>
+                <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Rs.{finalizedCostSummary.additionalAssetsCost}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className={`text-sm ${darkMode ? "text-slate-400" : "text-gray-500"}`}>Provider Working Charge</span>
-              <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Rs.{providerCharge}</span>
+              <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Rs.{finalizedCostSummary.providerCharge}</span>
             </div>
+            {!showAssetCharges && (
+              <p className={`text-xs ${darkMode ? "text-slate-500" : "text-gray-400"}`}>
+                Asset charges are finalized when the provider completes the service.
+              </p>
+            )}
             <div className={`pt-3 mt-1 border-t flex items-center justify-between ${darkMode ? "border-slate-800" : "border-gray-100"}`}>
               <span className={`text-sm font-bold ${darkMode ? "text-slate-100" : "text-slate-800"}`}>Total Amount</span>
-              <span className="text-base font-extrabold text-emerald-600">Rs.{totalCost}</span>
+              <span className="text-base font-extrabold text-emerald-600">Rs.{finalizedCostSummary.totalCost}</span>
             </div>
           </div>
         </Section>
 
-        {/* Notes */}
-        {booking.providerNote && (
-          <Section title="Provider Notes" darkMode={darkMode}>
-            <div className="flex items-start gap-2">
-              <FileText size={14} className={`${darkMode ? "text-slate-500" : "text-gray-400"} mt-0.5 flex-shrink-0`} />
-              <p className={`text-sm italic leading-relaxed ${darkMode ? "text-slate-300" : "text-gray-600"}`}>{booking.providerNote}</p>
+        {isCompleted && usedAssignedAssets.length > 0 && (
+          <Section title="Used Assigned Assets" darkMode={darkMode}>
+            <div className="space-y-2">
+              {usedAssignedAssets.map((asset, index) => (
+                <div key={`${asset.assetId || asset.assetName}-${index}`} className={`flex items-center justify-between gap-3 rounded-xl px-2 py-2 ${darkMode ? "bg-slate-950/70" : ""}`}>
+                  <div className="min-w-0">
+                    <p className={`text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{asset.assetName}</p>
+                    <p className={`text-[10px] ${darkMode ? "text-slate-500" : "text-gray-400"}`}>
+                      {asset.assetId ? `#${asset.assetId}` : "Assigned asset"}{asset.category ? ` - ${asset.category}` : ""}
+                    </p>
+                  </div>
+                  <p className="text-xs font-semibold text-emerald-600">Rs.{Number(asset.cost || 0)}</p>
+                </div>
+              ))}
             </div>
           </Section>
         )}
 
-        {/* Admin note */}
-        {booking.adminNote && (
-          <Section title="Admin Note" darkMode={darkMode}>
-            <div className="flex items-start gap-2">
-              <FileText size={14} className={`${darkMode ? "text-slate-500" : "text-gray-400"} mt-0.5 flex-shrink-0`} />
-              <p className={`text-sm italic leading-relaxed ${darkMode ? "text-slate-300" : "text-gray-600"}`}>{booking.adminNote}</p>
+        {isCompleted && additionalAssetsUsed.length > 0 && (
+          <Section title="Additional Assets Used" darkMode={darkMode}>
+            <div className="space-y-2">
+              {additionalAssetsUsed.map((asset, index) => (
+                <div key={`${asset.name}-${index}`} className={`flex items-center justify-between gap-3 rounded-xl px-2 py-2 ${darkMode ? "bg-slate-950/70" : ""}`}>
+                  <div className="min-w-0">
+                    <p className={`text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{asset.name}</p>
+                    {asset.note && <p className={`text-[10px] ${darkMode ? "text-slate-500" : "text-gray-400"}`}>{asset.note}</p>}
+                  </div>
+                  <p className="text-xs font-semibold text-emerald-600">Rs.{Number(asset.cost || 0)}</p>
+                </div>
+              ))}
             </div>
           </Section>
         )}
