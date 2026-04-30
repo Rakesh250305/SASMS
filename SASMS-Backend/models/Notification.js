@@ -12,6 +12,7 @@ const notificationSchema = new mongoose.Schema(
       enum: [
         "booking_created",    // admin gets this
         "booking_assigned",   // user + provider get this
+        "booking_rejected",   // admin gets this
         "booking_in_progress",// user gets this
         "booking_completed",  // user gets this
         "booking_cancelled",  // user + provider get this

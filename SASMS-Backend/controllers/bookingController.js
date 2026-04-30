@@ -9,6 +9,8 @@ import UserAddress from "../models/UserAddress.js";
 import Address from "../models/UserAddress.js"; 
 import Activity from "../models/Activity.js";
 
+const PROVIDER_WORKING_CHARGE = 50;
+
 /* ─────────────────────────────────────────
    HELPERS
 ───────────────────────────────────────── */
@@ -77,7 +79,7 @@ export const createBooking = async (req, res) => {
       service: serviceId,
       admin: adminDoc._id,
       address: addressDoc.toObject(),
-      providerNote: notes || "",
+      userNote: notes || "",
     });
 
     await booking.save();
@@ -439,6 +441,12 @@ export const getProviderBookingById = async (req, res) => {
 export const updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    const usedAssignedAssetIds = Array.isArray(req.body.usedAssignedAssetIds)
+      ? req.body.usedAssignedAssetIds
+      : [];
+    const additionalAssetsUsedInput = Array.isArray(req.body.additionalAssetsUsed)
+      ? req.body.additionalAssetsUsed
+      : [];
 
     const booking = await Booking.findOne({ _id: req.params.id, provider: req.user.id });
     if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
@@ -447,9 +455,9 @@ export const updateBookingStatus = async (req, res) => {
     const hasAssignedAssets = Array.isArray(booking.assets) && booking.assets.length > 0;
 
     const allowedTransitions = {
-      assigned: ["accepted", "cancelled"],
-      accepted: hasAssignedAssets ? ["picked_up", "cancelled"] : ["in_progress", "cancelled"],
-      picked_up: ["in_progress", "cancelled"],
+      assigned: ["accepted", "pending"],
+      accepted: hasAssignedAssets ? ["picked_up", "pending"] : ["in_progress", "pending"],
+      picked_up: ["in_progress", "pending"],
       in_progress: ["completed"],
     };
 
@@ -458,7 +466,20 @@ export const updateBookingStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: `Cannot transition from ${workflowState} to ${status}` });
     }
 
-    if (status === "accepted") {
+    if (status === "pending") {
+      booking.status = "pending";
+      booking.provider = null;
+      booking.assets = [];
+      booking.assignedAt = null;
+      booking.providerAcceptedAt = null;
+      booking.assetsPickedUpAt = null;
+      booking.startedAt = null;
+      booking.completedAt = null;
+      booking.usedAssignedAssets = [];
+      booking.additionalAssetsUsed = [];
+      booking.costSummary = null;
+      booking.adminNote = "";
+    } else if (status === "accepted") {
       booking.status = "accepted";
       booking.providerAcceptedAt = booking.providerAcceptedAt || new Date();
     } else if (status === "picked_up") {
@@ -471,15 +492,68 @@ export const updateBookingStatus = async (req, res) => {
       booking.status = "in_progress";
       booking.startedAt = new Date();
     } else if (status === "completed") {
+      const assignedAssetIds = (booking.assets || []).map((assetId) => String(assetId));
+      const invalidAssetId = usedAssignedAssetIds.find(
+        (assetId) => !assignedAssetIds.includes(String(assetId))
+      );
+
+      if (invalidAssetId) {
+        return res.status(400).json({
+          success: false,
+          message: "Selected used assets must belong to this booking",
+        });
+      }
+
+      const usedAssignedAssetsDocs = usedAssignedAssetIds.length
+        ? await Asset.find({ _id: { $in: usedAssignedAssetIds } }).select(
+            "assetName assetId category cost"
+          )
+        : [];
+
+      const usedAssignedAssets = usedAssignedAssetsDocs.map((asset) => ({
+        asset: asset._id,
+        assetName: asset.assetName || "",
+        assetId: asset.assetId || "",
+        category: asset.category || "",
+        cost: Number(asset.cost || 0),
+      }));
+
+      const additionalAssetsUsed = additionalAssetsUsedInput
+        .map((item) => ({
+          name: String(item?.name || "").trim(),
+          note: String(item?.note || "").trim(),
+          cost: Number(item?.cost || 0),
+        }))
+        .filter((item) => item.name && item.cost >= 0);
+
+      const service = await Service.findById(booking.service).select("estimatedPrice");
+      const serviceCost = Number(service?.estimatedPrice || 0);
+      const usedAssetsCost = usedAssignedAssets.reduce(
+        (sum, asset) => sum + Number(asset.cost || 0),
+        0
+      );
+      const additionalAssetsCost = additionalAssetsUsed.reduce(
+        (sum, asset) => sum + Number(asset.cost || 0),
+        0
+      );
+      const providerCharge = booking.provider ? PROVIDER_WORKING_CHARGE : 0;
+
       booking.status = "completed";
       booking.completedAt = new Date();
-    } else if (status === "cancelled") {
-      booking.status = "cancelled";
+      booking.usedAssignedAssets = usedAssignedAssets;
+      booking.additionalAssetsUsed = additionalAssetsUsed;
+      booking.costSummary = {
+        serviceCost,
+        usedAssetsCost,
+        additionalAssetsCost,
+        providerCharge,
+        totalCost: serviceCost + usedAssetsCost + additionalAssetsCost + providerCharge,
+      };
     }
 
     await booking.save();
 
-    if (status === "completed" || status === "cancelled") {
+    if (status === "completed") {
       await Service.findByIdAndUpdate(booking.service, {
         availability: "available",
         provider: null,
@@ -488,19 +562,33 @@ export const updateBookingStatus = async (req, res) => {
       });
     }
 
-    if (status === "in_progress" || status === "completed" || status === "cancelled") {
+    if (status === "pending") {
+      await Service.findByIdAndUpdate(booking.service, {
+        availability: "available",
+        provider: null,
+        asset: null,
+        assignTo: null,
+      });
+
+      await createNotification({
+        recipientId: booking.admin,
+        recipientModel: "Admin",
+        title: "Provider Rejected Task",
+        message: `Booking #${booking.bookingId} was rejected and moved back to pending`,
+        type: "booking_rejected",
+        bookingId: booking._id,
+      });
+    }
+
+    if (status === "in_progress" || status === "completed") {
       const notifType =
         status === "in_progress"
           ? "booking_in_progress"
-          : status === "completed"
-          ? "booking_completed"
-          : "booking_cancelled";
+          : "booking_completed";
       const notifMsg =
         status === "in_progress"
           ? `Your booking #${booking.bookingId} is now in progress`
-          : status === "completed"
-          ? `Your booking #${booking.bookingId} has been completed`
-          : `Your booking #${booking.bookingId} has been cancelled`;
+          : `Your booking #${booking.bookingId} has been completed`;
 
       await createNotification({
         recipientId: booking.user,
@@ -508,9 +596,7 @@ export const updateBookingStatus = async (req, res) => {
         title:
           status === "in_progress"
             ? "Work In Progress"
-            : status === "completed"
-            ? "Booking Completed"
-            : "Booking Cancelled",
+            : "Booking Completed",
         message: notifMsg,
         type: notifType,
         bookingId: booking._id,

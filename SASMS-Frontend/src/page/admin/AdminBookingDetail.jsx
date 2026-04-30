@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import useDarkMode from "../../utils/useDarkMode";
+import { notifyError, notifySuccess } from "../../utils/notify";
 import {
   ChevronLeft, MapPin, Package, UserCheck, Clock, FileText, CheckCircle2, Phone,
   Mail, Check, AlertCircle, Search, X, Plus, UserPlus, BoxSelect, Laptop, Printer, Monitor, Wrench, Settings, } from "lucide-react";
@@ -24,6 +25,26 @@ const getStatusFlow = (hasAssignedAssets) =>
   hasAssignedAssets
     ? ["pending", "assigned", "accepted", "picked_up", "in_progress", "completed"]
     : ["pending", "assigned", "accepted", "in_progress", "completed"];
+
+const getFinalizedCostSummary = (booking) => {
+  const serviceCost = Number(booking?.costSummary?.serviceCost ?? booking?.service?.estimatedPrice ?? 0);
+  const usedAssetsCost = Number(booking?.costSummary?.usedAssetsCost ?? 0);
+  const additionalAssetsCost = Number(booking?.costSummary?.additionalAssetsCost ?? 0);
+  const providerCharge = Number(
+    booking?.costSummary?.providerCharge ?? (booking?.provider ? PROVIDER_WORKING_CHARGE : 0)
+  );
+
+  return {
+    serviceCost,
+    usedAssetsCost,
+    additionalAssetsCost,
+    providerCharge,
+    totalCost: Number(
+      booking?.costSummary?.totalCost ??
+        serviceCost + usedAssetsCost + additionalAssetsCost + providerCharge
+    ),
+  };
+};
 
 const getCategoryStyle = (category) => {
   switch (category) {
@@ -454,7 +475,6 @@ export default function AdminBookingDetail() {
   const [expectedDate, setExpectedDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
-  const [msg, setMsg] = useState(null);
 
   // modal visibility
   const [showProviderModal, setShowProviderModal] = useState(false);
@@ -501,11 +521,10 @@ export default function AdminBookingDetail() {
     const selectedProviderRecord = providers.find((provider) => provider._id === selectedProvider);
 
     if (!selectedProvider || String(selectedProviderRecord?.status || "").toLowerCase() !== "active") {
-      setMsg({ type: "error", text: "Please select an active provider first" });
+      notifyError("Please select an active provider first");
       return;
     }
     setAssigning(true);
-    setMsg(null);
     try {
       const res = await axios.put(
         `${apiUrl}/admin/booking/${id}/assign`,
@@ -520,9 +539,9 @@ export default function AdminBookingDetail() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setBooking(res.data.booking);
-      setMsg({ type: "success", text: "Booking assigned successfully!" });
+      notifySuccess("Booking assigned successfully");
     } catch (err) {
-      setMsg({ type: "error", text: err.response?.data?.message || "Assignment failed" });
+      notifyError(err.response?.data?.message || "Assignment failed");
     }
     setAssigning(false);
   };
@@ -569,20 +588,18 @@ export default function AdminBookingDetail() {
   const statusFlow = getStatusFlow(hasAssignedAssets);
   const workflowStatus = booking.status;
   const currentStep = isCancelled ? -1 : statusFlow.indexOf(workflowStatus);
-  const selectedAssetsCost = validSelectedAssetObjs.reduce(
-    (sum, asset) => sum + Number(asset.cost || 0),
-    0
-  );
-  const assignedAssetsCost = (booking?.assets || []).reduce(
-    (sum, asset) => sum + Number(asset.cost || 0),
-    0
-  );
-  const serviceCost = Number(booking?.service?.estimatedPrice || 0);
+  const finalizedCostSummary = getFinalizedCostSummary(booking);
+  const serviceCost = finalizedCostSummary.serviceCost;
   const showProviderCharge = canAssign ? Boolean(selectedProviderObj) : Boolean(booking?.provider);
-  const providerCharge = showProviderCharge ? PROVIDER_WORKING_CHARGE : 0;
+  const providerCharge = canAssign
+    ? (showProviderCharge ? PROVIDER_WORKING_CHARGE : 0)
+    : finalizedCostSummary.providerCharge;
+  const showAssetCharges = booking.status === "completed" && Boolean(booking.costSummary);
+  const usedAssignedAssets = booking.usedAssignedAssets || [];
+  const additionalAssetsUsed = booking.additionalAssetsUsed || [];
   const totalCost = canAssign
-    ? serviceCost + selectedAssetsCost + providerCharge
-    : serviceCost + assignedAssetsCost + providerCharge;
+    ? serviceCost + providerCharge
+    : finalizedCostSummary.totalCost;
 
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-[#F5F7FA]"}`}>
@@ -744,15 +761,28 @@ export default function AdminBookingDetail() {
           {booking.completedAt && <TimelineRow darkMode={darkMode} label="Completed at" value={new Date(booking.completedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} highlight />}
         </Section>
 
-        {booking.providerNote && (
+        {/* Notes from  User / Customer */}
+        {booking.userNote && (
           <Section darkMode={darkMode} title="Customer Note">
             <div className="flex items-start gap-2">
               <FileText size={14} className="text-gray-400 mt-0.5" />
-              <p className="text-sm text-gray-600 italic">{booking.providerNote}</p>
+              <p className="text-sm text-gray-600 italic">{booking.userNote}</p>
             </div>
           </Section>
         )}
 
+         {/*Rejected Notes  from provider*/}
+                {booking.providerNote && (
+                  <Section title="Provider Notes" darkMode={darkMode}>
+                    <div className="flex items-start gap-2">
+                      <FileText size={14} className={`${darkMode ? "text-slate-500" : "text-gray-400"} mt-0.5 flex-shrink-0`} />
+                      <p className={`text-sm italic leading-relaxed ${darkMode ? "text-slate-300" : "text-gray-600"}`}>{booking.providerNote}</p>
+                    </div>
+                  </Section>
+                )}
+        
+
+        {/* Assets Assigned */}
         {!canAssign && booking.assets?.length > 0 && (
           <Section darkMode={darkMode} title="Assets Assigned">
             <div className="space-y-2">
@@ -789,6 +819,7 @@ export default function AdminBookingDetail() {
           </Section>
         )}
 
+        {/* Cost Breakdown */}
         <Section darkMode={darkMode} title="Cost Summary">
           <div className="space-y-2">
             <div className="flex items-center justify-between py-1.5">
@@ -796,29 +827,44 @@ export default function AdminBookingDetail() {
               <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>₹{serviceCost}</span>
             </div>
 
-            <div className="flex items-center justify-between py-1.5">
-              <span className="text-sm text-gray-500">
-                Assets Cost
-                {canAssign && validSelectedAssetObjs.length > 0 && (
+            {showAssetCharges && usedAssignedAssets.length > 0 && (
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-sm text-gray-500">
+                  Used Assigned Assets
                   <span className="ml-1 text-xs text-gray-400">
-                    ({validSelectedAssetObjs.length} selected)
+                    ({usedAssignedAssets.length} used)
                   </span>
-                )}
-                {!canAssign && (booking.assets || []).length > 0 && (
+                </span>
+                <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>
+                  ₹{finalizedCostSummary.usedAssetsCost}
+                </span>
+              </div>
+            )}
+
+            {showAssetCharges && additionalAssetsUsed.length > 0 && (
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-sm text-gray-500">
+                  Additional Assets
                   <span className="ml-1 text-xs text-gray-400">
-                    ({booking.assets.length} assigned)
+                    ({additionalAssetsUsed.length} added)
                   </span>
-                )}
-              </span>
-              <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>
-                ₹{canAssign ? selectedAssetsCost : assignedAssetsCost}
-              </span>
-            </div>
+                </span>
+                <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>
+                  ₹{finalizedCostSummary.additionalAssetsCost}
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center justify-between py-1.5">
               <span className="text-sm text-gray-500">Provider Working Charge</span>
               <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"} `}>₹{providerCharge}</span>
             </div>
+
+            {!showAssetCharges && (
+              <p className="text-xs text-gray-400">
+                Asset charges are finalized when the provider completes the service.
+              </p>
+            )}
 
             <div className="border-t border-gray-100 pt-3 mt-1 flex items-center justify-between">
               <span className="text-sm font-bold text-slate-800">Total Cost</span>
@@ -827,22 +873,46 @@ export default function AdminBookingDetail() {
           </div>
         </Section>
 
+        {booking.status === "completed" && usedAssignedAssets.length > 0 && (
+          <Section darkMode={darkMode} title="Used Assigned Assets">
+            <div className="space-y-2">
+              {usedAssignedAssets.map((asset, index) => (
+                <div key={`${asset.assetId || asset.assetName}-${index}`} className="flex items-center justify-between gap-3 py-1.5">
+                  <div className="min-w-0">
+                    <p className={`${darkMode ? "text-slate-400" : "text-slate-700"} text-sm font-semibold`}>{asset.assetName}</p>
+                    <p className="text-[10px] text-gray-400">
+                      {asset.assetId ? `#${asset.assetId}` : "Assigned asset"}{asset.category && <span className="ml-1 capitalize">· {asset.category}</span>}
+                    </p>
+                  </div>
+                  <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"}`}>₹{Number(asset.cost || 0)}</span>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {booking.status === "completed" && additionalAssetsUsed.length > 0 && (
+          <Section darkMode={darkMode} title="Additional Assets Used">
+            <div className="space-y-2">
+              {additionalAssetsUsed.map((asset, index) => (
+                <div key={`${asset.name}-${index}`} className="flex items-center justify-between gap-3 py-1.5">
+                  <div className="min-w-0">
+                    <p className={`${darkMode ? "text-slate-400" : "text-slate-700"} text-sm font-semibold`}>{asset.name}</p>
+                    {asset.note && <p className="text-[10px] text-gray-400">{asset.note}</p>}
+                  </div>
+                  <span className={`text-sm font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"}`}>₹{Number(asset.cost || 0)}</span>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
         {/* ── ASSIGN PANEL ─────────────────────────── */}
         {canAssign && !isInProgress && (
           <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4`}>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               {booking.status === "assigned" ? "Re-assign Task" : "Assign Task"}
             </p>
-
-            {/* Status message */}
-            {msg && (
-              <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold ${
-                msg.type === "success" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"
-              }`}>
-                {msg.type === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
-                {msg.text}
-              </div>
-            )}
 
             {/* Provider selector */}
             <div>

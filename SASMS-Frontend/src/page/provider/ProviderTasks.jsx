@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import BottomNav from "../../component/BottomNav";
 import useDarkMode from "../../utils/useDarkMode";
+import { notifyError, notifySuccess } from "../../utils/notify";
 
 const STATUS_TABS = ["all", "assigned", "accepted", "picked_up", "in_progress", "completed", "cancelled"];
 const STATUS_CONFIG = {
@@ -78,9 +79,11 @@ export default function ProviderTasks() {
       await axios.put(`${apiUrl}/provider/booking/${id}/status`, { status: "accepted" }, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      notifySuccess("Task accepted");
       navigate(`/provider/task/${id}`);
     } catch (error) {
       console.error(error);
+      notifyError(error.response?.data?.message || "Could not accept the task");
     } finally {
       setAccepting(null);
     }

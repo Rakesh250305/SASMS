@@ -11,6 +11,53 @@ const addressSchema = new mongoose.Schema({
   pincode: { type: String, required: true },
 });
 
+const usedAssignedAssetSchema = new mongoose.Schema(
+  {
+    asset: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Asset", 
+      default: null 
+    },
+    assetName: { 
+      type: String, 
+      default: "" 
+    },
+    assetId: { 
+      type: String, 
+      default: "" 
+    },
+    category: { 
+      type: String, 
+      default: "" 
+    },
+    cost: { 
+      type: Number, 
+      default: 0 
+    },
+  },
+  { _id: false }
+);
+
+const additionalAssetUsageSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+    note: { type: String, default: "" },
+    cost: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const costSummarySchema = new mongoose.Schema(
+  {
+    serviceCost: { type: Number, default: 0 },
+    usedAssetsCost: { type: Number, default: 0 },
+    additionalAssetsCost: { type: Number, default: 0 },
+    providerCharge: { type: Number, default: 0 },
+    totalCost: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
 const bookingSchema = new mongoose.Schema(
   {
     bookingId: {
@@ -28,7 +75,7 @@ const bookingSchema = new mongoose.Schema(
     // Booking details
     address: { type: addressSchema, required: true },
     scheduledDate: { type: Date },
-    providerNote: { type: String, default: "" },
+    userNote: { type: String, default: "" },
 
     // Status flow: pending → assigned → in_progress → completed | cancelled
     status: {
@@ -44,9 +91,15 @@ const bookingSchema = new mongoose.Schema(
     // Provider updates progress
     startedAt: { type: Date },
     completedAt: { type: Date },
+    usedAssignedAssets: [usedAssignedAssetSchema],
+    additionalAssetsUsed: [additionalAssetUsageSchema],
+    costSummary: { type: costSummarySchema, default: null },
 
     // Admin note when assigning
     adminNote: { type: String, default: "" },
+
+    // Provider Notes when it is rejected
+    providerNote: { type: String, default: "" },
 
     // Notifications sent flags
     notifiedUser: { type: Boolean, default: false },
